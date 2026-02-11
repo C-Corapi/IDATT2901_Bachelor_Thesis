@@ -1,1 +1,1 @@
-# idatt2901_bachelor_thesis
+# IDATT2901_Bachelor_Thesis
