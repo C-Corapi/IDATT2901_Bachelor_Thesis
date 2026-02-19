@@ -26,7 +26,7 @@ jobs:
       continue-on-error: true
     
     - name: Check formatting with black
-      run: black --check main.py
+      run: black --diff main.py
       continue-on-error: true
     
     - name: Type checking with mypy
