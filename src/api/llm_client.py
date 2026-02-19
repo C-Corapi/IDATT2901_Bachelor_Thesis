@@ -13,9 +13,10 @@ class LlamaClient:
             token=os.getenv("API_TOKEN"),
         )
 
-    def generate(self, prompt, max_new_tokens=500, temperature=0.2):
+    def generate(self, system_prompt, prompt, max_new_tokens=500, temperature=0.2):
         response = self.client.chat_completion(
             messages=[
+                {"role": "system", "content": system_prompt},
                 {"role": "user", "content": prompt}
             ],
             max_tokens=max_new_tokens,
