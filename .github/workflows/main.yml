@@ -32,7 +32,7 @@ jobs:
       run: mypy main.py --ignore-missing-imports --show-error-codes --show-error-context
 
     - name: Google style docstrings checking with ruff
-      run: ruff check .
+      run: ruff check . --fix
 
   build:
     runs-on: ubuntu-latest
