@@ -7,6 +7,7 @@ from huggingface_hub import InferenceClient
 
 print("llm_client.py loaded")
 
+
 class LlamaClient:
     """Client wrapper around Hugging Face Inference for a Llama chat model.
 
