@@ -5,51 +5,32 @@ on:
   pull_request:
 
 jobs:
-  lint-and-format:
+  quality:
     runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v5
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 black mypy pylint ruff
-    
-    - name: Lint with flake8
-      run: flake8 main.py --exit-zero
-    
-    - name: Check formatting with black
-      run: black --diff main.py
-      continue-on-error: true
-    
-    - name: Type checking with mypy
-      run: mypy main.py --ignore-missing-imports --show-error-codes --show-error-context
 
-    - name: Google style docstrings checking with ruff
-      run: ruff check . --fix
-
-  build:
-    runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v5
-    
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: '3.11'
-        cache: 'pip'
-    
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    
-    - name: Verify main.py syntax
-      run: python -m py_compile main.py
+      - uses: actions/checkout@v5
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          pip install ruff black mypy pytest
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      - name: Format check (black)
+        run: black --check .
+
+      - name: Type check (mypy)
+        run: mypy . --ignore-missing-imports --show-error-codes --show-error-context
+
+      - name: Tests (pytest)
+        run: pytest -q
