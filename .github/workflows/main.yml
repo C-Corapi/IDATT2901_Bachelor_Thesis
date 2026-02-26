@@ -33,4 +33,4 @@ jobs:
         run: mypy . --ignore-missing-imports --show-error-codes --show-error-context
 
       - name: Tests (pytest)
-        run: pytest -q
+        run: PYTHONPATH=src pytest -q
