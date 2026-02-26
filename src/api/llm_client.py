@@ -51,7 +51,7 @@ class LlamaClient:
         response = self.client.chat_completion(
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": prompt}
+                {"role": "user", "content": prompt},
             ],
             max_tokens=max_new_tokens,
             temperature=temperature,

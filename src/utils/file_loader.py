@@ -31,6 +31,6 @@ def load_txt_file(path: str) -> str:
     Raises:
         OSError: If the file cannot be opened or read (e.g., missing permissions).
     """
-    with open(path, 'r') as file:
+    with open(path, "r") as file:
         content = file.read()
     return content

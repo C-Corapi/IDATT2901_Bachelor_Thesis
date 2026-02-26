@@ -8,6 +8,7 @@ import os
 
 from src.api.llm_client import LlamaClient
 from src.prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
+from src.prompts.decision_extraction import DECISION_EXTRACTION_PROMPT
 from src.utils.file_loader import load_file
 
 file_path = os.path.join("src", "documents", "test.txt")
@@ -17,6 +18,8 @@ prompt = text
 print(prompt)
 
 llm = LlamaClient()
-result = llm.generate(system_prompt=EPIC_EXTRACTION_PROMPT, prompt=text)
+epic_result = llm.generate(system_prompt=EPIC_EXTRACTION_PROMPT, prompt=text)
+decision_result = llm.generate(system_prompt=DECISION_EXTRACTION_PROMPT, prompt=text)
 
-print(result)
+print(epic_result)
+print(decision_result)
