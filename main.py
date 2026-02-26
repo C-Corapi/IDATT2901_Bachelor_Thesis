@@ -21,5 +21,5 @@ llm = LlamaClient()
 epic_result = llm.generate(system_prompt=EPIC_EXTRACTION_PROMPT, prompt=text)
 decision_result = llm.generate(system_prompt=DECISION_EXTRACTION_PROMPT, prompt=text)
 
-#print(epic_result)
+print(epic_result)
 print(decision_result)
