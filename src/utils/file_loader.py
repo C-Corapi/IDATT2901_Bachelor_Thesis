@@ -1,5 +1,6 @@
 """File loading utilities for reading supported document formats."""
 
+
 def load_file(path: str) -> str:
     """Loads a supported file type and return its contents as a string.
 
@@ -18,6 +19,7 @@ def load_file(path: str) -> str:
         return load_txt_file(path)
     else:
         raise ValueError(f"Unsupported file type: {path}")
+
 
 def load_txt_file(path: str) -> str:
     """Loads a text file and return its contents.
