@@ -1,3 +1,5 @@
+# Prompt for extracting project-management epics. Output must be JSON to support
+# deterministic parsing downstream.
 EXTRACTION_PROMPT = """
 You are an AI system that extracts project managment epics from documents.
 
