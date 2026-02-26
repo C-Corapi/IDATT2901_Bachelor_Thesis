@@ -7,7 +7,7 @@ system prompt, and prints the extracted epics (expected to be JSON) to stdout.
 import os
 
 from src.api.llm_client import LlamaClient
-from src.prompts.epic_extraction import EXTRACTION_PROMPT
+from src.prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
 from src.utils.file_loader import load_file
 
 file_path = os.path.join("src", "documents", "test.txt")
@@ -17,6 +17,6 @@ prompt = text
 print(prompt)
 
 llm = LlamaClient()
-result = llm.generate(system_prompt=EXTRACTION_PROMPT, prompt=text)
+result = llm.generate(system_prompt=EPIC_EXTRACTION_PROMPT, prompt=text)
 
 print(result)
