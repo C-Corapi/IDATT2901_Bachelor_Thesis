@@ -16,6 +16,7 @@ class LlamaClient:
         """Initialize the LLM client using configuration from environment variables.
         Loads variables from a local `.env` file (if present) and reads `API_TOKEN`
         from the environment.
+
         Raises:
             ValueError: If `API_TOKEN` is not set.
         """
@@ -28,6 +29,7 @@ class LlamaClient:
 
     def generate(self, system_prompt, prompt, max_new_tokens=500, temperature=0.2):
         """Generates a chat completion from the model.
+
             Args:
                system_prompt: System instructions that define the assistant's behavior.
                prompt: The user prompt to send to the model.

@@ -1,1 +1,1 @@
-"""Prompts tests"""
+"""Prompts tests."""

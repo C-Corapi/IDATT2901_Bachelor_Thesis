@@ -1,6 +1,7 @@
 def load_file(path: str) -> str:
     """Loads a supported file type and return its contents as a string.
        Currently, only plain text files (".txt") are supported.
+
        Args:
            path: Path to the file to load.
        Returns:
@@ -15,6 +16,7 @@ def load_file(path: str) -> str:
 
 def load_txt_file(path: str) -> str:
     """Loads a text file and return its contents.
+
        Args:
            path: Path to a ".txt" file.
        Returns:
