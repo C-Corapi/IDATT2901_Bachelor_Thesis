@@ -31,6 +31,9 @@ jobs:
     - name: Type checking with mypy
       run: mypy main.py --ignore-missing-imports --show-error-codes --show-error-context
 
+    - name: Google style docstrings checking with ruff
+      run: ruff check .
+
   build:
     runs-on: ubuntu-latest
     
