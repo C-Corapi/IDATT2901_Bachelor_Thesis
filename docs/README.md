@@ -18,7 +18,17 @@ This project is a part of a bachelors thesis done at NTNU Trondheim. The system 
 TBA
 
 ### Installation
-TBA
+To install the program, begin by activating the virtual environment. Use the command:  
+
+source .venv/bin/activate 
+
+Next, install the dependencies using the command: 
+
+python -m pip install -r requirements.txt 
+
+To close the program, deactivate the virtual environment with the command: 
+
+deactivate 
 
 ## Running the application
 TBA
