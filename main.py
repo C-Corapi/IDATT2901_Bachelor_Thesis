@@ -8,7 +8,7 @@ file_path = os.path.join("src", "documents", "test.txt")
 text = load_file(file_path)
 
 prompt = text
-print(prompt)
+print(EXTRACTION_PROMPT)
 
 llm = LlamaClient()
 result = llm.generate(system_prompt=EXTRACTION_PROMPT, prompt=text)
