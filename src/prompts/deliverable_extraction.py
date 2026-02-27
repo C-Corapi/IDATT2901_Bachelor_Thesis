@@ -11,14 +11,14 @@ Output format (JSON):
 {
     "deliverables": [
         "requirements": "description of what stakeholders need",
-        "specifications": "description of how the deliverable should be built to meet the requirements.
-        It should be technical and measurable",
+        "specifications": "description of how the deliverable should be built to meet the 
+        requirements. It should be technical and measurable",
         "properties": "describes the characteristics of the delivered product, if there is one."
     ]
 }
 
 A deliverable is defined as such:
-Tangible and intangible project results are characterized by requirements, specifications, and properties.
-They are subject to approval using a fit criteria to assess fitness for purpose.
+Tangible and intangible project results are characterized by requirements, specifications, and
+properties. They are subject to approval using a fit criteria to assess fitness for purpose.
 Requirements are captured in either use cases, user stories, or free text.
 """
