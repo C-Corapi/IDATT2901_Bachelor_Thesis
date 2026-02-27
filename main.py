@@ -6,12 +6,10 @@ system prompt, and prints the extracted epics (expected to be JSON) to stdout.
 
 import os
 
-from src.api.llm_client import LlamaClient
-from src.utils.file_loader import load_file
 from api.llm_client import LlamaClient
 from prompts.decision_extraction import DECISION_EXTRACTION_PROMPT
 from prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
-from src.prompts.deliverable_extraction import DEXTRACTION_PROMPT
+from prompts.deliverable_extraction import DELIVERABLE_EXTRACTION_PROMPT
 from utils.file_loader import load_file
 
 file_path = os.path.join("src", "documents", "test.txt")
