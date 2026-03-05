@@ -7,6 +7,7 @@ parsing (e.g., JSON decoding).
 
 from prompts.activity_extraction import ACTIVITY_EXTRACTION_PROMPT
 
+
 def test_prompt_is_non_empty() -> None:
     """Verify the prompt is defined and not empty after stripping whitespace."""
     assert isinstance(ACTIVITY_EXTRACTION_PROMPT, str)
