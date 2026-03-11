@@ -6,6 +6,7 @@ system prompt, and prints the extracted epics (expected to be JSON) to stdout.
 
 import os
 
+from fastapi import FastAPI
 from api.llm_client import LlamaClient
 from prompts.activity_extraction import ACTIVITY_EXTRACTION_PROMPT
 
