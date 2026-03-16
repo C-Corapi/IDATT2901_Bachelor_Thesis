@@ -22,7 +22,6 @@ from prompts.epic_extraction import SYSTEM_PROMPT, USER_PROMPT
 from utils.commitment_gate import passes_phrase_gate
 from utils.evidence import recover_exact_evidence
 
-
 EPIC_COMMIT_PHRASES: List[str] = [
     "we will",
     "we must",
@@ -68,7 +67,7 @@ def strip_code_fences(s: str) -> str:
     if s.startswith("```"):
         first_newline = s.find("\n")
         if first_newline != -1:
-            s = s[first_newline + 1:]
+            s = s[first_newline + 1 :]
 
         if s.endswith("```"):
             s = s[:-3]
@@ -95,7 +94,7 @@ def extract_json_object(s: str) -> Optional[str]:
     if start == -1 or end == -1 or end <= start:
         return None
 
-    return s[start:end + 1]
+    return s[start : end + 1]
 
 
 def safe_load_json(raw: str) -> Optional[Dict[str, Any]]:

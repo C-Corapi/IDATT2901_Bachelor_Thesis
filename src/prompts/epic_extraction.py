@@ -73,4 +73,3 @@ NOTES:
 - evidence: a short exact substring copied from TEXT (must appear verbatim)
 - If no EPIC is found, return: { "items": [] }
 """
-

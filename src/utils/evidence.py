@@ -43,7 +43,7 @@ def _expand_trailing_punct(original: str, start: int, end_inclusive: int) -> str
     end = end_inclusive
     if end + 1 < len(original) and original[end + 1] in ".!?":
         end += 1
-    return original[start:end + 1]
+    return original[start : end + 1]
 
 
 def recover_exact_evidence(evidence: str, source_text: str) -> Optional[str]:

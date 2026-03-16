@@ -9,11 +9,11 @@ from typing import Sequence
 
 
 def passes_phrase_gate(
-        evidence: str,
-        *,
-        accept_phrases: Sequence[str],
-        reject_phrases: Sequence[str] = (),
-        reject_questions: bool = True,
+    evidence: str,
+    *,
+    accept_phrases: Sequence[str],
+    reject_phrases: Sequence[str] = (),
+    reject_questions: bool = True,
 ) -> bool:
     """Check whether evidence passes a phrase-based validation step.
 
