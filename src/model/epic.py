@@ -6,10 +6,12 @@ initiatives. The model includes fields for various metadata extracted or
 designated for epics.
 """
 
+from typing import List
 from typing import Optional
-from sqlalchemy.orm import Mapped
+from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from db.base import Base
+from __future__ import annotations
 
 class Epic(Base):
     """SQLAlchemy model representing an Epic entity.
@@ -31,7 +33,7 @@ class Epic(Base):
         non_functional_requirements (Optional[str]): Non-functional requirements for the epic.
     """
 
-    __tablename__ = "epics"
+    __tablename__ = "epic"
 
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
@@ -42,6 +44,8 @@ class Epic(Base):
     use_case: Mapped[Optional[str]]
     user_story: Mapped[Optional[str]]
     non_functional_requirements: Mapped[Optional[str]]
+
+    activities: Mapped[List[Activity]] = relationship(back_populates="epic")
 
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""
