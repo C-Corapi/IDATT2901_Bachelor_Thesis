@@ -191,12 +191,13 @@ class EpicExtractor:
         Returns:
             Raw text returned by the model.
         """
-        return self.llm.generate(
+        response = self.llm.generate(
             system_prompt=system_prompt,
             prompt=user_content,
             max_new_tokens=700,
             temperature=0.0,
         )
+        return str(response)
 
     def extract(self, text: str) -> Dict[str, Any]:
         """Extract EPICs from the given text and return verified items only.

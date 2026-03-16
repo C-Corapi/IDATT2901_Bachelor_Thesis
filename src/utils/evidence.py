@@ -89,8 +89,8 @@ def recover_exact_evidence(evidence: str, source_text: str) -> Optional[str]:
         end = idx + len(ev) - 1
         return _expand_trailing_punct(original, start, end)
 
-    normalized_chars = []
-    norm_to_orig = []
+    normalized_chars: list[str] = []
+    norm_to_orig: list[int] = []
     i = 0
     while i < len(original):
         ch = original[i]
