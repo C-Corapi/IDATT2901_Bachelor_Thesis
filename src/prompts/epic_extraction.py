@@ -1,3 +1,5 @@
+# ruff: noqa: E501
+
 """System and user prompt for extracting project-management epics as strict JSON."""
 
 SYSTEM_PROMPT = """
