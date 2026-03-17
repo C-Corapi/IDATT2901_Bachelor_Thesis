@@ -10,7 +10,7 @@ from typing import List
 from typing import Optional
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
-from db.base import Base
+from ..database import Base
 
 class Epic(Base):
     """SQLAlchemy model representing an Epic entity.
@@ -37,9 +37,9 @@ class Epic(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     description: Mapped[str]
-    classification: Mapped[str]
+    classification: Mapped[Optional[str]]
     owner: Mapped[Optional[str]]
-    scope: Mapped[str]
+    scope: Mapped[Optional[str]]
     use_case: Mapped[Optional[str]]
     user_story: Mapped[Optional[str]]
     non_functional_requirements: Mapped[Optional[str]]
