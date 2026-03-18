@@ -1,5 +1,8 @@
-from sqlalchemy import DateTime
+from datetime import datetime
+
 from sqlalchemy.orm import Mapped, mapped_column
+
+from ..database import Base
 
 
 class Decision(Base):
@@ -11,7 +14,7 @@ class Decision(Base):
     alternatives: Mapped[str]
     nature: Mapped[str]
     reach: Mapped[str]
-    deadline: Mapped[DateTime]
+    deadline: Mapped[datetime]
     owner: Mapped[str]
 
     def __repr__(self) -> str:

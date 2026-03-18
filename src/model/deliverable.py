@@ -1,6 +1,7 @@
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.base import Base
+from ..database import Base
 
 
 class Deliverable(Base):
@@ -13,7 +14,7 @@ class Deliverable(Base):
     properties: Mapped[str]
     fit_criterion: Mapped[str]
     owner: Mapped[str]
-    activity_id: Mapped[int] = mapped_column(foreign_key="activity.id")
+    activity_id: Mapped[int] = mapped_column(ForeignKey("activity.id"))
 
     activity: Mapped["Activity"] = relationship(back_populates="deliverables")
 

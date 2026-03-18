@@ -1,4 +1,4 @@
-"""Run the epic-extraction pipeline on a local document.
+﻿"""Run the epic-extraction pipeline on a local document.
 
 This script loads an input document, sends its contents to an LLM with a fixed
 system prompt, and prints the extracted epics (expected to be JSON) to stdout.
@@ -6,6 +6,7 @@ system prompt, and prints the extracted epics (expected to be JSON) to stdout.
 
 from fastapi import FastAPI
 from .api import epic_router
+from .model import *
 
 # from prompts.decision_extraction import DECISION_EXTRACTION_PROMPT
 # from prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
@@ -32,8 +33,13 @@ from .api import epic_router
 
 app = FastAPI()
 
+# Create database tables
+from .database import Base, engine
+Base.metadata.create_all(bind=engine)
+
 app.include_router(epic_router.router)
 
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
+
