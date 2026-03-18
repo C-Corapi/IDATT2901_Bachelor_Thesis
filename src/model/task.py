@@ -1,19 +1,21 @@
-from sqlalchemy import Date, DateTime, ForeignKey
+from datetime import datetime, date
+
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from db.base import Base
+from ..database import Base
 
 
 class Task(Base):
     __tablename__ = "task"
 
-    id: Mapped[int]
+    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     description: Mapped[str]
     owner: Mapped[str]
     status: Mapped[str]
-    time_logged: Mapped[DateTime]
-    target_date: Mapped[Date]
+    time_logged: Mapped[datetime]
+    target_date: Mapped[date]
     activity_id: Mapped[int] = mapped_column(ForeignKey("activity.id"))
 
     activity: Mapped["Activity"] = relationship(back_populates="tasks")

@@ -1,4 +1,4 @@
-from db.base import Base
+from ..database import Base
 from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, relationship
@@ -7,7 +7,7 @@ from sqlalchemy.orm import mapped_column
 class Activity(Base):
     __tablename__ = "activity"
 
-    id: Mapped[int]
+    id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str]
     description: Mapped[str]
     owner: Mapped[str]

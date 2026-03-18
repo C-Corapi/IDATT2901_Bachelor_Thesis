@@ -2,21 +2,23 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from ..database import get_db
 from ..model.epic import Epic
+from ..schemas.epic import EpicCreate, EpicResponse
 
 router = APIRouter(
     prefix="/epics",
     tags=["Epics"],
 )
 
-@router.get("/", response_model=list[Epic])
+@router.get("/", response_model=list[EpicResponse])
 def get_all_epics(db: Session = Depends(get_db)):
     """Retrieve all epics from the database."""
     return db.query(Epic).all()
 
-@router.post("/")
-def create_epic(epic: Epic, db: Session = Depends(get_db)):
+@router.post("/", response_model=EpicResponse, status_code=201)
+def create_epic(epic: EpicCreate, db: Session = Depends(get_db)):
     """Create a new epic in the database."""
-    db.add(epic)
+    db_epic = Epic(**epic.model_dump())
+    db.add(db_epic)
     db.commit()
-    db.refresh(epic)
-    return epic
+    db.refresh(db_epic)
+    return db_epic
