@@ -9,7 +9,7 @@ class Decision(Base):
     __tablename__ = "decision"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str]
+    name: Mapped[str]
     description: Mapped[str]
     alternatives: Mapped[str]
     nature: Mapped[str]
@@ -19,4 +19,4 @@ class Decision(Base):
 
     def __repr__(self) -> str:
         """Return a string representation of the Decision instance."""
-        return f"Decision(id={self.id!r}, title={self.title!r})"
+        return f"Decision(id={self.id!r}, title={self.name!r})"
