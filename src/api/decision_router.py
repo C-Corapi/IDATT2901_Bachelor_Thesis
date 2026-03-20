@@ -6,11 +6,11 @@ from src.model.decision import Decision
 from src.model.decision import Decision
 from src.schemas.decision import DecisionResponseModel
 
-
 router = APIRouter(
     prefix="/decisions",
     tags=["decisions"],
 )
+
 
 @router.get("/", response_model=list[DecisionResponseModel])
 def get_all_decisions(db: Session = Depends(get_db)):

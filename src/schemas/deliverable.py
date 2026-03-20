@@ -12,12 +12,16 @@ class DeliverableBaseModel(BaseModel):
     deadline: Optional[str] = None
     owner: Optional[str] = None
 
+
 class DeliverableCreateModel(DeliverableBaseModel):
     """Pydantic model for creating a new Deliverable."""
+
     pass
+
 
 class DeliverableResponseModel(DeliverableBaseModel):
     """Pydantic model for Deliverable API responses."""
+
     id: int
 
     model_config = ConfigDict(from_attributes=True)

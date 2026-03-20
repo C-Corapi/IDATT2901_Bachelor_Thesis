@@ -4,6 +4,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 
+
 class Activity(Base):
     __tablename__ = "activity"
 
@@ -21,4 +22,3 @@ class Activity(Base):
 
     def __repr__(self):
         return f"<Activity(id={self.id}, name='{self.name}')>"
-    
