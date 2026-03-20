@@ -5,8 +5,9 @@ system prompt, and prints the extracted epics (expected to be JSON) to stdout.
 """
 
 from fastapi import FastAPI
+
+from src.api import activity_router, decision_router, deliverable_router, task_router
 from .api import epic_router
-from .model import *
 
 # from prompts.decision_extraction import DECISION_EXTRACTION_PROMPT
 # from prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
@@ -33,13 +34,13 @@ from .model import *
 
 app = FastAPI()
 
-# Create database tables
+# Reset db on app restart only for testing purposes.
 from .database import Base, engine
+Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)
 
 app.include_router(epic_router.router)
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
-
+app.include_router(decision_router.router)
+app.include_router(deliverable_router.router)
+app.include_router(task_router.router)
+app.include_router(activity_router.router)
