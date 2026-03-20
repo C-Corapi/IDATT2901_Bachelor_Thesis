@@ -1,10 +1,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from src.utils.database import get_db
-from src.model.decision import Decision
 from src.model.decision import Decision
 from src.schemas.decision import DecisionResponseModel
+from src.utils.database import get_db
 
 router = APIRouter(
     prefix="/decisions",
