@@ -1,0 +1,1 @@
+"""Extractor package for metadata extraction logic."""
