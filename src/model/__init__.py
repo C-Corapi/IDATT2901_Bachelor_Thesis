@@ -1,10 +1,10 @@
 """Model package."""
 
-from .activity import Activity
-from .decision import Decision
-from .deliverable import Deliverable
-from .epic import Epic
-from .task import Task
+from src.model.activity import Activity
+from src.model.decision import Decision
+from src.model.deliverable import Deliverable
+from src.model.epic import Epic
+from src.model.task import Task
 
 __all__ = [
     "Epic",
