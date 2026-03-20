@@ -1,3 +1,5 @@
+"""Pydantic schemas for Task-related data validation and serialization."""
+
 from datetime import date, datetime
 from typing import Optional
 
@@ -5,8 +7,13 @@ from pydantic import BaseModel, ConfigDict
 
 
 class TaskBaseModel(BaseModel):
+    """Base Pydantic model for Task.
+
+    Contains common fields for both creation and response models.
+    """
+
     name: str
-    description: Optional[str]
+    description: Optional[str] = None
     owner: Optional[str] = None
     status: Optional[str] = None
     time_logged: datetime

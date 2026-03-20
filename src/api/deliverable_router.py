@@ -1,3 +1,5 @@
+"""API router for handling deliverable-related endpoints."""
+
 from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
