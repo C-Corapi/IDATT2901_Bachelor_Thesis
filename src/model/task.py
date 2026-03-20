@@ -14,6 +14,7 @@ from ..utils.database import Base
 
 class Task(Base):
     """SQLAlchemy model representing a Task in the database."""
+
     __tablename__ = "task"
 
     id: Mapped[int] = mapped_column(primary_key=True)

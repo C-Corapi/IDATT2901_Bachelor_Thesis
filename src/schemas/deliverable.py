@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict
 
 class DeliverableBaseModel(BaseModel):
     """Base Pydantic model for Deliverable."""
+
     name: str
     description: str
     alternatives: str

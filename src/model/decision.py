@@ -10,6 +10,7 @@ from ..utils.database import Base
 
 class Decision(Base):
     """SQLAlchemy model representing a Decision in the database."""
+
     __tablename__ = "decision"
 
     id: Mapped[int] = mapped_column(primary_key=True)
