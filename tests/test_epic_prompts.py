@@ -5,7 +5,7 @@ contain key constraints and required fields needed for deterministic downstream
 parsing (e.g., JSON decoding).
 """
 
-from prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
+from src.prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
 
 
 def test_prompt_is_non_empty() -> None:
