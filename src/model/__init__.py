@@ -8,7 +8,7 @@ from .task import Task
 
 __all__ = [
     "Epic",
-    "Activity", 
+    "Activity",
     "Decision",
     "Deliverable",
     "Task",

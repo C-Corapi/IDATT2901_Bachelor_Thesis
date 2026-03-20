@@ -12,6 +12,7 @@ from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
 from ..utils.database import Base
 
+
 class Epic(Base):
     """SQLAlchemy model representing an Epic entity.
 
@@ -44,7 +45,9 @@ class Epic(Base):
     user_story: Mapped[Optional[str]]
     non_functional_requirements: Mapped[Optional[str]]
 
-    activities: Mapped[List["Activity"]] = relationship(back_populates="epic", cascade="all, delete-orphan")
+    activities: Mapped[List["Activity"]] = relationship(
+        back_populates="epic", cascade="all, delete-orphan"
+    )
 
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""

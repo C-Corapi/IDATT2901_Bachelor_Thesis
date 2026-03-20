@@ -1,6 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 from typing import Optional
 
+
 class EpicBase(BaseModel):
     name: str
     description: str
@@ -11,12 +12,16 @@ class EpicBase(BaseModel):
     user_story: Optional[str] = None
     non_functional_requirements: Optional[str] = None
 
+
 class EpicCreate(EpicBase):
     """Pydantic model for creating a new Epic."""
+
     pass
+
 
 class EpicResponse(EpicBase):
     """Pydantic model for Epic API responses."""
+
     id: int
 
     model_config = ConfigDict(from_attributes=True)

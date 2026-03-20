@@ -20,4 +20,3 @@ class Deliverable(Base):
 
     def __repr__(self):
         return f"<Deliverable(id={self.id}, name='{self.name}')>"
-    

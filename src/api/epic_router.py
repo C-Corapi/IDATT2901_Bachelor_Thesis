@@ -9,10 +9,12 @@ router = APIRouter(
     tags=["Epics"],
 )
 
+
 @router.get("/", response_model=list[EpicResponse])
 def get_all_epics(db: Session = Depends(get_db)):
     """Retrieve all epics from the database."""
     return db.query(Epic).all()
+
 
 @router.post("/", response_model=EpicResponse, status_code=201)
 def create_epic(epic: EpicCreate, db: Session = Depends(get_db)):
