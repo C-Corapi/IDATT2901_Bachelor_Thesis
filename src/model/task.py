@@ -3,7 +3,7 @@ from datetime import datetime, date
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ..database import Base
+from ..utils.database import Base
 
 
 class Task(Base):

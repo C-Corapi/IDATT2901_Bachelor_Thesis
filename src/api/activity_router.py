@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from ..schemas.activity import ActivityResponseModel
-from ..database import get_db
+from ..utils.database import get_db
 from fastapi import APIRouter, Depends
 from src.model.activity import Activity
 

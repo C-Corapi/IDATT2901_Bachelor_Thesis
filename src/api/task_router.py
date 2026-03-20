@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from src.database import get_db
+from src.utils.database import get_db
 from src.schemas.task import TaskResponseModel
 from ..model.task import Task
 

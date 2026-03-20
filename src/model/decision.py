@@ -1,8 +1,9 @@
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ..database import Base
+from ..utils.database import Base
 
 
 class Decision(Base):
@@ -14,8 +15,8 @@ class Decision(Base):
     alternatives: Mapped[str]
     nature: Mapped[str]
     reach: Mapped[str]
-    deadline: Mapped[datetime]
-    owner: Mapped[str]
+    deadline: Mapped[Optional[datetime]]
+    owner: Mapped[Optional[str]]
 
     def __repr__(self) -> str:
         """Return a string representation of the Decision instance."""
