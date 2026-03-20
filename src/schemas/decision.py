@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict
 
 class DecisionBaseMode(BaseModel):
     """Base Pydantic model for Decision."""
+
     name: str
     description: str
     alternatives: str
