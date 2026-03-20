@@ -6,8 +6,7 @@ from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.model.activity import Activity
-
-from ..utils.database import Base
+from src.utils.database import Base
 
 
 class Deliverable(Base):

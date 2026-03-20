@@ -3,9 +3,9 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from ..model.epic import Epic
-from ..schemas.epic import EpicCreate, EpicResponse
-from ..utils.database import get_db
+from src.model.epic import Epic
+from src.schemas.epic import EpicCreate, EpicResponse
+from src.utils.database import get_db
 
 router = APIRouter(
     prefix="/epics",

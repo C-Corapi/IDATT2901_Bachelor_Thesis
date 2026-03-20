@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from .epic import Epic
     from .task import Task
 
-from ..utils.database import Base
+from src.utils.database import Base
 
 
 class Activity(Base):
