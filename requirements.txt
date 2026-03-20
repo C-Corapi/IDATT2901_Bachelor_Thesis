@@ -26,3 +26,4 @@ fastapi
 pydantic
 psycopg[binary]
 sqlalchemy
+ruff

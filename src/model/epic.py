@@ -6,10 +6,10 @@ initiatives. The model includes fields for various metadata extracted or
 designated for epics.
 """
 
-from typing import List
-from typing import Optional
-from sqlalchemy.orm import Mapped, relationship
-from sqlalchemy.orm import mapped_column
+from typing import List, Optional
+
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from ..utils.database import Base
 
 
