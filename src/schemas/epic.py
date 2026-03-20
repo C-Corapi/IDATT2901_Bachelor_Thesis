@@ -1,9 +1,12 @@
+"""Pydantic models for Epic API endpoints."""
+
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
 
 class EpicBase(BaseModel):
+    """Base Pydantic model for Epic."""
     name: str
     description: str
     classification: Optional[str] = None

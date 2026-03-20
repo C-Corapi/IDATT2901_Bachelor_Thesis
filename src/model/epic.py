@@ -6,9 +6,13 @@ initiatives. The model includes fields for various metadata extracted or
 designated for epics.
 """
 
+from __future__ import annotations
+
 from typing import List, Optional
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.model.activity import Activity
 
 from ..utils.database import Base
 
@@ -45,7 +49,7 @@ class Epic(Base):
     user_story: Mapped[Optional[str]]
     non_functional_requirements: Mapped[Optional[str]]
 
-    activities: Mapped[List["Activity"]] = relationship(
+    activities: Mapped[List[Activity]] = relationship(
         back_populates="epic", cascade="all, delete-orphan"
     )
 

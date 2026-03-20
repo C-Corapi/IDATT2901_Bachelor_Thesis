@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from src.api import activity_router, decision_router, deliverable_router, task_router
 
 from .api import epic_router
+from .utils.database import Base, engine
 
 # from prompts.decision_extraction import DECISION_EXTRACTION_PROMPT
 # from prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
@@ -36,7 +37,6 @@ from .api import epic_router
 app = FastAPI()
 
 # Reset db on app restart only for testing purposes.
-from .utils.database import Base, engine
 
 Base.metadata.drop_all(bind=engine)
 Base.metadata.create_all(bind=engine)

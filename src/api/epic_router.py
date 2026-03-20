@@ -1,3 +1,5 @@
+"""API router for managing epics related endpoints."""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 

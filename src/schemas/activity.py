@@ -1,9 +1,12 @@
+"""Pydantic models for Activity API endpoints."""
+
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
 
 class ActivityBaseModel(BaseModel):
+    """Base Pydantic model for Activity."""
     name: str
     description: Optional[str]
     owner: Optional[str] = None
