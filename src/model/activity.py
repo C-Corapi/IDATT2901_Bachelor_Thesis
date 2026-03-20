@@ -1,4 +1,4 @@
-from ..database import Base
+from ..utils.database import Base
 from typing import List
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, relationship

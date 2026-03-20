@@ -10,7 +10,7 @@ from typing import List
 from typing import Optional
 from sqlalchemy.orm import Mapped, relationship
 from sqlalchemy.orm import mapped_column
-from ..database import Base
+from ..utils.database import Base
 
 class Epic(Base):
     """SQLAlchemy model representing an Epic entity.

@@ -2,7 +2,7 @@ from fastapi import APIRouter
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
-from ..database import get_db
+from ..utils.database import get_db
 from ..model.deliverable import Deliverable
 from ..schemas.deliverable import DeliverableResponseModel
 
