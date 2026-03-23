@@ -5,7 +5,7 @@ contain key constraints and required fields needed for deterministic downstream
 parsing (e.g., JSON decoding).
 """
 
-from src.prompts.activity_extraction import ACTIVITY_EXTRACTION_PROMPT
+from prompts.activity_extraction import ACTIVITY_EXTRACTION_PROMPT
 
 
 def test_prompt_is_non_empty() -> None:
