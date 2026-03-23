@@ -14,6 +14,6 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[ActivityResponseModel])
-def get_all_activities(db: Session = Depends(get_db)): # type: ignore[assignment]
+def get_all_activities(db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve all activities from the database."""
     return db.query(Activity).all()

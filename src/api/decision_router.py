@@ -14,6 +14,6 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[DecisionResponseModel])
-def get_all_decisions(db: Session = Depends(get_db)): # type: ignore[assignment]
+def get_all_decisions(db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve all decisions from the database."""
     return db.query(Decision).all()
