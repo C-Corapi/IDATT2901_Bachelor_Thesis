@@ -1,0 +1,29 @@
+"""Pydantic models for Activity API endpoints."""
+
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
+
+
+class ActivityBaseModel(BaseModel):
+    """Base Pydantic model for Activity."""
+
+    name: str
+    description: Optional[str]
+    owner: Optional[str] = None
+    status: Optional[str] = None
+
+
+class ActivityCreateModel(ActivityBaseModel):
+    """Pydantic model for creating a new Activity."""
+
+    pass
+
+
+class ActivityResponseModel(ActivityBaseModel):
+    """Pydantic model for Activity API responses."""
+
+    id: int
+    epic_id: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)

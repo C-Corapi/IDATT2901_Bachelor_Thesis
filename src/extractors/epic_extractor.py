@@ -17,10 +17,10 @@ import json
 import uuid
 from typing import Any, Dict, List, Optional
 
-from api.llm_client import LlamaClient
 from prompts.epic_extraction import SYSTEM_PROMPT, USER_PROMPT
 from utils.commitment_gate import passes_phrase_gate
 from utils.evidence import recover_exact_evidence
+from utils.llm_client import LlamaClient
 
 EPIC_COMMIT_PHRASES: List[str] = [
     "we will",

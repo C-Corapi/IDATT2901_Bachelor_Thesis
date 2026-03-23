@@ -22,3 +22,8 @@ tqdm==4.67.3
 typer==0.24.0
 typer-slim==0.24.0
 typing_extensions==4.15.0
+fastapi
+pydantic
+psycopg[binary]
+sqlalchemy
+ruff
