@@ -5,7 +5,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from src.utils.database import Base
+from utils.database import Base
 
 
 class Decision(Base):

@@ -6,8 +6,8 @@ system prompt, and prints the extracted epics (expected to be JSON) to stdout.
 
 from fastapi import FastAPI
 
-from src.api import activity_router, decision_router, deliverable_router, epic_router, task_router
-from src.utils.database import Base, engine
+from api import activity_router, decision_router, deliverable_router, epic_router, task_router
+from utils.database import Base, engine
 
 # from prompts.decision_extraction import DECISION_EXTRACTION_PROMPT
 # from prompts.epic_extraction import EPIC_EXTRACTION_PROMPT
