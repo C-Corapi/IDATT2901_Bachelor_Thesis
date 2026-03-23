@@ -7,8 +7,8 @@ from datetime import date, datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from src.model.activity import Activity
-from src.utils.database import Base
+from model.activity import Activity
+from utils.database import Base
 
 
 class Task(Base):
