@@ -15,6 +15,6 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[DeliverableResponseModel])
-def get_all_deliverables(db: Session = Depends(get_db)):
+def get_all_deliverables(db: Session = Depends(get_db)): # type: ignore[assignment]
     """Retrieve all deliverables from the database."""
     return db.query(Deliverable).all()
