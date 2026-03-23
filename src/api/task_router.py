@@ -14,6 +14,6 @@ router = APIRouter(
 
 
 @router.get("/", response_model=list[TaskResponseModel])
-def get_all_tasks(db: Session = Depends(get_db)):
+def get_all_tasks(db: Session = Depends(get_db)): # type: ignore[assignment]
     """Retrieve all tasks from the database."""
     return db.query(Task).all()
