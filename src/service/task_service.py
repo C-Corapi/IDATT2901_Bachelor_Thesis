@@ -3,6 +3,7 @@
 import json
 from typing import Any
 
+from model.task import Task
 from prompts.task_extraction import TASK_EXTRACTION_PROMPT
 from schemas.task import TaskCreateModel
 from utils.file_loader import load_file
