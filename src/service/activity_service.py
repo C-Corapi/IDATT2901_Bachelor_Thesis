@@ -28,6 +28,7 @@ def extract_activities(filepath: str) -> list[ActivityCreateModel]:
 
     return activities
 
+
 def save_activities_to_db(activities: list[ActivityCreateModel], db: Session) -> list[Activity]:
     """Save a list of ActivityCreateModel instances to the database."""
     db_activities = [Activity(**a.model_dump()) for a in activities]

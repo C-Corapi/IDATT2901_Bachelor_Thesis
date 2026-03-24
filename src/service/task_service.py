@@ -3,6 +3,8 @@
 import json
 from typing import Any
 
+from sqlalchemy.orm import Session
+
 from model.task import Task
 from prompts.task_extraction import TASK_EXTRACTION_PROMPT
 from schemas.task import TaskCreateModel
@@ -20,11 +22,10 @@ def extract_tasks(filepath: str) -> list[TaskCreateModel]:
 
     # Converts response to dictionary, then to list of TaskCreateModel instances.
     data: dict[str, Any] = json.loads(response)
-    tasks: list[TaskCreateModel] = [
-        TaskCreateModel(**d) for d in data.get("tasks", [])
-    ]
+    tasks: list[TaskCreateModel] = [TaskCreateModel(**d) for d in data.get("tasks", [])]
 
     return tasks
+
 
 def save_tasks_to_db(tasks: list[TaskCreateModel], db: Session) -> list[Task]:
     """Save a list of TaskCreateModel instances to the database."""
