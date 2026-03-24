@@ -5,7 +5,7 @@ from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
-class EpicBase(BaseModel):
+class EpicBaseModel(BaseModel):
     """Base Pydantic model for Epic."""
 
     name: str
@@ -18,13 +18,13 @@ class EpicBase(BaseModel):
     non_functional_requirements: Optional[str] = None
 
 
-class EpicCreate(EpicBase):
+class EpicCreateModel(EpicBaseModel):
     """Pydantic model for creating a new Epic."""
 
     pass
 
 
-class EpicResponse(EpicBase):
+class EpicResponseModel(EpicBaseModel):
     """Pydantic model for Epic API responses."""
 
     id: int
