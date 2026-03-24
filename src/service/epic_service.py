@@ -22,11 +22,10 @@ def extract_epics(filepath: str) -> list[EpicCreateModel]:
 
     # Converts response to dictionary, then to list of EpicCreateModel instances.
     data: dict[str, Any] = json.loads(response)
-    epics: list[EpicCreateModel] = [
-        EpicCreateModel(**d) for d in data.get("epics", [])
-    ]
+    epics: list[EpicCreateModel] = [EpicCreateModel(**d) for d in data.get("epics", [])]
 
     return epics
+
 
 def save_epics_to_db(epics: list[EpicCreateModel], db: Session) -> list[Epic]:
     """Save a list of EpicCreateModel instances to the database."""

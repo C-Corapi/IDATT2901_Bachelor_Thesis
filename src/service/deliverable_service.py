@@ -29,7 +29,9 @@ def extract_deliverables(filepath: str) -> list[DeliverableCreateModel]:
     return deliverables
 
 
-def save_deliverables_to_db(deliverables: list[DeliverableCreateModel], db: Session) -> list[Deliverable]:
+def save_deliverables_to_db(
+    deliverables: list[DeliverableCreateModel], db: Session
+) -> list[Deliverable]:
     """Save a list of DeliverableCreateModel instances to the database."""
     db_deliverables = [Deliverable(**d.model_dump()) for d in deliverables]
     db.add_all(db_deliverables)
