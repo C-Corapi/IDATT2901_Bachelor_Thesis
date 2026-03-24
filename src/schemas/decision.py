@@ -1,30 +1,29 @@
 """Pydantic models for Decision API requests and responses."""
 
-from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
 
-class DecisionBaseMode(BaseModel):
+class DecisionBaseModel(BaseModel):
     """Base Pydantic model for Decision."""
 
-    name: str
+    title: str
     description: str
-    alternatives: str
-    nature: str
-    reach: str
-    deadline: Optional[datetime] = None
+    alternatives: Optional[str] = None
+    nature: Optional[str] = None
+    reach: Optional[str] = None
+    deadline: Optional[str] = None
     owner: Optional[str] = None
 
 
-class DecisionCreateModel(DecisionBaseMode):
+class DecisionCreateModel(DecisionBaseModel):
     """Pydantic model for creating a new Decision."""
 
     pass
 
 
-class DecisionResponseModel(DecisionBaseMode):
+class DecisionResponseModel(DecisionBaseModel):
     """Pydantic model for Decision API responses."""
 
     id: int
