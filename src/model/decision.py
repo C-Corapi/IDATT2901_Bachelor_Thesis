@@ -1,6 +1,5 @@
 """SQLAlchemy model representing a Decision in the database."""
 
-from datetime import datetime
 from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column
@@ -14,14 +13,14 @@ class Decision(Base):
     __tablename__ = "decision"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str]
-    alternatives: Mapped[str]
-    nature: Mapped[str]
-    reach: Mapped[str]
-    deadline: Mapped[Optional[datetime]]
+    title: Mapped[str]
+    description: Mapped[Optional[str]]
+    alternatives: Mapped[Optional[str]]
+    nature: Mapped[Optional[str]]
+    reach: Mapped[Optional[str]]
+    deadline: Mapped[Optional[str]]
     owner: Mapped[Optional[str]]
 
     def __repr__(self) -> str:
         """Return a string representation of the Decision instance."""
-        return f"Decision(id={self.id!r}, title={self.name!r})"
+        return f"Decision(id={self.id!r}, title={self.title!r})"
