@@ -27,3 +27,4 @@ pydantic
 psycopg[binary]
 sqlalchemy
 ruff
+black
