@@ -1,13 +1,9 @@
 """SQLAlchemy model representing a Task in the database."""
 
-from __future__ import annotations
-
 from datetime import date, datetime
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
-from model.activity import Activity
 from utils.database import Base
 
 
