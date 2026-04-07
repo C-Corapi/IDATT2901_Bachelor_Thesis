@@ -18,11 +18,11 @@ Output format (JSON):
     "deliverables": [
         {
             "title": "name of the deliverable (no more than one sentance)",
-            "requirements": "description of what stakeholders need",
+            "requirements": "Descriptions of what stakeholders needs or wants. Describing a deliverable, can be free text, use cases or user stories",
             "specifications": "description of how the deliverable should be built to meet the requirements. It should be technical and measurable",
             "properties": "describes the characteristics of the delivered product, if there is one.",
-            "fit_criterion": "description of how the deliverable will be evaluated for approval",
-            "owner": "name of the one who is responsible for the deliverable"
+            "fit_criterion": "the conditions, method, and acceptance criteria that will be used to confirm that the deliverables are fit for purpose",
+            "owner": "person approving the deliverable or responsible for its delivery, if it can be inferred from the text, otherwise set to unknown"
         }
     ]
 }
@@ -34,7 +34,7 @@ Requirements are captured in either use cases, user stories, or free text.
 
 ---
 
-Example:
+Example 1:
 
 Document:
 "The system shall allow users to log in using email and password. The authentication must be completed within 2 seconds. The system should be secure and scalable."
@@ -48,7 +48,7 @@ Output:
             "specifications": "Authentication must complete within 2 seconds",
             "properties": "Secure and scalable system",
             "fit_criterion": "Authentication completes within 2 seconds and system is secure and scalable",
-            "owner": "unknown",
+            "owner": "unknown"
         }
     ]
 }
