@@ -48,10 +48,6 @@ class Epic(Base):
     user_story: Mapped[Optional[str]]
     non_functional_requirements: Mapped[Optional[str]]
 
-    activities: Mapped[List[Activity]] = relationship(
-        back_populates="epic", cascade="all, delete-orphan"
-    )
-
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""
         return f"Epic(id={self.id!r}, name={self.name!r})"

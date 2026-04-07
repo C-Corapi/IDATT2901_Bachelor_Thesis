@@ -8,12 +8,11 @@ from pydantic import BaseModel, ConfigDict
 class DeliverableBaseModel(BaseModel):
     """Base Pydantic model for Deliverable."""
 
-    name: str
-    description: str
-    alternatives: str
-    nature: str
-    reach: str
-    deadline: Optional[str] = None
+    title: str
+    requirements: str
+    specifications: str
+    properties: str
+    fit_criterion: str
     owner: Optional[str] = None
 
 

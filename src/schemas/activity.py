@@ -24,6 +24,5 @@ class ActivityResponseModel(ActivityBaseModel):
     """Pydantic model for Activity API responses."""
 
     id: int
-    epic_id: Optional[int] = None
 
     model_config = ConfigDict(from_attributes=True)

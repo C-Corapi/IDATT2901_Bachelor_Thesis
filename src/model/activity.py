@@ -23,12 +23,6 @@ class Activity(Base):
     description: Mapped[str]
     owner: Mapped[str]
     status: Mapped[str]
-    epic_id: Mapped[int] = mapped_column(ForeignKey("epic.id"))
-
-    epic: Mapped["Epic"] = relationship(back_populates="activities")
-
-    tasks: Mapped[List["Task"]] = relationship(back_populates="activity")
-    deliverables: Mapped[List["Deliverable"]] = relationship(back_populates="activity")
 
     def __repr__(self):
         """Return a string representation of the Activity instance."""

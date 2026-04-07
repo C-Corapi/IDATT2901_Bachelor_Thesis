@@ -19,6 +19,7 @@ def extract_deliverables(filepath: str) -> list[DeliverableCreateModel]:
     document: str = load_file(filepath)
 
     response: str = llm.generate(system_prompt=DELIVERABLE_EXTRACTION_PROMPT, prompt=document)
+    print("LLM response:", response)
 
     # Converts response to dictionary, then to list of DeliverableCreateModel instances.
     data: dict[str, Any] = json.loads(response)
