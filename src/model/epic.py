@@ -8,11 +8,10 @@ designated for epics.
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
-from model.activity import Activity
 from utils.database import Base
 
 

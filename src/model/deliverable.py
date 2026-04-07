@@ -1,11 +1,7 @@
 """SQLAlchemy model representing a Deliverable in the database."""
 
-from __future__ import annotations
+from sqlalchemy.orm import Mapped, mapped_column
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-from model.activity import Activity
 from utils.database import Base
 
 

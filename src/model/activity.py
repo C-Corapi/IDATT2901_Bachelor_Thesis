@@ -1,14 +1,6 @@
 """SQLAlchemy model representing an Activity in the database."""
 
-from typing import TYPE_CHECKING, List
-
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
-
-if TYPE_CHECKING:
-    from .deliverable import Deliverable
-    from .epic import Epic
-    from .task import Task
+from sqlalchemy.orm import Mapped, mapped_column
 
 from utils.database import Base
 
