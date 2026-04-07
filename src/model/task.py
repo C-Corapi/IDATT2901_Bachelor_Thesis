@@ -23,9 +23,6 @@ class Task(Base):
     status: Mapped[str]
     time_logged: Mapped[datetime]
     target_date: Mapped[date]
-    activity_id: Mapped[int] = mapped_column(ForeignKey("activity.id"))
-
-    activity: Mapped[Activity] = relationship(back_populates="tasks")
 
     def __repr__(self):
         """Return a string representation of the Task instance."""
