@@ -1,6 +1,6 @@
 """API router for handling deliverable-related endpoints."""
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 
@@ -37,7 +37,7 @@ def create_deliverable(deliverable: DeliverableCreateModel, db: Session = Depend
 @router.get("/{deliverable_id}", response_model=DeliverableResponseModel)
 def get_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve a specific deliverable by its ID."""
-    deliverable: Deliverable = (
+    deliverable: Deliverable | None = (
         db.query(Deliverable)
         .filter(Deliverable.id == deliverable_id)
         .first()
@@ -51,7 +51,7 @@ def get_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # type
 @router.delete("/{deliverable_id}", status_code=204)
 def delete_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Delete a specific deliverable by its ID."""
-    deliverable: Deliverable = (
+    deliverable: Deliverable | None = (
         db.query(Deliverable)
         .filter(Deliverable.id == deliverable_id)
         .first()
@@ -64,9 +64,10 @@ def delete_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # t
     db.commit()
 
 @router.put("/{deliverable_id}", response_model=DeliverableResponseModel)
-def update_deliverable(deliverable_id: int, updated_deliverable: DeliverableCreateModel, db: Session = Depends(get_db)):  # type: ignore[assignment]
+def update_deliverable(deliverable_id: int, updated_deliverable: DeliverableCreateModel,
+                       db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Update a specific deliverable by its ID."""
-    deliverable: Deliverable = (
+    deliverable: Deliverable | None = (
         db.query(Deliverable)
         .filter(Deliverable.id == deliverable_id)
         .first()
