@@ -27,53 +27,46 @@ def extract_and_save_tasks(filepath: str, db: Session = Depends(get_db)):  # typ
     saved: list[Task] = save_tasks_to_db(tasks, db)
     return saved
 
+
 @router.post("/", response_model=TaskResponseModel, status_code=201)
-def create_task(task: TaskCreateModel, db: Session = Depends(get_db)): # type: ignore[assignment]
+def create_task(task: TaskCreateModel, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Create a new task in the database."""
     return save_tasks_to_db([task], db)[0]
+
 
 @router.get("/{task_id}", response_model=TaskResponseModel)
 def get_task(task_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve a specific task by its ID."""
-    task: Task | None = (
-        db.query(Task)
-        .filter(Task.id == task_id)
-        .first()
-    )
+    task: Task | None = db.query(Task).filter(Task.id == task_id).first()
 
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     return task
+
 
 @router.delete("/{task_id}", status_code=204)
 def delete_task(task_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Delete a specific task by its ID."""
-    task: Task | None = (
-        db.query(Task)
-        .filter(Task.id == task_id)
-        .first()
-    )
+    task: Task | None = db.query(Task).filter(Task.id == task_id).first()
 
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     db.delete(task)
     db.commit()
 
+
 @router.put("/{task_id}", response_model=TaskResponseModel)
-def update_task(task_id: int, updated_task: TaskCreateModel,
-                db: Session = Depends(get_db)):  # type: ignore[assignment]
+def update_task(
+    task_id: int, updated_task: TaskCreateModel, db: Session = Depends(get_db)
+):  # type: ignore[assignment]
     """Update a specific task by its ID."""
-    task: Task | None = (
-        db.query(Task)
-        .filter(Task.id == task_id)
-        .first()
-    )
+    task: Task | None = db.query(Task).filter(Task.id == task_id).first()
 
     if task is None:
         raise HTTPException(status_code=404, detail="Task not found")
-    
+
     for key, value in updated_task.model_dump().items():
         setattr(task, key, value)
 

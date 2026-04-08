@@ -29,32 +29,31 @@ def extract_and_save_deliverables(filepath: str, db: Session = Depends(get_db)):
     saved: list[Deliverable] = save_deliverables_to_db(deliverables, db)
     return saved
 
+
 @router.post("/", response_model=DeliverableResponseModel, status_code=201)
 def create_deliverable(deliverable: DeliverableCreateModel, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Create a new deliverable in the database."""
     return save_deliverables_to_db([deliverable], db)[0]
 
+
 @router.get("/{deliverable_id}", response_model=DeliverableResponseModel)
 def get_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve a specific deliverable by its ID."""
     deliverable: Deliverable | None = (
-        db.query(Deliverable)
-        .filter(Deliverable.id == deliverable_id)
-        .first()
+        db.query(Deliverable).filter(Deliverable.id == deliverable_id).first()
     )
 
     if deliverable is None:
         raise HTTPException(status_code=404, detail="Deliverable not found")
-    
+
     return deliverable
+
 
 @router.delete("/{deliverable_id}", status_code=204)
 def delete_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Delete a specific deliverable by its ID."""
     deliverable: Deliverable | None = (
-        db.query(Deliverable)
-        .filter(Deliverable.id == deliverable_id)
-        .first()
+        db.query(Deliverable).filter(Deliverable.id == deliverable_id).first()
     )
 
     if deliverable is None:
@@ -63,19 +62,19 @@ def delete_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # t
     db.delete(deliverable)
     db.commit()
 
+
 @router.put("/{deliverable_id}", response_model=DeliverableResponseModel)
-def update_deliverable(deliverable_id: int, updated_deliverable: DeliverableCreateModel,
-                       db: Session = Depends(get_db)):  # type: ignore[assignment]
+def update_deliverable(
+    deliverable_id: int, updated_deliverable: DeliverableCreateModel, db: Session = Depends(get_db)
+):  # type: ignore[assignment]
     """Update a specific deliverable by its ID."""
     deliverable: Deliverable | None = (
-        db.query(Deliverable)
-        .filter(Deliverable.id == deliverable_id)
-        .first()
+        db.query(Deliverable).filter(Deliverable.id == deliverable_id).first()
     )
 
     if deliverable is None:
         raise HTTPException(status_code=404, detail="Deliverable not found")
-    
+
     for key, value in updated_deliverable.model_dump().items():
         setattr(deliverable, key, value)
 
