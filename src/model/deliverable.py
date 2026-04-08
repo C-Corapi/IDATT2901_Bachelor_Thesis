@@ -20,4 +20,4 @@ class Deliverable(Base):
 
     def __repr__(self):
         """Return a string representation of the Deliverable instance."""
-        return f"<Deliverable(id={self.id}, name='{self.name}')>"
+        return f"<Deliverable(id={self.id}, name='{self.title}')>"
