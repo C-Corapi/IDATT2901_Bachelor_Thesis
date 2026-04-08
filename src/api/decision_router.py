@@ -26,3 +26,56 @@ def extract_and_save_decisions(filepath: str, db: Session = Depends(get_db)):  #
     decisions: list[DecisionCreateModel] = extract_decisions(filepath)
     saved: list[Decision] = save_decisions_to_db(decisions, db)
     return saved
+
+@router.post("/", response_model=DecisionResponseModel, status_code=201)
+def create_decision(decision: DecisionCreateModel, db: Session = Depends(get_db)):  # type: ignore[assignment]
+    """Create a new decision in the database."""
+    return save_decisions_to_db([decision], db)[0]
+
+@router.get("/{decision_id}", response_model=DecisionResponseModel)
+def get_decision(decision_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
+    """Retrieve a specific decision by its ID."""
+    decision: Decision = (
+        db.query(Decision)
+        .filter(Decision.id == decision_id)
+        .first()
+    )
+
+    if decision is None:
+        raise HTTPException(status_code=404, detail="Decision not found")
+    
+    return decision
+
+@router.delete("/{decision_id}", status_code=204)
+def delete_decision(decision_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
+    """Delete a specific decision by its ID."""
+    decision: Decision = (
+        db.query(Decision)
+        .filter(Decision.id == decision_id)
+        .first()
+    )
+
+    if decision is None:
+        raise HTTPException(status_code=404, detail="Decision not found")
+    
+    db.delete(decision)
+    db.commit()
+
+@router.put("/{decision_id}", response_model=DecisionResponseModel)
+def update_decision(decision_id: int, updated_decision: DecisionCreateModel, db: Session = Depends(get_db)):  # type: ignore[assignment]
+    """Update a specific decision by its ID."""
+    decision: Decision = (
+        db.query(Decision)
+        .filter(Decision.id == decision_id)
+        .first()
+    )
+
+    if decision is None:
+        raise HTTPException(status_code=404, detail="Decision not found")
+    
+    for key, value in updated_decision.model_dump().items():
+        setattr(decision, key, value)
+
+    db.commit()
+    db.refresh(decision)
+    return decision
