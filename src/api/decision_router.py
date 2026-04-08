@@ -1,6 +1,6 @@
 """API router for handling decision-related endpoints."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from model.decision import Decision
@@ -35,7 +35,7 @@ def create_decision(decision: DecisionCreateModel, db: Session = Depends(get_db)
 @router.get("/{decision_id}", response_model=DecisionResponseModel)
 def get_decision(decision_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve a specific decision by its ID."""
-    decision: Decision = (
+    decision: Decision | None = (
         db.query(Decision)
         .filter(Decision.id == decision_id)
         .first()
@@ -49,7 +49,7 @@ def get_decision(decision_id: int, db: Session = Depends(get_db)):  # type: igno
 @router.delete("/{decision_id}", status_code=204)
 def delete_decision(decision_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Delete a specific decision by its ID."""
-    decision: Decision = (
+    decision: Decision | None = (
         db.query(Decision)
         .filter(Decision.id == decision_id)
         .first()
@@ -62,9 +62,10 @@ def delete_decision(decision_id: int, db: Session = Depends(get_db)):  # type: i
     db.commit()
 
 @router.put("/{decision_id}", response_model=DecisionResponseModel)
-def update_decision(decision_id: int, updated_decision: DecisionCreateModel, db: Session = Depends(get_db)):  # type: ignore[assignment]
+def update_decision(decision_id: int, updated_decision: DecisionCreateModel,
+                    db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Update a specific decision by its ID."""
-    decision: Decision = (
+    decision: Decision | None = (
         db.query(Decision)
         .filter(Decision.id == decision_id)
         .first()

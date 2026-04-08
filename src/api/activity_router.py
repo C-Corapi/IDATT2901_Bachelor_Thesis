@@ -1,7 +1,5 @@
 """API router for activity-related endpoints."""
 
-from typing import Optional
-
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -37,7 +35,7 @@ def create_activity(activity: ActivityCreateModel, db: Session = Depends(get_db)
 @router.get("/{activity_id}", response_model=ActivityResponseModel)
 def get_activity(activity_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve a specific activity by its ID."""
-    activity: Optional[Activity] = (
+    activity: Activity | None = (
         db.query(Activity)
         .filter(Activity.id == activity_id)
         .first()
@@ -51,7 +49,7 @@ def get_activity(activity_id: int, db: Session = Depends(get_db)):  # type: igno
 @router.delete("/{activity_id}", status_code=204)
 def delete_activity(activity_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Delete a specific activity by its ID."""
-    activity: Optional[Activity] = (
+    activity: Activity | None = (
         db.query(Activity)
         .filter(Activity.id == activity_id)
         .first()
@@ -64,9 +62,10 @@ def delete_activity(activity_id: int, db: Session = Depends(get_db)):  # type: i
     db.commit()
 
 @router.put("/{activity_id}", response_model=ActivityResponseModel)
-def update_activity(activity_id: int, updated_activity: ActivityCreateModel, db: Session = Depends(get_db)):  # type: ignore[assignment]
+def update_activity(activity_id: int, updated_activity: ActivityCreateModel,
+                    db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Update a specific activity by its ID."""
-    activity: Optional[Activity] = (
+    activity: Activity | None = (
         db.query(Activity)
         .filter(Activity.id == activity_id)
         .first()

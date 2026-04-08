@@ -1,6 +1,6 @@
 """API router for managing epics related endpoints."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from model.epic import Epic
@@ -37,3 +37,51 @@ def extract_and_save_epics(filepath: str, db: Session = Depends(get_db)):  # typ
     epics: list[EpicCreateModel] = extract_epics(filepath)
     saved: list[Epic] = save_epics_to_db(epics, db)
     return saved
+
+@router.get("/{epic_id}", response_model=EpicResponseModel)
+def get_epic(epic_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
+    """Retrieve a specific epic by its ID."""
+    epic: Epic | None = (
+        db.query(Epic)
+        .filter(Epic.id == epic_id)
+        .first()
+    )
+
+    if epic is None:
+        raise HTTPException(status_code=404, detail="Epic not found")
+    
+    return epic
+
+@router.delete("/{epic_id}", status_code=204)
+def delete_epic(epic_id: int, db: Session = Depends(get_db)):
+    """Delete a specific epic by its ID."""
+    epic: Epic | None = (
+        db.query(Epic)
+        .filter(Epic.id == epic_id)
+        .first()
+    )
+
+    if epic is None:
+        raise HTTPException(status_code=404, detail="Epic not found")
+    
+    db.delete(epic)
+    db.commit()
+
+@router.put("/{epic_id}", response_model=EpicResponseModel)
+def update_epic(epic_id: int, epic_update: EpicCreateModel, db: Session = Depends(get_db)):
+    """Update a specific epic by its ID."""
+    epic: Epic | None = (
+        db.query(Epic)
+        .filter(Epic.id == epic_id)
+        .first()
+    )
+
+    if epic is None:
+        raise HTTPException(status_code=404, detail="Epic not found")
+    
+    for key, value in epic_update.model_dump().items():
+        setattr(epic, key, value)
+
+    db.commit()
+    db.refresh(epic)
+    return epic
