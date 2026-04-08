@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from model.deliverable import Deliverable
 from schemas.deliverable import DeliverableCreateModel, DeliverableResponseModel
+from service.deliverable_service import extract_deliverables, save_deliverables_to_db
 from utils.database import get_db
 
 router = APIRouter(
@@ -23,8 +24,7 @@ def get_all_deliverables(db: Session = Depends(get_db)):  # type: ignore[assignm
 @router.post("/extract", response_model=list[DeliverableResponseModel], status_code=201)
 def extract_and_save_deliverables(filepath: str, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Extract deliverables from a given file and save them to the database."""
-    from service.deliverable_service import extract_deliverables, save_deliverables_to_db
-
+    print("Extracting deliverables from file:", filepath)
     deliverables: list[DeliverableCreateModel] = extract_deliverables(filepath)
     saved: list[Deliverable] = save_deliverables_to_db(deliverables, db)
     return saved

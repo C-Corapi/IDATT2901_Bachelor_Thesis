@@ -8,11 +8,10 @@ designated for epics.
 
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Optional
 
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
-from model.activity import Activity
 from utils.database import Base
 
 
@@ -47,10 +46,6 @@ class Epic(Base):
     use_case: Mapped[Optional[str]]
     user_story: Mapped[Optional[str]]
     non_functional_requirements: Mapped[Optional[str]]
-
-    activities: Mapped[List[Activity]] = relationship(
-        back_populates="epic", cascade="all, delete-orphan"
-    )
 
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""

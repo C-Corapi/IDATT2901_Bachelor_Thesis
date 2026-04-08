@@ -1,13 +1,9 @@
 """SQLAlchemy model representing a Task in the database."""
 
-from __future__ import annotations
-
 from datetime import date, datetime
 
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
-from model.activity import Activity
 from utils.database import Base
 
 
@@ -23,9 +19,6 @@ class Task(Base):
     status: Mapped[str]
     time_logged: Mapped[datetime]
     target_date: Mapped[date]
-    activity_id: Mapped[int] = mapped_column(ForeignKey("activity.id"))
-
-    activity: Mapped[Activity] = relationship(back_populates="tasks")
 
     def __repr__(self):
         """Return a string representation of the Task instance."""
