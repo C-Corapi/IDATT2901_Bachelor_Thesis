@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from enums.canban_status import CanbanStatus
+
 
 class DeliverableBaseModel(BaseModel):
     """Base Pydantic model for Deliverable."""
@@ -26,5 +28,6 @@ class DeliverableResponseModel(DeliverableBaseModel):
     """Pydantic model for Deliverable API responses."""
 
     id: int
+    canban_status: Optional[CanbanStatus]
 
     model_config = ConfigDict(from_attributes=True)

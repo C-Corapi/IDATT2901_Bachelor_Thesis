@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from enums.canban_status import CanbanStatus
+
 
 class ActivityBaseModel(BaseModel):
     """Base Pydantic model for Activity."""
@@ -24,5 +26,6 @@ class ActivityResponseModel(ActivityBaseModel):
     """Pydantic model for Activity API responses."""
 
     id: int
+    canban_status: Optional[CanbanStatus]
 
     model_config = ConfigDict(from_attributes=True)

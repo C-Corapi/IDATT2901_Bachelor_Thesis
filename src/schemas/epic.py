@@ -4,6 +4,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from enums.canban_status import CanbanStatus
+
 
 class EpicBaseModel(BaseModel):
     """Base Pydantic model for Epic."""
@@ -28,5 +30,6 @@ class EpicResponseModel(EpicBaseModel):
     """Pydantic model for Epic API responses."""
 
     id: int
+    canban_status: Optional[CanbanStatus]
 
     model_config = ConfigDict(from_attributes=True)

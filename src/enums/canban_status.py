@@ -1,4 +1,7 @@
+"""Module containing the CanbanStatus enum."""
+
 from enum import Enum
+
 
 class CanbanStatus(str, Enum):
     """Enum representing the possible statuses of an element of a Kanban board."""
