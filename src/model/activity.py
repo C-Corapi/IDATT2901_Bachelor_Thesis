@@ -16,7 +16,7 @@ class Activity(Base):
     description: Mapped[str]
     owner: Mapped[str]
     status: Mapped[str]
-    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.TODO)
+    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.BACKLOG)
 
     def __repr__(self):
         """Return a string representation of the Activity instance."""

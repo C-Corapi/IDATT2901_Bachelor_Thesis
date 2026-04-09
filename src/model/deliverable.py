@@ -18,7 +18,7 @@ class Deliverable(Base):
     properties: Mapped[str]
     fit_criterion: Mapped[str]
     owner: Mapped[str]
-    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.TODO)
+    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.BACKLOG)
 
     def __repr__(self):
         """Return a string representation of the Deliverable instance."""

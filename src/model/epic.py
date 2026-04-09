@@ -45,7 +45,7 @@ class Epic(Base):
     use_case: Mapped[Optional[str]]
     user_story: Mapped[Optional[str]]
     non_functional_requirements: Mapped[Optional[str]]
-    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.TODO)
+    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.BACKLOG)
 
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""

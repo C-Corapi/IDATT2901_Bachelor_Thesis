@@ -20,7 +20,7 @@ class Task(Base):
     status: Mapped[str]
     time_logged: Mapped[datetime]
     target_date: Mapped[date]
-    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.TODO)
+    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.BACKLOG)
 
     def __repr__(self):
         """Return a string representation of the Task instance."""

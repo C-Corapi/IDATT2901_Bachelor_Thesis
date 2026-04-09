@@ -21,7 +21,7 @@ class Decision(Base):
     reach: Mapped[Optional[str]]
     deadline: Mapped[Optional[str]]
     owner: Mapped[Optional[str]]
-    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.TODO)
+    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.BACKLOG)
 
     def __repr__(self) -> str:
         """Return a string representation of the Decision instance."""
