@@ -2,6 +2,7 @@
 
 from sqlalchemy.orm import Mapped, mapped_column
 
+from enums.canban_status import CanbanStatus
 from utils.database import Base
 
 
@@ -15,6 +16,7 @@ class Activity(Base):
     description: Mapped[str]
     owner: Mapped[str]
     status: Mapped[str]
+    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.TODO)
 
     def __repr__(self):
         """Return a string representation of the Activity instance."""

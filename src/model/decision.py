@@ -4,6 +4,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column
 
+from enums.canban_status import CanbanStatus
 from utils.database import Base
 
 
@@ -20,6 +21,7 @@ class Decision(Base):
     reach: Mapped[Optional[str]]
     deadline: Mapped[Optional[str]]
     owner: Mapped[Optional[str]]
+    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.TODO)
 
     def __repr__(self) -> str:
         """Return a string representation of the Decision instance."""
