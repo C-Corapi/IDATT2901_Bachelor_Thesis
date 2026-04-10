@@ -12,10 +12,12 @@ router = APIRouter(
     tags=["Kanban"],
 )
 
+
 @router.get("/", response_model=KanbanBoard)
 def get_kanban_board(db: Session = Depends(get_db)):
     """Endpoint to retrieve the current state of the Kanban board."""
     return build_kanban_board(db)
+
 
 @router.post("/update", response_model=KanbanCard)
 def update_kanban_card(newCard: KanbanCard, db: Session = Depends(get_db)):

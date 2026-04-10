@@ -24,7 +24,7 @@ def build_kanban_board(db: Session) -> KanbanBoard:
 
     for a in activities:
         getattr(board, a.kanban_status.value).append(map_activity_to_card(a))
-        
+
     for d in decisions:
         getattr(board, d.kanban_status.value).append(map_decision_to_card(d))
 
@@ -69,19 +69,14 @@ def update_kanban_card_in_db(card: KanbanCard, db: Session) -> KanbanCard:
 def map_activity_to_card(activity: Activity) -> KanbanCard:
     """Maps an Activity instance to a KanbanCard."""
     return KanbanCard(
-        id=activity.id,
-        title=activity.title,
-        type="Activity",
-        kanban_status=activity.kanban_status
+        id=activity.id, title=activity.title, type="Activity", kanban_status=activity.kanban_status
     )
+
 
 def map_decision_to_card(decision: Decision) -> KanbanCard:
     """Maps a Decision instance to a KanbanCard."""
     return KanbanCard(
-        id=decision.id,
-        title=decision.title,
-        type="Decision",
-        kanban_status=decision.kanban_status
+        id=decision.id, title=decision.title, type="Decision", kanban_status=decision.kanban_status
     )
 
 
@@ -91,25 +86,15 @@ def map_deliverable_to_card(deliverable: Deliverable) -> KanbanCard:
         id=deliverable.id,
         title=deliverable.title,
         type="Deliverable",
-        kanban_status=deliverable.kanban_status
+        kanban_status=deliverable.kanban_status,
     )
 
 
 def map_epic_to_card(epic: Epic) -> KanbanCard:
     """Maps an Epic instance to a KanbanCard."""
-    return KanbanCard(
-        id=epic.id,
-        title=epic.name,
-        type="Epic",
-        kanban_status=epic.kanban_status
-    )
+    return KanbanCard(id=epic.id, title=epic.name, type="Epic", kanban_status=epic.kanban_status)
 
 
 def map_task_to_card(task: Task) -> KanbanCard:
     """Maps a Task instance to a KanbanCard."""
-    return KanbanCard(
-        id=task.id,
-        title=task.name,
-        type="Task",
-        kanban_status=task.kanban_status
-    )
+    return KanbanCard(id=task.id, title=task.name, type="Task", kanban_status=task.kanban_status)
