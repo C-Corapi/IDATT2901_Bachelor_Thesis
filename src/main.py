@@ -1,4 +1,4 @@
-﻿"""Run the epic-extraction pipeline on a local document.
+"""Run the epic-extraction pipeline on a local document.
 
 This script loads an input document, sends its contents to an LLM with a fixed
 system prompt, and prints the extracted epics (expected to be JSON) to stdout.
