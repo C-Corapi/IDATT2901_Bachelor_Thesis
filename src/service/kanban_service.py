@@ -41,19 +41,20 @@ def build_kanban_board(db: Session) -> KanbanBoard:
 
 def update_kanban_card_in_db(card: KanbanCard, db: Session) -> KanbanCard:
     """Updates the kanban status of an element in the database."""
-    if card.type == "Activity":
-        element = db.query(Activity).filter(Activity.id == card.id).first()
-    elif card.type == "Decision":
-        element = db.query(Decision).filter(Decision.id == card.id).first()
-    elif card.type == "Deliverable":
-        element = db.query(Deliverable).filter(Deliverable.id == card.id).first()
-    elif card.type == "Epic":
-        element = db.query(Epic).filter(Epic.id == card.id).first()
-    elif card.type == "Task":
-        element = db.query(Task).filter(Task.id == card.id).first()
-    else:
-        raise ValueError(f"Unknown card type: {card.type}")
 
+    model_map = {
+        "Activity": Activity,
+        "Decision": Decision,
+        "Deliverable": Deliverable,
+        "Epic": Epic,
+        "Task": Task,
+    }
+    
+    model = model_map.get(card.type)
+    if model is None:
+        raise ValueError(f"Unknown card type: {card.type}")
+    
+    element = db.query(model).filter(model.id == card.id).first()   
     if element is None:
         raise ValueError(f"Element with ID {card.id} not found in the database")
 
