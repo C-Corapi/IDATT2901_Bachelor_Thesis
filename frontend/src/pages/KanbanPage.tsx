@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import KanbanColumn from '../components/KanbanColumn';
 import {
-  getTasks, getActivities, getDecisions,
-  updateTask, updateActivity, updateDecision,
-  deleteTask, deleteActivity, deleteDecision,
+  getEpics, getDeliverables, getTasks, getActivities, getDecisions,
+  updateEpic, updateDeliverable, updateTask, updateActivity, updateDecision,
+  deleteEpic, deleteDeliverable, deleteTask, deleteActivity, deleteDecision,
 } from '../api';
 import type { KanbanItemFull, MetadataType } from '../types';
 
@@ -28,13 +28,36 @@ const KanbanPage: React.FC = () => {
 
   const loadData = useCallback(() => {
     setLoading(true);
-    // #TODO: when a dedicated GET /kanban/ endpoint exists, replace this
     Promise.all([
+      getEpics().catch(() => []),
+      getDeliverables().catch(() => []),
       getTasks().catch(() => []),
       getActivities().catch(() => []),
       getDecisions().catch(() => []),
-    ]).then(([tasks, activities, decisions]) => {
+    ]).then(([epics, deliverables, tasks, activities, decisions]) => {
       const items: KanbanItemFull[] = [
+        ...epics.map((e: any) => ({
+          id: e.id, title: e.name, owner: e.owner,
+          type: 'epic' as MetadataType,
+          status: (e.status ?? 'open').toLowerCase(),
+          description: e.description,
+          extraDetails: [
+            ...(e.classification ? [{ label: 'Classification', value: e.classification, key: 'classification' }] : []),
+            ...(e.scope          ? [{ label: 'Scope',          value: e.scope,          key: 'scope' }] : []),
+            ...(e.use_case       ? [{ label: 'Use Case',       value: e.use_case,       key: 'use_case' }] : []),
+            ...(e.user_story     ? [{ label: 'User Story',     value: e.user_story,     key: 'user_story' }] : []),
+          ],
+          raw: e,
+        })),
+        ...deliverables.map((d: any) => ({
+          id: d.id, title: d.name, owner: d.owner,
+          type: 'deliverable' as MetadataType,
+          status: (d.status ?? 'open').toLowerCase(),
+          description: d.description,
+          nature: d.nature, reach: d.reach, alternatives: d.alternatives,
+          extraDetails: d.deadline ? [{ label: 'Deadline', value: d.deadline, key: 'deadline' }] : [],
+          raw: d,
+        })),
         ...tasks.map((t: any) => ({
           id: t.id, title: t.name, owner: t.owner,
           type: 'task' as MetadataType,
@@ -78,10 +101,11 @@ const KanbanPage: React.FC = () => {
   const handleSaveItem = async (item: KanbanItemFull, changes: Record<string, string>) => {
     try {
       switch (item.type) {
-        case 'task':     await updateTask(item.id, changes); break;
-        case 'activity': await updateActivity(item.id, changes); break;
-        case 'decision': await updateDecision(item.id, changes); break;
-        // #TODO: add other types when endpoints are ready
+        case 'epic':        await updateEpic(item.id, changes); break;
+        case 'deliverable': await updateDeliverable(item.id, changes); break;
+        case 'task':        await updateTask(item.id, changes); break;
+        case 'activity':    await updateActivity(item.id, changes); break;
+        case 'decision':    await updateDecision(item.id, changes); break;
       }
       loadData();
     } catch (err) {
@@ -92,10 +116,11 @@ const KanbanPage: React.FC = () => {
   const handleDeleteItem = async (item: KanbanItemFull) => {
     try {
       switch (item.type) {
-        case 'task':     await deleteTask(item.id); break;
-        case 'activity': await deleteActivity(item.id); break;
-        case 'decision': await deleteDecision(item.id); break;
-        // #TODO: add other types when endpoints are ready
+        case 'epic':        await deleteEpic(item.id); break;
+        case 'deliverable': await deleteDeliverable(item.id); break;
+        case 'task':        await deleteTask(item.id); break;
+        case 'activity':    await deleteActivity(item.id); break;
+        case 'decision':    await deleteDecision(item.id); break;
       }
       loadData();
     } catch (err) {
