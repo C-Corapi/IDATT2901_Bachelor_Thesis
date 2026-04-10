@@ -16,27 +16,25 @@ def build_kanban_board(db: Session) -> KanbanBoard:
     activities: list[Activity] = db.query(Activity).all()
     decisions: list[Decision] = db.query(Decision).all()
     deliverables: list[Deliverable] = db.query(Deliverable).all()
-    print(f"Deliverables: {deliverables}")
     epics: list[Epic] = db.query(Epic).all()
-    task: list[Task] = db.query(Task).all()
+    tasks: list[Task] = db.query(Task).all()
 
     board: KanbanBoard = KanbanBoard()
 
-    for a in activities:
-        getattr(board, a.kanban_status.value).append(map_activity_to_card(a))
+    for activity in activities:
+        getattr(board, activity.kanban_status.value).append(map_activity_to_card(activity))
 
-    for d in decisions:
-        getattr(board, d.kanban_status.value).append(map_decision_to_card(d))
+    for decision in decisions:
+        getattr(board, decision.kanban_status.value).append(map_decision_to_card(decision))
 
-    for d in deliverables:
-        print(f"Mapping deliverable to card: {d}")
-        getattr(board, d.kanban_status.value).append(map_deliverable_to_card(d))
+    for deliverable in deliverables:
+        getattr(board, deliverable.kanban_status.value).append(map_deliverable_to_card(deliverable))
 
-    for e in epics:
-        getattr(board, e.kanban_status.value).append(map_epic_to_card(e))
+    for epic in epics:
+        getattr(board, epic.kanban_status.value).append(map_epic_to_card(epic))
 
-    for t in task:
-        getattr(board, t.kanban_status.value).append(map_task_to_card(t))
+    for task in tasks:
+        getattr(board, task.kanban_status.value).append(map_task_to_card(task))
 
     return board
 
