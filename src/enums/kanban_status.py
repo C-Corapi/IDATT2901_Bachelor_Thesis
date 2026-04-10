@@ -1,9 +1,9 @@
-"""Module containing the CanbanStatus enum."""
+"""Module containing the KanbanStatus enum."""
 
 from enum import Enum
 
 
-class CanbanStatus(str, Enum):
+class KanbanStatus(str, Enum):
     """Enum representing the possible statuses of an element of a Kanban board."""
 
     BACKLOG = "Backlog"

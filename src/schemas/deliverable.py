@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from enums.canban_status import CanbanStatus
+from enums.kanban_status import KanbanStatus
 
 
 class DeliverableBaseModel(BaseModel):
@@ -28,6 +28,6 @@ class DeliverableResponseModel(DeliverableBaseModel):
     """Pydantic model for Deliverable API responses."""
 
     id: int
-    canban_status: Optional[CanbanStatus]
+    kanban_status: Optional[KanbanStatus]
 
     model_config = ConfigDict(from_attributes=True)

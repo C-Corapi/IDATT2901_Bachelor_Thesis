@@ -4,7 +4,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
-from enums.canban_status import CanbanStatus
+from enums.kanban_status import KanbanStatus
 
 
 class DecisionBaseModel(BaseModel):
@@ -29,6 +29,6 @@ class DecisionResponseModel(DecisionBaseModel):
     """Pydantic model for Decision API responses."""
 
     id: int
-    canban_status: Optional[CanbanStatus]
+    kanban_status: Optional[KanbanStatus]
 
     model_config = ConfigDict(from_attributes=True)

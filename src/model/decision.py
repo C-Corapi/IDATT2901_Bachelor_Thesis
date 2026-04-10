@@ -4,7 +4,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column
 
-from enums.canban_status import CanbanStatus
+from enums.kanban_status import KanbanStatus
 from utils.database import Base
 
 
@@ -21,7 +21,7 @@ class Decision(Base):
     reach: Mapped[Optional[str]]
     deadline: Mapped[Optional[str]]
     owner: Mapped[Optional[str]]
-    canban_status: Mapped[CanbanStatus] = mapped_column(default=CanbanStatus.BACKLOG)
+    kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
 
     def __repr__(self) -> str:
         """Return a string representation of the Decision instance."""
