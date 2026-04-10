@@ -41,7 +41,6 @@ def build_kanban_board(db: Session) -> KanbanBoard:
 
 def update_kanban_card_in_db(card: KanbanCard, db: Session) -> KanbanCard:
     """Updates the kanban status of an element in the database."""
-    
     element: Activity | Decision | Deliverable | Epic | Task | None = None
 
     if card.type == "Activity":
