@@ -4,56 +4,48 @@ from sqlalchemy.orm import Session
 
 from model.activity import Activity
 from model.decision import Decision
-from model.decision import Decision
 from model.deliverable import Deliverable
 from model.epic import Epic
 from model.task import Task
-from schemas.kanban_card import KanbanCard
+from schemas.kanban import KanbanBoard, KanbanCard
 
 
-def build_kanban_board(db: Session) -> dict[str, list[KanbanCard]]:
+def build_kanban_board(db: Session) -> KanbanBoard:
     """Builds the Kanban board data structure."""
+    print("Building Kanban board...")
     activities: list[Activity] = db.query(Activity).all()
     decisions: list[Decision] = db.query(Decision).all()
     deliverables: list[Deliverable] = db.query(Deliverable).all()
+    print(f"Deliverables: {deliverables}")
     epics: list[Epic] = db.query(Epic).all()
     task: list[Task] = db.query(Task).all()
 
-    backlog_cards: list[KanbanCard] = []
-    todo_cards: list[KanbanCard] = []
-    in_progress_cards: list[KanbanCard] = []
-    done_cards: list[KanbanCard] = []
-
-    cards: dict[str, list[KanbanCard]] = {
-        "backlog": backlog_cards,
-        "todo": todo_cards,
-        "in_progress": in_progress_cards,
-        "done": done_cards
-    }
+    board: KanbanBoard = KanbanBoard()
 
     for a in activities:
-        cards[a.kanban_status.value].append(map_activity_to_card(a))
-
+        getattr(board, a.kanban_status.value).append(map_activity_to_card(a))
+        
     for d in decisions:
-        cards[d.kanban_status.value].append(map_decision_to_card(d))
+        getattr(board, d.kanban_status.value).append(map_decision_to_card(d))
 
     for d in deliverables:
-        cards[d.kanban_status.value].append(map_deliverable_to_card(d))
+        print(f"Mapping deliverable to card: {d}")
+        getattr(board, d.kanban_status.value).append(map_deliverable_to_card(d))
 
     for e in epics:
-        cards[e.kanban_status.value].append(map_epic_to_card(e))
+        getattr(board, e.kanban_status.value).append(map_epic_to_card(e))
 
     for t in task:
-        cards[t.kanban_status.value].append(map_task_to_card(t))
+        getattr(board, t.kanban_status.value).append(map_task_to_card(t))
 
-    return cards
+    return board
 
 
 def map_activity_to_card(activity: Activity) -> KanbanCard:
     """Maps an Activity instance to a KanbanCard."""
     return KanbanCard(
         id=activity.id,
-        title=activity.name,
+        title=activity.title,
         type="Activity",
         kanban_status=activity.kanban_status.value
     )

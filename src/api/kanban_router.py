@@ -1,5 +1,9 @@
+"""Defines the API router for Kanban board-related endpoints."""
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
+
+from schemas.kanban import KanbanBoard
 from service.kanban_service import build_kanban_board
 from utils.database import get_db
 
@@ -8,7 +12,7 @@ router = APIRouter(
     tags=["Kanban"],
 )
 
-@router.get("/")
+@router.get("/", response_model=KanbanBoard)
 def get_kanban_board(db: Session = Depends(get_db)):
     """Endpoint to retrieve the current state of the Kanban board."""
     return build_kanban_board(db)

@@ -12,7 +12,7 @@ class Activity(Base):
     __tablename__ = "activity"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
+    title: Mapped[str]
     description: Mapped[str]
     owner: Mapped[str]
     status: Mapped[str]
@@ -20,4 +20,4 @@ class Activity(Base):
 
     def __repr__(self):
         """Return a string representation of the Activity instance."""
-        return f"<Activity(id={self.id}, name='{self.name}')>"
+        return f"<Activity(id={self.id}, name='{self.title}')>"
