@@ -4,6 +4,7 @@ import FilterTabs, { Tab } from '../components/FilterTabs';
 import MetadataCard from '../components/MetadataCard';
 import {
   getEpics, getDecisions, getDeliverables, getTasks, getActivities,
+  createEpic, createDecision, createDeliverable, createTask, createActivity,
   updateEpic, updateDecision, updateDeliverable, updateTask, updateActivity,
   deleteEpic, deleteDecision, deleteDeliverable, deleteTask, deleteActivity,
 } from '../api';
@@ -33,6 +34,23 @@ const OverviewPage: React.FC = () => {
   }, []);
 
   useEffect(() => { loadAll(); }, [loadAll]);
+
+  /* ── Create handler ────────────────────────────────────────────── */
+
+  const handleCreate = async (type: MetadataType) => {
+    try {
+      switch (type) {
+        case 'epic':        await createEpic({ name: 'New Epic', description: '' }); break;
+        case 'decision':    await createDecision({ title: 'New Decision', description: '' }); break;
+        case 'deliverable': await createDeliverable({ name: 'New Deliverable', description: '', alternatives: '', nature: '', reach: '' }); break;
+        case 'task':        await createTask({ name: 'New Task', description: '', time_logged: '' }); break;
+        case 'activity':    await createActivity({ name: 'New Activity', description: '' }); break;
+      }
+      loadAll();
+    } catch (err) {
+      console.error('Create failed', err);
+    }
+  };
 
   /* ── Save / Delete handlers per type ──────────────────────────── */
 
@@ -145,6 +163,14 @@ const OverviewPage: React.FC = () => {
       <h1 id="overview-heading" className="page-title">Metadata Overview</h1>
       <StatsSummary stats={stats} />
       <FilterTabs tabs={tabs} active={tab} onChange={(k) => setTab(k as MetadataType)} />
+
+      <div style={{ marginBottom: '1rem' }}>
+        <button className="btn-primary" onClick={() => handleCreate(tab)}
+          title={`Create a new ${tab}`} aria-label={`Create a new ${tab}`}>
+          + New {tab.charAt(0).toUpperCase() + tab.slice(1)}
+        </button>
+      </div>
+
       <div role="tabpanel" id={`tabpanel-${tab}`} aria-labelledby={`tab-${tab}`} aria-live="polite">
         {loading
           ? <div className="empty-state" role="status" aria-label="Loading metadata">Loading…</div>
