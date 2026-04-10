@@ -1,0 +1,1 @@
+"""Module containing all enums used in the application."""

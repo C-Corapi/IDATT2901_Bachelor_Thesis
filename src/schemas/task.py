@@ -5,6 +5,8 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from enums.kanban_status import KanbanStatus
+
 
 class TaskBaseModel(BaseModel):
     """Base Pydantic model for Task.
@@ -30,5 +32,6 @@ class TaskResponseModel(TaskBaseModel):
     """Pydantic model for Task API responses."""
 
     id: int
+    kanban_status: Optional[KanbanStatus]
 
     model_config = ConfigDict(from_attributes=True)

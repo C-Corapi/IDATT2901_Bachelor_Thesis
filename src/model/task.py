@@ -4,6 +4,7 @@ from datetime import date, datetime
 
 from sqlalchemy.orm import Mapped, mapped_column
 
+from enums.kanban_status import KanbanStatus
 from utils.database import Base
 
 
@@ -19,6 +20,7 @@ class Task(Base):
     status: Mapped[str]
     time_logged: Mapped[datetime]
     target_date: Mapped[date]
+    kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
 
     def __repr__(self):
         """Return a string representation of the Task instance."""
