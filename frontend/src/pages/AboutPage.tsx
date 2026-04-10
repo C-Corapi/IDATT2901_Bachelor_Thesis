@@ -21,7 +21,7 @@ const AboutPage: React.FC = () => (
           This system is a tool made to increase efficiency by enabling easier
           information retrieval from documents, made with next-gen agile in mind.
           The system uses LLMs in order to retrieve, as well as verify, specific
-          data elements from project1 files.
+          data elements from project files.
         </p>
       </div>
       <p>
