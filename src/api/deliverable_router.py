@@ -65,7 +65,7 @@ def delete_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # t
 
 @router.put("/{deliverable_id}", response_model=DeliverableResponseModel)
 def update_deliverable(
-    deliverable_id: int, updated_deliverable: DeliverableCreateModel, db: Session = Depends(get_db)
+    deliverable_id: int, updated_deliverable: DeliverableCreateModel, db: Session = Depends(get_db) # type: ignore[assignment]
 ):  # type: ignore[assignment]
     """Update a specific deliverable by its ID."""
     deliverable: Deliverable | None = (
