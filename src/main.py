@@ -11,6 +11,7 @@ from api import (
     activity_router,
     decision_router,
     deliverable_router,
+    document_router,
     epic_router,
     kanban_router,
     task_router,
@@ -65,3 +66,4 @@ app.include_router(deliverable_router.router)
 app.include_router(task_router.router)
 app.include_router(activity_router.router)
 app.include_router(kanban_router.router)
+app.include_router(document_router.router)
