@@ -5,6 +5,7 @@ system prompt, and prints the extracted epics (expected to be JSON) to stdout.
 """
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api import (
     activity_router,
@@ -40,6 +41,18 @@ from utils.database import Base, engine
 # print(activity_result)
 
 app = FastAPI()
+
+origins = [
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Reset db on app restart only for testing purposes.
 
