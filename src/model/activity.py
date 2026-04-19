@@ -13,11 +13,11 @@ class Activity(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
-    description: Mapped[str]
-    owner: Mapped[str]
-    status: Mapped[str]
+    description: Mapped[str | None] = mapped_column(nullable=True)
+    owner: Mapped[str | None] = mapped_column(nullable=True)
+    status: Mapped[str | None] = mapped_column(nullable=True)
     kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
 
     def __repr__(self):
         """Return a string representation of the Activity instance."""
-        return f"<Activity(id={self.id}, name='{self.title}')>"
+        return f"<Activity(id={self.id}, title='{self.title}')>"

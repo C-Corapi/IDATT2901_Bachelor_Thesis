@@ -12,12 +12,12 @@ class Deliverable(Base):
     __tablename__ = "deliverable"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str]
-    requirements: Mapped[str]
-    specifications: Mapped[str]
-    properties: Mapped[str]
-    fit_criterion: Mapped[str]
-    owner: Mapped[str]
+    title: Mapped[str | None] = mapped_column(nullable=True)
+    requirements: Mapped[str | None] = mapped_column(nullable=True)
+    specifications: Mapped[str | None] = mapped_column(nullable=True)
+    properties: Mapped[str | None] = mapped_column(nullable=True)
+    fit_criterion: Mapped[str | None] = mapped_column(nullable=True)
+    owner: Mapped[str | None] = mapped_column(nullable=True)
     kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
 
     def __repr__(self):

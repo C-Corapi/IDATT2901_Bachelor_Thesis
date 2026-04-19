@@ -1,7 +1,5 @@
 """Pydantic models for Epic API endpoints."""
 
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict
 
 from enums.kanban_status import KanbanStatus
@@ -10,14 +8,14 @@ from enums.kanban_status import KanbanStatus
 class EpicBaseModel(BaseModel):
     """Base Pydantic model for Epic."""
 
-    name: str
-    description: str
-    classification: Optional[str] = None
-    owner: Optional[str] = None
-    scope: Optional[str] = None
-    use_case: Optional[str] = None
-    user_story: Optional[str] = None
-    non_functional_requirements: Optional[str] = None
+    title: str
+    description: str | None = None
+    classification: str | None = None
+    owner: str | None = None
+    scope: str | None = None
+    use_case: str | None = None
+    user_story: str | None = None
+    non_functional_requirements: str | None = None
 
 
 class EpicCreateModel(EpicBaseModel):
@@ -30,6 +28,6 @@ class EpicResponseModel(EpicBaseModel):
     """Pydantic model for Epic API responses."""
 
     id: int
-    kanban_status: Optional[KanbanStatus]
+    kanban_status: KanbanStatus
 
     model_config = ConfigDict(from_attributes=True)

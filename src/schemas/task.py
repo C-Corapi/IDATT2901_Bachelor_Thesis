@@ -1,8 +1,5 @@
 """Pydantic schemas for Task-related data validation and serialization."""
 
-from datetime import date, datetime
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict
 
 from enums.kanban_status import KanbanStatus
@@ -14,12 +11,12 @@ class TaskBaseModel(BaseModel):
     Contains common fields for both creation and response models.
     """
 
-    name: str
-    description: Optional[str] = None
-    owner: Optional[str] = None
-    status: Optional[str] = None
-    time_logged: datetime
-    target_date: Optional[date] = None
+    title: str
+    description: str | None = None
+    owner: str | None = None
+    status: str | None = None
+    time_logged: str | None = None
+    target_date: str | None = None
 
 
 class TaskCreateModel(TaskBaseModel):
@@ -32,6 +29,6 @@ class TaskResponseModel(TaskBaseModel):
     """Pydantic model for Task API responses."""
 
     id: int
-    kanban_status: Optional[KanbanStatus]
+    kanban_status: KanbanStatus
 
     model_config = ConfigDict(from_attributes=True)
