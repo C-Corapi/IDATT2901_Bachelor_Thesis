@@ -16,8 +16,6 @@ Output format (JSON):
             "description": "1-3 sentence description of what is to be decided",
             "owner": "name of the one who is responsible for combleting the task.",
             "status": "Must be one of: Open, In Progress, Closed",
-            "confidence": "Score from 0-1",
-            "source_excerpt": "Short quote from document that supports the extraction"
         },
     ]
 }

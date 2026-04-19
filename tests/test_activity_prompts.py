@@ -16,7 +16,7 @@ def test_prompt_is_non_empty() -> None:
 
 def test_prompt_returns_json_only() -> None:
     """Verify the prompt instructs the model to return valid JSON only."""
-    assert "Return valid JSON only" in ACTIVITY_EXTRACTION_PROMPT
+    assert "Output ONLY valid JSON" in ACTIVITY_EXTRACTION_PROMPT
 
 
 def test_prompt_requests_required_attributes() -> None:
@@ -26,7 +26,6 @@ def test_prompt_requests_required_attributes() -> None:
         "description",
         "owner",
         "status",
-        "related_deliverables",
     ]
     missing = [field for field in required_fields if field not in ACTIVITY_EXTRACTION_PROMPT]
     assert missing == []

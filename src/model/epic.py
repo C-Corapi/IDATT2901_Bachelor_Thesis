@@ -6,8 +6,6 @@ initiatives. The model includes fields for various metadata extracted or
 designated for epics.
 """
 
-from typing import Optional
-
 from sqlalchemy.orm import Mapped, mapped_column
 
 from enums.kanban_status import KanbanStatus
@@ -24,7 +22,7 @@ class Epic(Base):
 
     Attributes:
         id (int): Primary key, auto-incrementing identifier for the epic.
-        name (str): The name or title of the epic.
+        title (str): The title of the epic.
         description (str): A detailed description of the epic's purpose and scope.
         classification (str): The classification category of the epic.
         owner (Optional[str]): The person or team responsible for the epic.
@@ -37,16 +35,16 @@ class Epic(Base):
     __tablename__ = "epic"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str]
-    description: Mapped[str]
-    classification: Mapped[Optional[str]]
-    owner: Mapped[Optional[str]]
-    scope: Mapped[Optional[str]]
-    use_case: Mapped[Optional[str]]
-    user_story: Mapped[Optional[str]]
-    non_functional_requirements: Mapped[Optional[str]]
+    title: Mapped[str]
+    description: Mapped[str | None] = mapped_column(nullable=True)
+    classification: Mapped[str | None] = mapped_column(nullable=True)
+    owner: Mapped[str | None] = mapped_column(nullable=True)
+    scope: Mapped[str | None] = mapped_column(nullable=True)
+    use_case: Mapped[str | None] = mapped_column(nullable=True)
+    user_story: Mapped[str | None] = mapped_column(nullable=True)
+    non_functional_requirements: Mapped[str | None] = mapped_column(nullable=True)
     kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
 
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""
-        return f"Epic(id={self.id!r}, name={self.name!r})"
+        return f"Epic(id={self.id!r}, name={self.title!r})"

@@ -92,9 +92,9 @@ def map_deliverable_to_card(deliverable: Deliverable) -> KanbanCard:
 
 def map_epic_to_card(epic: Epic) -> KanbanCard:
     """Maps an Epic instance to a KanbanCard."""
-    return KanbanCard(id=epic.id, title=epic.name, type="Epic", kanban_status=epic.kanban_status)
+    return KanbanCard(id=epic.id, title=epic.title, type="Epic", kanban_status=epic.kanban_status)
 
 
 def map_task_to_card(task: Task) -> KanbanCard:
     """Maps a Task instance to a KanbanCard."""
-    return KanbanCard(id=task.id, title=task.name, type="Task", kanban_status=task.kanban_status)
+    return KanbanCard(id=task.id, title=task.title, type="Task", kanban_status=task.kanban_status)

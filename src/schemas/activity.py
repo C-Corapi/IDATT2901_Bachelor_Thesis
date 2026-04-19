@@ -1,7 +1,5 @@
 """Pydantic models for Activity API endpoints."""
 
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict
 
 from enums.kanban_status import KanbanStatus
@@ -10,10 +8,10 @@ from enums.kanban_status import KanbanStatus
 class ActivityBaseModel(BaseModel):
     """Base Pydantic model for Activity."""
 
-    name: str
-    description: Optional[str]
-    owner: Optional[str] = None
-    status: Optional[str] = None
+    title: str
+    description: str | None = None
+    owner: str | None = None
+    status: str | None = None
 
 
 class ActivityCreateModel(ActivityBaseModel):
@@ -26,6 +24,6 @@ class ActivityResponseModel(ActivityBaseModel):
     """Pydantic model for Activity API responses."""
 
     id: int
-    kanban_status: Optional[KanbanStatus]
+    kanban_status: KanbanStatus
 
     model_config = ConfigDict(from_attributes=True)

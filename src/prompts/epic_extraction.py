@@ -54,9 +54,8 @@ From the TEXT, extract ALL EPICs (EPC) found in the TEXT.
 
 Return JSON EXACTLY in this wrapper format (not a raw list):
 {
-  "items": [
+  "epics": [
     {
-      "type": "EPC",
       "title": "...",
       "description": "...",
       "owner": null,

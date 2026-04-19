@@ -4,8 +4,12 @@ ACTIVITY_EXTRACTION_PROMPT = """
 You are an AI system that extracts project-management activities from documents.
 
 Rules:
-- Return valid JSON only
-- Write unknown if an attribute is unknown, do not leave anything empty
+- Output ONLY valid JSON
+- Do NOT include any text before or after the JSON
+- Do NOT include explanations
+- Do NOT use bullet points
+- The response MUST start with '{' and end with '}'
+- Use EXACTLY the specified schema and no additional fields
 - Do not include decisions. Decisions usually contain words like "decide" or "choose".
 
 Output format (JSON):
@@ -15,11 +19,7 @@ Output format (JSON):
             "title": "name of the activity (no more than one sentance)",
             "description": "1-3 sentence description of what is to be decided",
             "owner": "name of the one who is responsible for combleting the task.",
-            "related_deliverables": 
-            "the deliverable(s) that the activity contributes to or enables",
-            "confidence": "Score from 0-1",
             "status": "Must be one of: Open, In Progress, Closed",
-            "source_excerpt": "Short quote from document that supports the extraction"
         },
     ]
 }
