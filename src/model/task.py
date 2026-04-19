@@ -12,7 +12,7 @@ class Task(Base):
     __tablename__ = "task"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str | None] = mapped_column(nullable=True)
+    title: Mapped[str]
     description: Mapped[str | None] = mapped_column(nullable=True)
     owner: Mapped[str | None] = mapped_column(nullable=True)
     status: Mapped[str | None] = mapped_column(nullable=True)

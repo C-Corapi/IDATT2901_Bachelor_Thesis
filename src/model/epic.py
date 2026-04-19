@@ -35,7 +35,7 @@ class Epic(Base):
     __tablename__ = "epic"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str | None] = mapped_column(nullable=True)
+    title: Mapped[str]
     description: Mapped[str | None] = mapped_column(nullable=True)
     classification: Mapped[str | None] = mapped_column(nullable=True)
     owner: Mapped[str | None] = mapped_column(nullable=True)

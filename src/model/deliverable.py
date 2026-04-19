@@ -12,7 +12,7 @@ class Deliverable(Base):
     __tablename__ = "deliverable"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str | None] = mapped_column(nullable=True)
+    title: Mapped[str]
     requirements: Mapped[str | None] = mapped_column(nullable=True)
     specifications: Mapped[str | None] = mapped_column(nullable=True)
     properties: Mapped[str | None] = mapped_column(nullable=True)
