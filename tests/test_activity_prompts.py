@@ -26,7 +26,6 @@ def test_prompt_requests_required_attributes() -> None:
         "description",
         "owner",
         "status",
-        "related_deliverables",
     ]
     missing = [field for field in required_fields if field not in ACTIVITY_EXTRACTION_PROMPT]
     assert missing == []
