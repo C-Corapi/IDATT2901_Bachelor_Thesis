@@ -1,7 +1,7 @@
 import os
 import uuid
 
-from fastapi import APIRouter, File, UploadFile
+from fastapi import APIRouter, File, HTTPException, UploadFile
 
 
 router = APIRouter(
@@ -24,4 +24,21 @@ async def upload_document(file: UploadFile = File(...)):
 
     return {"filename": safe_name, "message": "File uploaded successfully"}
 
+@router.get("/", response_model=list[str])
+def get_documents() -> list[str]:
+    """Endpoint to list all uploaded documents."""
+
+    files: list[str] = os.listdir("documents")
+    return files
+
+@router.get("/{filename}", response_model=str)
+def get_document(filename: str) -> str:
+    """Helper function to get content of a document by its filename."""
+
+    file_path: str = os.path.join("documents", filename)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
     
+    with open(file_path, "r") as f:
+        return f.read()
