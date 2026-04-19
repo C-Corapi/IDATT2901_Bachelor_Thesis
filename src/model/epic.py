@@ -35,7 +35,7 @@ class Epic(Base):
     __tablename__ = "epic"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    title: Mapped[str]
+    title: Mapped[str | None] = mapped_column(nullable=True)
     description: Mapped[str | None] = mapped_column(nullable=True)
     classification: Mapped[str | None] = mapped_column(nullable=True)
     owner: Mapped[str | None] = mapped_column(nullable=True)
@@ -47,4 +47,4 @@ class Epic(Base):
 
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""
-        return f"Epic(id={self.id!r}, name={self.name!r})"
+        return f"Epic(id={self.id!r}, name={self.title!r})"

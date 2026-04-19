@@ -2,7 +2,7 @@ export type MetadataType = 'epic' | 'decision' | 'deliverable' | 'task' | 'activ
 
 export interface Epic {
   id: number;
-  name: string;
+  title: string;
   description: string;
   classification?: string;
   owner?: string;
@@ -25,7 +25,7 @@ export interface Decision {
 
 export interface Deliverable {
   id: number;
-  name: string;
+  title: string;
   description: string;
   alternatives: string;
   nature: string;
@@ -36,7 +36,7 @@ export interface Deliverable {
 
 export interface Task {
   id: number;
-  name: string;
+  title: string;
   description?: string;
   owner?: string;
   status?: string;
@@ -47,7 +47,7 @@ export interface Task {
 
 export interface Activity {
   id: number;
-  name: string;
+  title: string;
   description?: string;
   owner?: string;
   status?: string;
@@ -55,7 +55,7 @@ export interface Activity {
 }
 
 export interface DocEntry {
-  name: string;
+  title: string;
   uploaded_at: string;
 }
 

@@ -40,11 +40,11 @@ const OverviewPage: React.FC = () => {
   const handleCreate = async (type: MetadataType) => {
     try {
       switch (type) {
-        case 'epic':        await createEpic({ name: 'New Epic', description: '' }); break;
+        case 'epic':        await createEpic({ title: 'New Epic', description: '' }); break;
         case 'decision':    await createDecision({ title: 'New Decision', description: '' }); break;
-        case 'deliverable': await createDeliverable({ name: 'New Deliverable', description: '', alternatives: '', nature: '', reach: '' }); break;
-        case 'task':        await createTask({ name: 'New Task', description: '', time_logged: '' }); break;
-        case 'activity':    await createActivity({ name: 'New Activity', description: '' }); break;
+        case 'deliverable': await createDeliverable({ title: 'New Deliverable', requirements: '', specifications: '', properties: '', fit_criterion: '', owner: '' }); break;
+        case 'task':        await createTask({ title: 'New Task', description: '', time_logged: '' }); break;
+        case 'activity':    await createActivity({ title: 'New Activity', description: '' }); break;
       }
       loadAll();
     } catch (err) {
@@ -107,7 +107,7 @@ const OverviewPage: React.FC = () => {
     switch (tab) {
       case 'epic':
         return epics.map((e) => (
-          <MetadataCard key={e.id} title={e.name} owner={e.owner} description={e.description}
+          <MetadataCard key={e.id} title={e.title} owner={e.owner} description={e.description}
             onSave={(c) => handleSave('epic', e.id, c)}
             onDelete={() => handleDelete('epic', e.id)}
             extraDetails={[
@@ -131,7 +131,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'deliverable':
         return deliverables.map((d) => (
-          <MetadataCard key={d.id} title={d.name} owner={d.owner} nature={d.nature} reach={d.reach}
+          <MetadataCard key={d.id} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach}
             description={d.description} alternatives={d.alternatives}
             onSave={(c) => handleSave('deliverable', d.id, c)}
             onDelete={() => handleDelete('deliverable', d.id)}
@@ -140,7 +140,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'task':
         return tasks.map((t) => (
-          <MetadataCard key={t.id} title={t.name} owner={t.owner} status={t.status}
+          <MetadataCard key={t.id} title={t.title} owner={t.owner} status={t.status}
             description={t.description}
             onSave={(c) => handleSave('task', t.id, c)}
             onDelete={() => handleDelete('task', t.id)}
@@ -149,7 +149,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'activity':
         return activities.map((a) => (
-          <MetadataCard key={a.id} title={a.name} owner={a.owner} status={a.status}
+          <MetadataCard key={a.id} title={a.title} owner={a.owner} status={a.status}
             description={a.description}
             onSave={(c) => handleSave('activity', a.id, c)}
             onDelete={() => handleDelete('activity', a.id)}
