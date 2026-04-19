@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 venv/
+src/test.db
+src/documents/
+frontend/node_modules/
