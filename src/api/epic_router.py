@@ -5,8 +5,8 @@ from sqlalchemy.orm import Session
 
 from model.epic import Epic
 from schemas.epic import EpicCreateModel, EpicResponseModel
-from utils.database import get_db
 from service.epic_service import extract_epics, save_epics_to_db
+from utils.database import get_db
 
 router = APIRouter(
     prefix="/epics",

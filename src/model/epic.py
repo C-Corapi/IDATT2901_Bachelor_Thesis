@@ -6,8 +6,6 @@ initiatives. The model includes fields for various metadata extracted or
 designated for epics.
 """
 
-from typing import Optional
-
 from sqlalchemy.orm import Mapped, mapped_column
 
 from enums.kanban_status import KanbanStatus
@@ -39,12 +37,12 @@ class Epic(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     title: Mapped[str]
     description: Mapped[str | None] = mapped_column(nullable=True)
-    classification: Mapped[ str | None] = mapped_column(nullable=True)
-    owner: Mapped[ str | None] = mapped_column(nullable=True)
-    scope: Mapped[ str | None] = mapped_column(nullable=True)
-    use_case: Mapped[ str | None] = mapped_column(nullable=True)
-    user_story: Mapped[ str | None] = mapped_column(nullable=True)
-    non_functional_requirements: Mapped[ str | None] = mapped_column(nullable=True)
+    classification: Mapped[str | None] = mapped_column(nullable=True)
+    owner: Mapped[str | None] = mapped_column(nullable=True)
+    scope: Mapped[str | None] = mapped_column(nullable=True)
+    use_case: Mapped[str | None] = mapped_column(nullable=True)
+    user_story: Mapped[str | None] = mapped_column(nullable=True)
+    non_functional_requirements: Mapped[str | None] = mapped_column(nullable=True)
     kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
 
     def __repr__(self) -> str:

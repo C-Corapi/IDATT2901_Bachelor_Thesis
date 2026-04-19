@@ -10,7 +10,7 @@ class ActivityBaseModel(BaseModel):
 
     title: str
     description: str | None = None
-    owner: str| None = None
+    owner: str | None = None
     status: str | None = None
 
 
