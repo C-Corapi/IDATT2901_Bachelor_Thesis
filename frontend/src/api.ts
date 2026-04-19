@@ -1,10 +1,10 @@
 /*
  * Centralized API client.
  *
- * Backend endpoints (main branch)
+ * Backend endpoints
  */
 
-const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+const BASE = import.meta.env.VITE_API_URL ?? '';
 
 async function get<T>(path: string): Promise<T> {
   const res = await fetch(`${BASE}${path}`);
@@ -15,8 +15,8 @@ async function get<T>(path: string): Promise<T> {
 async function post<T>(path: string, body?: unknown): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    ...(body !== undefined && { body: JSON.stringify(body) }),
+    headers: body instanceof FormData ? undefined : { 'Content-Type': 'application/json' },
+    ...(body !== undefined && { body: body instanceof FormData ? body : JSON.stringify(body) }),
   });
   if (!res.ok) throw new Error(`POST ${path} → ${res.status}`);
   return res.json();
@@ -37,7 +37,7 @@ async function del(path: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE ${path} → ${res.status}`);
 }
 
-/* ── 1. GET all ────────────────────────────────────────��─────────── */
+/* ── 1. GET all ──────────────────────────────────────── */
 export const getEpics        = () => get<any[]>('/epics/');
 export const getDecisions    = () => get<any[]>('/decisions/');
 export const getDeliverables = () => get<any[]>('/deliverables/');
@@ -79,17 +79,24 @@ export const extractDeliverables = (fp: string) => post<any[]>(`/deliverables/ex
 export const extractTasks        = (fp: string) => post<any[]>(`/tasks/extract?filepath=${encodeURIComponent(fp)}`);
 export const extractActivities   = (fp: string) => post<any[]>(`/activities/extract?filepath=${encodeURIComponent(fp)}`);
 
-/* ── 7. UPLOAD DOCUMENT ─────────────────────────────────────────── */
-// #TODO: add POST /documents/upload (multipart) when ready
-export async function uploadDocument(file: File, metadataType: string): Promise<any> {
+/* ── 7. DOCUMENTS ──────────────────────────────────────────────── */
+export async function uploadDocument(file: File): Promise<any> {
   const form = new FormData();
   form.append('file', file);
-  form.append('metadata_type', metadataType);
-  const res = await fetch(`${BASE}/documents/upload`, { method: 'POST', body: form });
+
+  const res = await fetch(`${BASE}/documents/upload`, {
+    method: 'POST',
+    body: form,
+  });
+
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   return res.json();
 }
 
-/* ── 8. GET DOCUMENTS ────────────────────────────────────────────── */
-// #TODO: add GET /documents/ when ready
-export const getDocuments = () => get<any[]>('/documents/');
+export const getDocuments = () => get<string[]>('/documents/');
+export const getDocumentByFilename = (filename: string) =>
+  get<string>(`/documents/${encodeURIComponent(filename)}`);
+
+/* ── 8. KANBAN ─────────────────────────────────────────────────── */
+export const getKanbanBoard = () => get<any>('/kanban/');
+export const updateKanbanCard = (card: any) => post<any>('/kanban/update', card);
