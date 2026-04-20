@@ -1,5 +1,7 @@
 """API router for managing tasks related endpoints."""
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -7,8 +9,6 @@ from model.task import Task
 from schemas.task import TaskCreateModel, TaskResponseModel
 from service.task_service import extract_tasks, save_tasks_to_db
 from utils.database import get_db
-
-import os
 
 router = APIRouter(
     prefix="/tasks",

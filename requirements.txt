@@ -28,3 +28,5 @@ psycopg[binary]
 sqlalchemy
 ruff
 black
+fastapi[standard]
+python-docx
