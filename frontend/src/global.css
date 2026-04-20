@@ -347,6 +347,19 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
 }
 .kanban-empty { color: var(--gray-500); font-size: .88rem; text-align: center; padding: 18px 0; }
 
+.kanban-col--over {
+  outline: 2px dashed var(--blue-dark);
+  background: rgba(0, 102, 204, 0.06);
+}
+
+.kanban-item[draggable="true"] {
+  cursor: grab;
+}
+
+.kanban-item[draggable="true"]:active {
+  cursor: grabbing;
+}
+
 /* ── Modal ──────────────────────────────────────────────────────── */
 .modal-overlay {
   position: fixed; inset: 0;
