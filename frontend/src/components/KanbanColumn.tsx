@@ -11,6 +11,17 @@ interface Props {
   onDropItem?: (item: KanbanItemFull) => void;
 }
 
+const typeAbbrev = (type: string) => {
+  switch (type) {
+    case 'epic': return 'EPIC';
+    case 'decision': return 'DSC';
+    case 'deliverable': return 'DEL';
+    case 'task': return 'TASK';
+    case 'activity': return 'ACT';
+    default: return type;
+  }
+};
+
 const KanbanColumn: React.FC<Props> = ({
   title,
   items,
@@ -113,7 +124,7 @@ const KanbanColumn: React.FC<Props> = ({
                 <MetadataCard
                   title={i.title}
                   owner={i.owner}
-                  status={i.status !== 'open' ? i.status : undefined}
+                  displayType={typeAbbrev(i.type)}
                   nature={i.nature}
                   reach={i.reach}
                   description={i.description}
@@ -149,7 +160,6 @@ const KanbanColumn: React.FC<Props> = ({
                 >
                   <div className="kanban-item-title">{i.title}</div>
                   {i.owner && <div className="kanban-item-owner">{i.owner}</div>}
-                  {i.status && <div className="kanban-item-type">{i.status}</div>}
                 </article>
               )}
             </div>
