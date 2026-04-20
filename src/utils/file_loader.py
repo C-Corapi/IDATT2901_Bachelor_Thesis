@@ -1,4 +1,5 @@
 """File loading utilities for reading supported document formats."""
+from docx import Document
 
 
 def load_file(path: str) -> str:
@@ -17,6 +18,8 @@ def load_file(path: str) -> str:
     """
     if path.endswith(".txt"):
         return load_txt_file(path)
+    elif path.endswith(".docx"):
+        return load_docx_file(path)
     else:
         raise ValueError(f"Unsupported file type: {path}")
 
@@ -33,6 +36,22 @@ def load_txt_file(path: str) -> str:
     Raises:
         OSError: If the file cannot be opened or read (e.g., missing permissions).
     """
-    with open(path, "r", encoding="utf-8") as file:
+    with open(path, "r", encoding="utf-8", errors="replace") as file:
         content = file.read()
+        return content
+
+def load_docx_file(path: str) -> str:
+    """Loads a docx file and return its contents.
+
+    Args:
+        path: Path to a ".docx" file.
+
+    Returns:
+        The complete file contents as a string.
+
+    Raises:
+        OSError: If the file cannot be opened or read (e.g., missing permissions).
+    """
+    doc = Document(path)
+    content = "\n".join(paragraph.text for paragraph in doc.paragraphs)
     return content

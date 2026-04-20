@@ -73,19 +73,31 @@ export const deleteTask        = (id: number) => del(`/tasks/${id}`);
 export const deleteActivity    = (id: number) => del(`/activities/${id}`);
 
 /* ── 6. EXTRACT (LLM) ───────────────────────────────────────────── */
-export const extractEpics        = (fp: string) => post<any[]>(`/epics/extract?filepath=${encodeURIComponent(fp)}`);
-export const extractDecisions    = (fp: string) => post<any[]>(`/decisions/extract?filepath=${encodeURIComponent(fp)}`);
-export const extractDeliverables = (fp: string) => post<any[]>(`/deliverables/extract?filepath=${encodeURIComponent(fp)}`);
-export const extractTasks        = (fp: string) => post<any[]>(`/tasks/extract?filepath=${encodeURIComponent(fp)}`);
-export const extractActivities   = (fp: string) => post<any[]>(`/activities/extract?filepath=${encodeURIComponent(fp)}`);
+export const extractEpics = (filepath: string) =>
+  post<any[]>(`/epics/extract?filepath=${encodeURIComponent(filepath)}`);
+
+export const extractDecisions = (filepath: string) =>
+  post<any[]>(`/decisions/extract?filepath=${encodeURIComponent(filepath)}`);
+
+export const extractDeliverables = (filepath: string) =>
+  post<any[]>(`/deliverables/extract?filepath=${encodeURIComponent(filepath)}`);
+
+export const extractTasks = (filepath: string) =>
+  post<any[]>(`/tasks/extract?filepath=${encodeURIComponent(filepath)}`);
+
+export const extractActivities = (filepath: string) =>
+  post<any[]>(`/activities/extract?filepath=${encodeURIComponent(filepath)}`);
 
 /* ── 7. UPLOAD DOCUMENT ─────────────────────────────────────────── */
-// #TODO: add POST /documents/upload (multipart) when ready
-export async function uploadDocument(file: File, metadataType: string): Promise<any> {
+export async function uploadDocument(file: File): Promise<{ filename: string; message: string }> {
   const form = new FormData();
   form.append('file', file);
-  form.append('metadata_type', metadataType);
-  const res = await fetch(`${BASE}/documents/upload`, { method: 'POST', body: form });
+
+  const res = await fetch(`${BASE}/documents/upload`, {
+    method: 'POST',
+    body: form,
+  });
+
   if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
   return res.json();
 }

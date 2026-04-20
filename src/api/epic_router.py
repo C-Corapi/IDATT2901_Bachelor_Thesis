@@ -7,6 +7,7 @@ from model.epic import Epic
 from schemas.epic import EpicCreateModel, EpicResponseModel
 from service.epic_service import extract_epics, save_epics_to_db
 from utils.database import get_db
+import os
 
 router = APIRouter(
     prefix="/epics",
@@ -33,7 +34,8 @@ def create_epic(epic: EpicCreateModel, db: Session = Depends(get_db)):  # type: 
 @router.post("/extract", response_model=list[EpicResponseModel], status_code=201)
 def extract_and_save_epics(filepath: str, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Extract epics from a given file and save them to the database."""
-    epics: list[EpicCreateModel] = extract_epics(filepath)
+    full_path = os.path.join("documents", filepath)
+    epics: list[EpicCreateModel] = extract_epics(full_path)
     print("Extracted epics:", epics)
     saved: list[Epic] = save_epics_to_db(epics, db)
     return saved
