@@ -19,6 +19,8 @@ interface Props {
   onSave?: (changes: Record<string, string>) => void;
   onDelete?: () => void;
   defaultOpen?: boolean;
+  showKanbanStatus?: boolean;
+  displayType?: string;
 }
 
 const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in progress','urgent','important','local','global'];
@@ -29,7 +31,8 @@ const badgeCls = (v: string) => {
 
 const MetadataCard: React.FC<Props> = ({
   title, owner, status, nature, reach, description, alternatives, evidence,
-  confidence, verified, onVerify, extraDetails, onSave, onDelete, defaultOpen,
+  confidence, verified, onVerify, extraDetails, onSave, onDelete, defaultOpen, showKanbanStatus = false,
+  displayType,
 }) => {
   const [open, setOpen] = useState(defaultOpen ?? false);
   const [editing, setEditing] = useState(false);
@@ -47,7 +50,9 @@ const MetadataCard: React.FC<Props> = ({
   useEffect(() => { setDAlts(alternatives ?? ''); }, [alternatives]);
   useEffect(() => { setDExtras(extraDetails ?? []); }, [extraDetails]);
 
-  const badges = [status, nature, reach].filter(Boolean) as string[];
+  const displayTag = showKanbanStatus ? status : displayType;
+  const primaryBadge = showKanbanStatus ? status : displayType;
+  const badges = [primaryBadge, nature, reach].filter(Boolean) as string[];
   const uid = useRef(`card-${Math.random().toString(36).slice(2, 8)}`).current;
   const detailId = `${uid}-detail`;
 
@@ -185,11 +190,11 @@ const MetadataCard: React.FC<Props> = ({
                   title={`Verify "${title}"`} aria-label={`Verify "${title}"`}>✓ Verify</button>
               )}
               {!editing && onSave && (
-                <button className="btn-edit" onClick={startEdit} title={`Edit "${title}"`} aria-label={`Edit "${title}"`}>✏ Edit</button>
+                <button className="btn-edit" onClick={startEdit} title={`Edit "${title}"`} aria-label={`Edit "${title}"`}>Edit</button>
               )}
               {editing && (
                 <>
-                  <button className="btn-save" onClick={save} title="Save changes" aria-label="Save changes">💾 Save</button>
+                  <button className="btn-save" onClick={save} title="Save changes" aria-label="Save changes">Save</button>
                   <button className="btn-cancel" onClick={cancelEdit} title="Cancel editing" aria-label="Cancel editing">Cancel</button>
                 </>
               )}

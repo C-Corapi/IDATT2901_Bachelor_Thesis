@@ -173,7 +173,7 @@ const OverviewPage: React.FC = () => {
     switch (tab) {
       case 'epic':
         return epics.map((e) => (
-          <MetadataCard key={e.id} title={e.title} owner={e.owner} description={e.description}
+          <MetadataCard key={e.id} title={e.title} owner={e.owner} description={e.description} status={(e.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
             onSave={(c) => handleSave('epic', e.id, c)}
             onDelete={() => handleDelete('epic', e.id)}
             extraDetails={[
@@ -188,7 +188,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'decision':
         return decisions.map((d) => (
-          <MetadataCard key={d.id} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach}
+          <MetadataCard key={d.id} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
             description={d.description} alternatives={d.alternatives}
             onSave={(c) => handleSave('decision', d.id, c)}
             onDelete={() => handleDelete('decision', d.id)}
@@ -197,7 +197,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'deliverable':
         return deliverables.map((d) => (
-          <MetadataCard key={d.id} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach}
+          <MetadataCard key={d.id} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
             description={d.description} alternatives={d.alternatives}
             onSave={(c) => handleSave('deliverable', d.id, c)}
             onDelete={() => handleDelete('deliverable', d.id)}
@@ -206,7 +206,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'task':
         return tasks.map((t) => (
-          <MetadataCard key={t.id} title={t.title} owner={t.owner} status={t.status}
+          <MetadataCard key={t.id} title={t.title} owner={t.owner}  status={(t.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
             description={t.description}
             onSave={(c) => handleSave('task', t.id, c)}
             onDelete={() => handleDelete('task', t.id)}
@@ -215,7 +215,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'activity':
         return activities.map((a) => (
-          <MetadataCard key={a.id} title={a.title} owner={a.owner} status={a.status}
+          <MetadataCard key={a.id} title={a.title} owner={a.owner} status={(a.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
             description={a.description}
             onSave={(c) => handleSave('activity', a.id, c)}
             onDelete={() => handleDelete('activity', a.id)}
