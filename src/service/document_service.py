@@ -4,7 +4,7 @@ from pathlib import Path
 
 from fastapi import HTTPException
 
-BASE_DIR = Path("uploads").resolve()
+BASE_DIR = Path("documents").resolve()
 
 
 def _resolve_path(filename: str) -> Path:
