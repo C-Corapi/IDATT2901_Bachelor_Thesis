@@ -40,6 +40,7 @@ def load_txt_file(path: str) -> str:
         content = file.read()
         return content
 
+
 def load_docx_file(path: str) -> str:
     """Loads a docx file and return its contents.
 
