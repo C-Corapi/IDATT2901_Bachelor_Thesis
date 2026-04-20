@@ -15,10 +15,10 @@ interface ColumnDef {
 }
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
-  { id: 'backlog',     title: 'Backlog',     statuses: ['backlog'] },
-  { id: 'todo',        title: 'To Do',        statuses: ['to do'] },
-  { id: 'in progress', title: 'In Progress', statuses: ['in progress'] },
-  { id: 'done',      title: 'Done',      statuses: ['done'] },
+  { id: 'backlog', title: 'Backlog', statuses: ['backlog'] },
+  { id: 'todo', title: 'To Do', statuses: ['todo'] },
+  { id: 'in_progress', title: 'In Progress', statuses: ['in_progress'] },
+  { id: 'done', title: 'Done', statuses: ['done'] },
 ];
 
 const KanbanPage: React.FC = () => {
@@ -40,7 +40,7 @@ const KanbanPage: React.FC = () => {
         ...epics.map((e: any) => ({
           id: e.id, title: e.name, owner: e.owner,
           type: 'epic' as MetadataType,
-          status: (e.status ?? 'open').toLowerCase(),
+          status: (e.status ?? 'backlog').toLowerCase(),
           description: e.description,
           extraDetails: [
             ...(e.classification ? [{ label: 'Classification', value: e.classification, key: 'classification' }] : []),
@@ -53,7 +53,7 @@ const KanbanPage: React.FC = () => {
         ...deliverables.map((d: any) => ({
           id: d.id, title: d.name, owner: d.owner,
           type: 'deliverable' as MetadataType,
-          status: (d.status ?? 'open').toLowerCase(),
+          status: (d.status ?? 'backlog').toLowerCase(),
           description: d.description,
           nature: d.nature, reach: d.reach, alternatives: d.alternatives,
           extraDetails: d.deadline ? [{ label: 'Deadline', value: d.deadline, key: 'deadline' }] : [],
@@ -62,7 +62,7 @@ const KanbanPage: React.FC = () => {
         ...tasks.map((t: any) => ({
           id: t.id, title: t.name, owner: t.owner,
           type: 'task' as MetadataType,
-          status: (t.status ?? 'open').toLowerCase(),
+          status: (t.status ?? 'backlog').toLowerCase(),
           description: t.description,
           extraDetails: t.target_date ? [{ label: 'Target Date', value: t.target_date, key: 'target_date' }] : [],
           raw: t,
@@ -70,7 +70,7 @@ const KanbanPage: React.FC = () => {
         ...activities.map((a: any) => ({
           id: a.id, title: a.name, owner: a.owner,
           type: 'activity' as MetadataType,
-          status: (a.status ?? 'open').toLowerCase(),
+          status: (a.status ?? 'backlog').toLowerCase(),
           description: a.description,
           extraDetails: [],
           raw: a,
@@ -78,7 +78,7 @@ const KanbanPage: React.FC = () => {
         ...decisions.map((d: any) => ({
           id: d.id, title: d.title, owner: d.owner,
           type: 'decision' as MetadataType,
-          status: 'open',
+          status: 'backlog',
           description: d.description,
           nature: d.nature, reach: d.reach, alternatives: d.alternatives,
           extraDetails: d.deadline ? [{ label: 'Deadline', value: d.deadline, key: 'deadline' }] : [],
