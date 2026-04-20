@@ -1,5 +1,7 @@
 """API router for handling deliverable-related endpoints."""
 
+import os
+
 from fastapi import APIRouter, HTTPException
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
@@ -8,8 +10,6 @@ from model.deliverable import Deliverable
 from schemas.deliverable import DeliverableCreateModel, DeliverableResponseModel
 from service.deliverable_service import extract_deliverables, save_deliverables_to_db
 from utils.database import get_db
-
-import os
 
 router = APIRouter(
     prefix="/deliverables",

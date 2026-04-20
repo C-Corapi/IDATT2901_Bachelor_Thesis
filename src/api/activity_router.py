@@ -1,5 +1,7 @@
 """API router for activity-related endpoints."""
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -7,8 +9,6 @@ from model.activity import Activity
 from schemas.activity import ActivityCreateModel, ActivityResponseModel
 from service.activity_service import extract_activities, save_activities_to_db
 from utils.database import get_db
-
-import os
 
 router = APIRouter(
     prefix="/activities",

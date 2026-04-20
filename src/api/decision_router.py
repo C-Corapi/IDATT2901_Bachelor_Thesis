@@ -1,5 +1,7 @@
 """API router for handling decision-related endpoints."""
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -7,8 +9,6 @@ from model.decision import Decision
 from schemas.decision import DecisionCreateModel, DecisionResponseModel
 from service.desicion_service import extract_decisions, save_decisions_to_db
 from utils.database import get_db
-
-import os
 
 router = APIRouter(
     prefix="/decisions",

@@ -1,5 +1,7 @@
 """API router for managing epics related endpoints."""
 
+import os
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
@@ -7,7 +9,6 @@ from model.epic import Epic
 from schemas.epic import EpicCreateModel, EpicResponseModel
 from service.epic_service import extract_epics, save_epics_to_db
 from utils.database import get_db
-import os
 
 router = APIRouter(
     prefix="/epics",

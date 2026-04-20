@@ -3,15 +3,15 @@
 import os
 import uuid
 
-from fastapi import APIRouter, File, HTTPException, UploadFile
-from pathlib import Path
+from fastapi import APIRouter, File, UploadFile
+
+from service.document_service import delete_file, read_file, save_file
 
 router = APIRouter(
     prefix="/documents",
     tags=["Documents"],
 )
 
-UPLOAD_DIR = Path("uploads").resolve()
 
 @router.post("/upload", status_code=201)
 async def upload_document(file: UploadFile = File(...)):
@@ -20,12 +20,9 @@ async def upload_document(file: UploadFile = File(...)):
     filename: str = file.filename or "file"
     safe_name: str = f"{uuid.uuid4()}_{filename}"
 
-    file_path: str = os.path.join("documents", safe_name)
-
-    with open(file_path, "wb") as f:
-        f.write(await file.read())
-
-    return {"filename": safe_name, "message": "File uploaded successfully"}
+    content = await file.read()
+    save_file(safe_name, content)
+    return {"filename": file.filename}
 
 
 @router.get("/", response_model=list[str])
@@ -38,23 +35,10 @@ def get_documents() -> list[str]:
 @router.get("/{filename}", response_model=str)
 def get_document(filename: str) -> str:
     """Endpoint to get content of a document by its filename."""
-    file_path: str = os.path.join("documents", filename)
+    return read_file(filename)
 
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
 
-    with open(file_path, "r") as f:
-        return f.read()
-    
-@router.delete("/{filename}")
-def delete_document(filename: str):
+@router.delete("/{filename}", status_code=204)
+def delete_document(filename: str) -> None:
     """Endpoint to delete a document by its filename."""
-    file_path: str = os.path.join("documents", filename)
-
-    if not file_path.startswith("documents"):
-        raise HTTPException(status_code=400, detail="Invalid file path")
-    
-    if not os.path.exists(file_path):
-        raise HTTPException(status_code=404, detail="File not found")
-    
-
+    delete_file(filename)
