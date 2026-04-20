@@ -21,7 +21,7 @@ interface Props {
   defaultOpen?: boolean;
 }
 
-const KNOWN = ['open','pending','closed','in-progress','urgent','important','local','global'];
+const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in progress','urgent','important','local','global'];
 const badgeCls = (v: string) => {
   const k = v.toLowerCase().replace(/\s+/g, '-');
   return `badge badge--${KNOWN.includes(k) ? k : 'default'}`;
