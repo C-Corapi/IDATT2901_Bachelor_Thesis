@@ -101,7 +101,7 @@ export async function updateKanbanCard(payload: {
   type: string;
   kanban_status: string;
 }) {
-  const res = await fetch('/kanban/update', {
+  const res = await fetch(`${BASE}/kanban/update`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
