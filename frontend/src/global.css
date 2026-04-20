@@ -623,6 +623,29 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   }
 }
 
+.modal--wide {
+  max-width: 900px;
+}
+
+.document-viewer {
+  max-height: 70vh;
+  overflow: auto;
+  background: var(--off-white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+
+.document-viewer {
+  max-height: 70vh;
+  overflow: auto;
+  background: var(--off-white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
 /* ── Upload ─────────────────────────────────────────────────────── */
 .upload-form {
   background: var(--off-white); border: 1px solid var(--gray-200);

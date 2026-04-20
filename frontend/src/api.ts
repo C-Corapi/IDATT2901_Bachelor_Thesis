@@ -91,8 +91,10 @@ export async function uploadDocument(file: File, metadataType: string): Promise<
 }
 
 /* ── 8. GET DOCUMENTS ────────────────────────────────────────────── */
-// #TODO: add GET /documents/ when ready
-export const getDocuments = () => get<any[]>('/documents/');
+export const getDocuments = () => get<string[]>('/documents/');
+
+export const getDocumentByName = (filename: string) =>
+  get<string>(`/documents/${encodeURIComponent(filename)}`);
 
 /* ── 9. KANBAN ────────────────────────────────────────────── */
 export async function updateKanbanCard(payload: {

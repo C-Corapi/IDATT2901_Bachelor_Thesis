@@ -55,8 +55,7 @@ export interface Activity {
 }
 
 export interface DocEntry {
-  title: string;
-  uploaded_at: string;
+  filename: string;
 }
 
 export interface KanbanItemFull {
