@@ -8,6 +8,8 @@ from schemas.activity import ActivityCreateModel, ActivityResponseModel
 from service.activity_service import extract_activities, save_activities_to_db
 from utils.database import get_db
 
+import os
+
 router = APIRouter(
     prefix="/activities",
     tags=["Activities"],
@@ -23,7 +25,8 @@ def get_all_activities(db: Session = Depends(get_db)):  # type: ignore[assignmen
 @router.post("/extract", response_model=list[ActivityResponseModel], status_code=201)
 def extract_and_save_activities(filepath: str, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Extract activities from a given file and save them to the database."""
-    activities: list[ActivityCreateModel] = extract_activities(filepath)
+    full_path = os.path.join("documents", filepath)
+    activities: list[ActivityCreateModel] = extract_activities(full_path)
     saved: list[Activity] = save_activities_to_db(activities, db)
     return saved
 

@@ -8,6 +8,8 @@ from schemas.task import TaskCreateModel, TaskResponseModel
 from service.task_service import extract_tasks, save_tasks_to_db
 from utils.database import get_db
 
+import os
+
 router = APIRouter(
     prefix="/tasks",
     tags=["Tasks"],
@@ -23,7 +25,8 @@ def get_all_tasks(db: Session = Depends(get_db)):  # type: ignore[assignment]
 @router.post("/extract", response_model=list[TaskResponseModel], status_code=201)
 def extract_and_save_tasks(filepath: str, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Extract tasks from a given file and save them to the database."""
-    tasks: list[TaskCreateModel] = extract_tasks(filepath)
+    full_path = os.path.join("documents", filepath)
+    tasks: list[TaskCreateModel] = extract_tasks(full_path)
     saved: list[Task] = save_tasks_to_db(tasks, db)
     return saved
 
