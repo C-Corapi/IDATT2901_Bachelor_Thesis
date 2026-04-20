@@ -110,7 +110,8 @@ export async function updateKanbanCard(payload: {
   });
 
   if (!res.ok) {
-    throw new Error('Failed to update kanban card');
+    const text = await res.text();
+    throw new Error(`Failed to update kanban card: ${res.status} ${text}`);
   }
 
   return res.json();
