@@ -16,7 +16,7 @@ const OverviewPage: React.FC = () => {
   const [deliverables, setDeliverables] = useState<any[]>([]);
   const [tasks, setTasks]               = useState<any[]>([]);
   const [activities, setActivities]     = useState<any[]>([]);
-  const [tab, setTab]                   = useState<MetadataType>('epic');
+  const [tab, setTab]                   = useState<MetadataType>('all');
   const [loading, setLoading]           = useState(true);
 
   const loadAll = useCallback(() => {
@@ -162,14 +162,71 @@ const OverviewPage: React.FC = () => {
   ];
 
   const tabs: Tab[] = [
-    { key: 'epic',        label: 'Epics',        count: epics.length },
-    { key: 'decision',    label: 'Decisions',    count: decisions.length },
-    { key: 'deliverable', label: 'Deliverables', count: deliverables.length },
-    { key: 'task',        label: 'Tasks',        count: tasks.length },
-    { key: 'activity',    label: 'Activities',   count: activities.length },
+    { key: 'all',        label: 'All',         count: total },
+    { key: 'epic',       label: 'Epics',       count: epics.length },
+    { key: 'decision',   label: 'Decisions',   count: decisions.length },
+    { key: 'deliverable',label: 'Deliverables',count: deliverables.length },
+    { key: 'task',       label: 'Tasks',       count: tasks.length },
+    { key: 'activity',   label: 'Activities',  count: activities.length },
   ];
 
   const renderCards = () => {
+    if (tab === 'all') {
+      return (
+        <>
+          {epics.map((e) => (
+            <MetadataCard key={`epic-${e.id}`} title={e.title} owner={e.owner} description={e.description} status={(e.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+              onSave={(c) => handleSave('epic', e.id, c)}
+              onDelete={() => handleDelete('epic', e.id)}
+              extraDetails={[
+                ...(e.classification ? [{ label: 'Classification', value: e.classification, key: 'classification' }] : []),
+                ...(e.scope          ? [{ label: 'Scope',          value: e.scope,          key: 'scope' }] : []),
+                ...(e.use_case       ? [{ label: 'Use Case',       value: e.use_case,       key: 'use_case' }] : []),
+                ...(e.user_story     ? [{ label: 'User Story',     value: e.user_story,     key: 'user_story' }] : []),
+                ...(e.non_functional_requirements
+                  ? [{ label: 'Non-Functional Req.', value: e.non_functional_requirements, key: 'non_functional_requirements' }] : []),
+              ]}
+            />
+          ))}
+
+          {decisions.map((d) => (
+            <MetadataCard key={`decision-${d.id}`} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+              description={d.description} alternatives={d.alternatives}
+              onSave={(c) => handleSave('decision', d.id, c)}
+              onDelete={() => handleDelete('decision', d.id)}
+              extraDetails={d.deadline ? [{ label: 'Deadline', value: d.deadline, key: 'deadline' }] : []}
+            />
+          ))}
+
+          {deliverables.map((d) => (
+            <MetadataCard key={`deliverable-${d.id}`} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+              description={d.description} alternatives={d.alternatives}
+              onSave={(c) => handleSave('deliverable', d.id, c)}
+              onDelete={() => handleDelete('deliverable', d.id)}
+              extraDetails={d.deadline ? [{ label: 'Deadline', value: d.deadline, key: 'deadline' }] : []}
+            />
+          ))}
+
+          {tasks.map((t) => (
+            <MetadataCard key={`task-${t.id}`} title={t.title} owner={t.owner} status={(t.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+              description={t.description}
+              onSave={(c) => handleSave('task', t.id, c)}
+              onDelete={() => handleDelete('task', t.id)}
+              extraDetails={t.target_date ? [{ label: 'Target Date', value: t.target_date, key: 'target_date' }] : []}
+            />
+          ))}
+
+          {activities.map((a) => (
+            <MetadataCard key={`activity-${a.id}`} title={a.title} owner={a.owner} status={(a.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+              description={a.description}
+              onSave={(c) => handleSave('activity', a.id, c)}
+              onDelete={() => handleDelete('activity', a.id)}
+            />
+          ))}
+        </>
+      );
+    }
+
     switch (tab) {
       case 'epic':
         return epics.map((e) => (
@@ -206,7 +263,7 @@ const OverviewPage: React.FC = () => {
         ));
       case 'task':
         return tasks.map((t) => (
-          <MetadataCard key={t.id} title={t.title} owner={t.owner}  status={(t.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+          <MetadataCard key={t.id} title={t.title} owner={t.owner} status={(t.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
             description={t.description}
             onSave={(c) => handleSave('task', t.id, c)}
             onDelete={() => handleDelete('task', t.id)}
