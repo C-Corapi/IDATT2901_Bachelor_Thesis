@@ -93,3 +93,25 @@ export async function uploadDocument(file: File, metadataType: string): Promise<
 /* ── 8. GET DOCUMENTS ────────────────────────────────────────────── */
 // #TODO: add GET /documents/ when ready
 export const getDocuments = () => get<any[]>('/documents/');
+
+/* ── 9. KANBAN ────────────────────────────────────────────── */
+export async function updateKanbanCard(payload: {
+  id: number;
+  title: string;
+  type: string;
+  kanban_status: string;
+}) {
+  const res = await fetch('/kanban/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    throw new Error('Failed to update kanban card');
+  }
+
+  return res.json();
+}
