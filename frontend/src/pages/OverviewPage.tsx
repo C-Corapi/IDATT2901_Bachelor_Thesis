@@ -10,14 +10,14 @@ import {
 } from '../api';
 import type { MetadataType } from '../types';
 
-const OverviewPage: React.FC = () => {
-  const [epics, setEpics]               = useState<any[]>([]);
-  const [decisions, setDecisions]       = useState<any[]>([]);
-  const [deliverables, setDeliverables] = useState<any[]>([]);
-  const [tasks, setTasks]               = useState<any[]>([]);
-  const [activities, setActivities]     = useState<any[]>([]);
-  const [tab, setTab]                   = useState<MetadataType>('all');
-  const [loading, setLoading]           = useState(true);
+  const OverviewPage: React.FC = () => {
+    const [epics, setEpics]               = useState<any[]>([]);
+    const [decisions, setDecisions]       = useState<any[]>([]);
+    const [deliverables, setDeliverables] = useState<any[]>([]);
+    const [tasks, setTasks]               = useState<any[]>([]);
+    const [activities, setActivities]     = useState<any[]>([]);
+    const [tab, setTab]                   = useState<MetadataType>('all');
+    const [loading, setLoading]           = useState(true);
 
   const loadAll = useCallback(() => {
     setLoading(true);
@@ -35,22 +35,115 @@ const OverviewPage: React.FC = () => {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [createType, setCreateType] = useState<MetadataType>('epic');
+  const [createForm, setCreateForm] = useState<Record<string, string>>({
+    title: '',
+    description: '',
+    owner: '',
+    classification: '',
+    scope: '',
+    use_case: '',
+    user_story: '',
+    non_functional_requirements: '',
+    alternatives: '',
+    nature: '',
+    reach: '',
+    deadline: '',
+    requirements: '',
+    specifications: '',
+    properties: '',
+    fit_criterion: '',
+    time_logged: '',
+    target_date: '',
+    status: '',
+  });
+
   /* ── Create handler ────────────────────────────────────────────── */
 
-  const handleCreate = async (type: MetadataType) => {
-    try {
-      switch (type) {
-        case 'epic':        await createEpic({ title: 'New Epic', description: '' }); break;
-        case 'decision':    await createDecision({ title: 'New Decision', description: '' }); break;
-        case 'deliverable': await createDeliverable({ title: 'New Deliverable', requirements: '', specifications: '', properties: '', fit_criterion: '', owner: '' }); break;
-        case 'task':        await createTask({ title: 'New Task', description: '', time_logged: '' }); break;
-        case 'activity':    await createActivity({ title: 'New Activity', description: '' }); break;
-      }
-      loadAll();
-    } catch (err) {
-      console.error('Create failed', err);
+const handleCreate = async () => {
+  try {
+    switch (createType) {
+      case 'epic':
+        await createEpic({
+          title: createForm.title,
+          description: createForm.description,
+          owner: createForm.owner,
+          classification: createForm.classification,
+          scope: createForm.scope,
+          use_case: createForm.use_case,
+          user_story: createForm.user_story,
+          non_functional_requirements: createForm.non_functional_requirements,
+        });
+        break;
+      case 'decision':
+        await createDecision({
+          title: createForm.title,
+          description: createForm.description,
+          owner: createForm.owner,
+          alternatives: createForm.alternatives,
+          nature: createForm.nature,
+          reach: createForm.reach,
+          deadline: createForm.deadline,
+        });
+        break;
+      case 'deliverable':
+        await createDeliverable({
+          title: createForm.title,
+          requirements: createForm.requirements,
+          specifications: createForm.specifications,
+          properties: createForm.properties,
+          fit_criterion: createForm.fit_criterion,
+          owner: createForm.owner,
+        });
+        break;
+      case 'task':
+        await createTask({
+          title: createForm.title,
+          description: createForm.description,
+          owner: createForm.owner,
+          status: createForm.status,
+          time_logged: createForm.time_logged,
+          target_date: createForm.target_date,
+        });
+        break;
+      case 'activity':
+        await createActivity({
+          title: createForm.title,
+          description: createForm.description,
+          owner: createForm.owner,
+          status: createForm.status,
+        });
+        break;
     }
-  };
+
+    setShowCreateModal(false);
+    setCreateForm({
+      title: '',
+      description: '',
+      owner: '',
+      classification: '',
+      scope: '',
+      use_case: '',
+      user_story: '',
+      non_functional_requirements: '',
+      alternatives: '',
+      nature: '',
+      reach: '',
+      deadline: '',
+      requirements: '',
+      specifications: '',
+      properties: '',
+      fit_criterion: '',
+      time_logged: '',
+      target_date: '',
+      status: '',
+    });
+    loadAll();
+  } catch (err) {
+    console.error('Create failed', err);
+  }
+};
 
   /* ── Save / Delete handlers per type ──────────────────────────── */
 
@@ -282,25 +375,249 @@ const OverviewPage: React.FC = () => {
   };
 
   return (
-    <section aria-labelledby="overview-heading">
-      <h1 id="overview-heading" className="page-title">Metadata Overview</h1>
-      <StatsSummary stats={stats} />
-      <FilterTabs tabs={tabs} active={tab} onChange={(k) => setTab(k as MetadataType)} />
+      <section aria-labelledby="overview-heading">
+        <h1 id="overview-heading" className="page-title">Metadata Overview</h1>
+        <StatsSummary stats={stats}/>
+        <FilterTabs tabs={tabs} active={tab} onChange={(k) => setTab(k as MetadataType)}/>
 
-      <div style={{ marginBottom: '1rem' }}>
-        <button className="btn-primary" onClick={() => handleCreate(tab)}
-          title={`Create a new ${tab}`} aria-label={`Create a new ${tab}`}>
-          + New {tab.charAt(0).toUpperCase() + tab.slice(1)}
-        </button>
-      </div>
+        <div style={{marginBottom: '1rem'}}>
+          <button className="btn-primary" onClick={() => setShowCreateModal(true)}>
+            Create New
+          </button>
+        </div>
 
-      <div role="tabpanel" id={`tabpanel-${tab}`} aria-labelledby={`tab-${tab}`} aria-live="polite">
-        {loading
-          ? <div className="empty-state" role="status" aria-label="Loading metadata">Loading…</div>
-          : renderCards()}
-      </div>
-    </section>
+        <div role="tabpanel" id={`tabpanel-${tab}`} aria-labelledby={`tab-${tab}`} aria-live="polite">
+          {loading
+              ? <div className="empty-state" role="status" aria-label="Loading metadata">Loading…</div>
+              : renderCards()}
+        </div>
+
+        {showCreateModal && (
+            <div className="modal-overlay" role="presentation" onClick={() => setShowCreateModal(false)}>
+              <div className="modal modal--wide" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+                <h2>Create New</h2>
+
+                <div className="form-group">
+                  <label className="form-label">Metadata type</label>
+                  <select
+                      className="form-select"
+                      value={createType}
+                      onChange={(e) => setCreateType(e.target.value as MetadataType)}
+                  >
+                    <option value="epic">Epic</option>
+                    <option value="decision">Decision</option>
+                    <option value="deliverable">Deliverable</option>
+                    <option value="task">Task</option>
+                    <option value="activity">Activity</option>
+                  </select>
+                </div>
+
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label className="form-label">Title</label>
+                    <input
+                        className="detail-input"
+                        value={createForm.title}
+                        onChange={(e) => setCreateForm({...createForm, title: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">Owner</label>
+                    <input
+                        className="detail-input"
+                        value={createForm.owner}
+                        onChange={(e) => setCreateForm({...createForm, owner: e.target.value})}
+                    />
+                  </div>
+
+                  <div className="form-group form-group--full">
+                    <label className="form-label">Description</label>
+                    <textarea
+                        className="detail-textarea"
+                        value={createForm.description}
+                        onChange={(e) => setCreateForm({...createForm, description: e.target.value})}
+                    />
+                  </div>
+                </div>
+
+                {createType === 'epic' && (
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label className="form-label">Classification</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.classification}
+                            onChange={(e) => setCreateForm({...createForm, classification: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Scope</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.scope}
+                            onChange={(e) => setCreateForm({...createForm, scope: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Use Case</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.use_case}
+                            onChange={(e) => setCreateForm({...createForm, use_case: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">User Story</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.user_story}
+                            onChange={(e) => setCreateForm({...createForm, user_story: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group form-group--full">
+                        <label className="form-label">Non-Functional Requirements</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.non_functional_requirements}
+                            onChange={(e) => setCreateForm({
+                              ...createForm,
+                              non_functional_requirements: e.target.value
+                            })}
+                        />
+                      </div>
+                    </div>
+                )}
+
+                {createType === 'decision' && (
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label className="form-label">Alternatives</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.alternatives}
+                            onChange={(e) => setCreateForm({...createForm, alternatives: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Nature</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.nature}
+                            onChange={(e) => setCreateForm({...createForm, nature: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Reach</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.reach}
+                            onChange={(e) => setCreateForm({...createForm, reach: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Deadline</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.deadline}
+                            onChange={(e) => setCreateForm({...createForm, deadline: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                )}
+
+                {createType === 'deliverable' && (
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label className="form-label">Requirements</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.requirements}
+                            onChange={(e) => setCreateForm({...createForm, requirements: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Specifications</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.specifications}
+                            onChange={(e) => setCreateForm({...createForm, specifications: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Properties</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.properties}
+                            onChange={(e) => setCreateForm({...createForm, properties: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Fit Criterion</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.fit_criterion}
+                            onChange={(e) => setCreateForm({...createForm, fit_criterion: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                )}
+
+                {createType === 'task' && (
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label className="form-label">Status</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.status}
+                            onChange={(e) => setCreateForm({...createForm, status: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Time Logged</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.time_logged}
+                            onChange={(e) => setCreateForm({...createForm, time_logged: e.target.value})}
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label className="form-label">Target Date</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.target_date}
+                            onChange={(e) => setCreateForm({...createForm, target_date: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                )}
+
+                {createType === 'activity' && (
+                    <div className="form-grid">
+                      <div className="form-group">
+                        <label className="form-label">Status</label>
+                        <input
+                            className="detail-input"
+                            value={createForm.status}
+                            onChange={(e) => setCreateForm({...createForm, status: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                )}
+
+                <div className="modal-actions">
+                  <button className="btn-cancel" onClick={() => setShowCreateModal(false)}>
+                    Cancel
+                  </button>
+                  <button className="btn-primary" onClick={handleCreate}>
+                    Create
+                  </button>
+                </div>
+              </div>
+            </div>
+        )}
+      </section>
   );
-};
+  };
 
 export default OverviewPage;
