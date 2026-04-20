@@ -9,7 +9,10 @@ import {
 } from '../api';
 import type { MetadataType } from '../types';
 
-const OPTIONS: { value: MetadataType; label: string }[] = [
+type ExtractType = MetadataType | 'all';
+
+const OPTIONS: { value: ExtractType; label: string }[] = [
+  { value: 'all', label: 'All' },
   { value: 'epic', label: 'Epic' },
   { value: 'decision', label: 'Decision' },
   { value: 'deliverable', label: 'Deliverable' },
@@ -19,7 +22,7 @@ const OPTIONS: { value: MetadataType; label: string }[] = [
 
 const UploadPage: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [type, setType] = useState<MetadataType>('epic');
+  const [type, setType] = useState<ExtractType>('all');
   const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
   const [busy, setBusy] = useState(false);
   const [results, setResults] = useState<any[]>([]);
@@ -35,26 +38,44 @@ const UploadPage: React.FC = () => {
 
     try {
       const uploaded = await uploadDocument(file);
-
       setMsg({ text: 'Document uploaded. Extracting metadata…', ok: true });
 
       let extracted: any[] = [];
-      switch (type) {
-        case 'epic':
-          extracted = await extractEpics(uploaded.filename);
-          break;
-        case 'decision':
-          extracted = await extractDecisions(uploaded.filename);
-          break;
-        case 'deliverable':
-          extracted = await extractDeliverables(uploaded.filename);
-          break;
-        case 'task':
-          extracted = await extractTasks(uploaded.filename);
-          break;
-        case 'activity':
-          extracted = await extractActivities(uploaded.filename);
-          break;
+
+      if (type === 'all') {
+        const [epics, decisions, deliverables, tasks, activities] = await Promise.all([
+          extractEpics(uploaded.filename),
+          extractDecisions(uploaded.filename),
+          extractDeliverables(uploaded.filename),
+          extractTasks(uploaded.filename),
+          extractActivities(uploaded.filename),
+        ]);
+
+        extracted = [
+          ...epics.map((item) => ({ kind: 'Epic', ...item })),
+          ...decisions.map((item) => ({ kind: 'Decision', ...item })),
+          ...deliverables.map((item) => ({ kind: 'Deliverable', ...item })),
+          ...tasks.map((item) => ({ kind: 'Task', ...item })),
+          ...activities.map((item) => ({ kind: 'Activity', ...item })),
+        ];
+      } else {
+        switch (type) {
+          case 'epic':
+            extracted = await extractEpics(uploaded.filename);
+            break;
+          case 'decision':
+            extracted = await extractDecisions(uploaded.filename);
+            break;
+          case 'deliverable':
+            extracted = await extractDeliverables(uploaded.filename);
+            break;
+          case 'task':
+            extracted = await extractTasks(uploaded.filename);
+            break;
+          case 'activity':
+            extracted = await extractActivities(uploaded.filename);
+            break;
+        }
       }
 
       setResults(extracted);
@@ -99,12 +120,12 @@ const UploadPage: React.FC = () => {
               id="file-input"
               type="file"
               hidden
-              accept=".txt,.pdf,.doc,.docx"
+              accept=".txt,.docx"
               aria-describedby="file-help"
               onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
             />
           </div>
-          <span id="file-help" className="sr-only">Accepted formats: .txt, .pdf, .doc, .docx</span>
+          <span id="file-help" className="sr-only">Accepted formats: .txt, .docx</span>
         </div>
 
         <div className="form-group">
@@ -113,7 +134,7 @@ const UploadPage: React.FC = () => {
             id="meta-type"
             className="form-select"
             value={type}
-            onChange={(e) => setType(e.target.value as MetadataType)}
+            onChange={(e) => setType(e.target.value as ExtractType)}
             aria-required="true"
             title="Choose metadata type for extraction"
           >
@@ -147,7 +168,7 @@ const UploadPage: React.FC = () => {
             {results.map((item, i) => (
               <article className="doc-row" key={i}>
                 <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                  <strong>{item.title ?? item.name ?? `Item ${i + 1}`}</strong>
+                  <strong>{item.kind ? `${item.kind}: ` : ''}{item.title ?? item.name ?? `Item ${i + 1}`}</strong>
                   <div>{JSON.stringify(item, null, 2)}</div>
                 </div>
               </article>
