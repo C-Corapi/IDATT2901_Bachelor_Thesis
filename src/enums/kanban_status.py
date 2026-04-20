@@ -7,6 +7,6 @@ class KanbanStatus(str, Enum):
     """Enum representing the possible statuses of an element of a Kanban board."""
 
     BACKLOG = "backlog"
-    TODO = "to do"
-    IN_PROGRESS = "in progress"
+    TODO = "todo"
+    IN_PROGRESS = "in_progress"
     DONE = "done"
