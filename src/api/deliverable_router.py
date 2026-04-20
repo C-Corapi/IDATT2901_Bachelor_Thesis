@@ -9,6 +9,8 @@ from schemas.deliverable import DeliverableCreateModel, DeliverableResponseModel
 from service.deliverable_service import extract_deliverables, save_deliverables_to_db
 from utils.database import get_db
 
+import os
+
 router = APIRouter(
     prefix="/deliverables",
     tags=["Deliverables"],
@@ -25,7 +27,8 @@ def get_all_deliverables(db: Session = Depends(get_db)):  # type: ignore[assignm
 def extract_and_save_deliverables(filepath: str, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Extract deliverables from a given file and save them to the database."""
     print("Extracting deliverables from file:", filepath)
-    deliverables: list[DeliverableCreateModel] = extract_deliverables(filepath)
+    full_path = os.path.join("documents", filepath)
+    deliverables: list[DeliverableCreateModel] = extract_deliverables(full_path)
     saved: list[Deliverable] = save_deliverables_to_db(deliverables, db)
     return saved
 

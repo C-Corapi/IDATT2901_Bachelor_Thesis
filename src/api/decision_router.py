@@ -8,6 +8,8 @@ from schemas.decision import DecisionCreateModel, DecisionResponseModel
 from service.desicion_service import extract_decisions, save_decisions_to_db
 from utils.database import get_db
 
+import os
+
 router = APIRouter(
     prefix="/decisions",
     tags=["decisions"],
@@ -23,7 +25,8 @@ def get_all_decisions(db: Session = Depends(get_db)):  # type: ignore[assignment
 @router.post("/extract", response_model=list[DecisionResponseModel], status_code=201)
 def extract_and_save_decisions(filepath: str, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Extract decisions from a given file and save them to the database."""
-    decisions: list[DecisionCreateModel] = extract_decisions(filepath)
+    full_path = os.path.join("documents", filepath)
+    decisions: list[DecisionCreateModel] = extract_decisions(full_path)
     saved: list[Decision] = save_decisions_to_db(decisions, db)
     return saved
 
