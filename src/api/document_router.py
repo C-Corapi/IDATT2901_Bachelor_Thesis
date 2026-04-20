@@ -4,12 +4,14 @@ import os
 import uuid
 
 from fastapi import APIRouter, File, HTTPException, UploadFile
+from pathlib import Path
 
 router = APIRouter(
     prefix="/documents",
     tags=["Documents"],
 )
 
+UPLOAD_DIR = Path("uploads").resolve()
 
 @router.post("/upload", status_code=201)
 async def upload_document(file: UploadFile = File(...)):
@@ -43,3 +45,16 @@ def get_document(filename: str) -> str:
 
     with open(file_path, "r") as f:
         return f.read()
+    
+@router.delete("/{filename}")
+def delete_document(filename: str):
+    """Endpoint to delete a document by its filename."""
+    file_path: str = os.path.join("documents", filename)
+
+    if not file_path.startswith("documents"):
+        raise HTTPException(status_code=400, detail="Invalid file path")
+    
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="File not found")
+    
+
