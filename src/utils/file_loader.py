@@ -1,4 +1,5 @@
 """File loading utilities for reading supported document formats."""
+
 from docx import Document
 
 
@@ -18,10 +19,9 @@ def load_file(path: str) -> str:
     """
     if path.endswith(".txt"):
         return load_txt_file(path)
-    elif path.endswith(".docx"):
+    if path.endswith(".docx"):
         return load_docx_file(path)
-    else:
-        raise ValueError(f"Unsupported file type: {path}")
+    raise ValueError(f"Unsupported file type: {path}")
 
 
 def load_txt_file(path: str) -> str:
