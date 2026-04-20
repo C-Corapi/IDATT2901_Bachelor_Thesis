@@ -21,7 +21,7 @@ interface Props {
   defaultOpen?: boolean;
 }
 
-const KNOWN = ['open','pending','closed','in-progress','urgent','important','local','global'];
+const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in progress','urgent','important','local','global'];
 const badgeCls = (v: string) => {
   const k = v.toLowerCase().replace(/\s+/g, '-');
   return `badge badge--${KNOWN.includes(k) ? k : 'default'}`;
@@ -35,13 +35,13 @@ const MetadataCard: React.FC<Props> = ({
   const [editing, setEditing] = useState(false);
   const [showModal, setShowModal] = useState(false);
 
-  const [dTitle, setDTitle] = useState(title);
-  const [dOwner, setDOwner] = useState(owner ?? '');
-  const [dDesc, setDDesc] = useState(description ?? '');
-  const [dAlts, setDAlts] = useState(alternatives ?? '');
+  const [dTitle, setDTitle] = useState<string>(title ?? '');
+  const [dOwner, setDOwner] = useState<string>(owner ?? '');
+  const [dDesc, setDDesc] = useState<string>(description ?? '');
+  const [dAlts, setDAlts] = useState<string>(alternatives ?? '');
   const [dExtras, setDExtras] = useState<DetailField[]>(extraDetails ?? []);
 
-  useEffect(() => { setDTitle(title); }, [title]);
+  useEffect(() => { setDTitle(title ?? ''); }, [title]);
   useEffect(() => { setDOwner(owner ?? ''); }, [owner]);
   useEffect(() => { setDDesc(description ?? ''); }, [description]);
   useEffect(() => { setDAlts(alternatives ?? ''); }, [alternatives]);

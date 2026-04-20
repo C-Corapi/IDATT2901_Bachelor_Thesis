@@ -57,11 +57,77 @@ const OverviewPage: React.FC = () => {
   const handleSave = async (type: MetadataType, id: number, changes: Record<string, string>) => {
     try {
       switch (type) {
-        case 'epic':        await updateEpic(id, changes); break;
-        case 'decision':    await updateDecision(id, changes); break;
-        case 'deliverable': await updateDeliverable(id, changes); break;
-        case 'task':        await updateTask(id, changes); break;
-        case 'activity':    await updateActivity(id, changes); break;
+      case 'epic': {
+        const epic = epics.find((e) => e.id === id);
+        if (!epic) break;
+
+        await updateEpic(id, {
+          title: changes.title ?? epic.title,
+          description: changes.description ?? epic.description,
+          classification: changes.classification ?? epic.classification,
+          owner: changes.owner ?? epic.owner,
+          scope: changes.scope ?? epic.scope,
+          use_case: changes.use_case ?? epic.use_case,
+          user_story: changes.user_story ?? epic.user_story,
+          non_functional_requirements: changes.non_functional_requirements ?? epic.non_functional_requirements,
+        });
+        break;
+      }
+      case 'decision': {
+        const decision = decisions.find((d) => d.id === id);
+        if (!decision) break;
+
+        await updateDecision(id, {
+          title: changes.title ?? decision.title,
+          description: changes.description ?? decision.description,
+          alternatives: changes.alternatives ?? decision.alternatives,
+          nature: changes.nature ?? decision.nature,
+          reach: changes.reach ?? decision.reach,
+          deadline: changes.deadline ?? decision.deadline,
+          owner: changes.owner ?? decision.owner,
+        });
+        break;
+      }
+      case 'deliverable': {
+        const deliverable = deliverables.find((d) => d.id === id);
+        if (!deliverable) break;
+
+        await updateDeliverable(id, {
+          title: changes.title ?? deliverable.title,
+          requirements: changes.requirements ?? deliverable.requirements,
+          specifications: changes.specifications ?? deliverable.specifications,
+          properties: changes.properties ?? deliverable.properties,
+          fit_criterion: changes.fit_criterion ?? deliverable.fit_criterion,
+          owner: changes.owner ?? deliverable.owner,
+        });
+        break;
+      }
+      case 'task': {
+        const task = tasks.find((t) => t.id === id);
+        if (!task) break;
+
+        await updateTask(id, {
+          title: changes.title ?? task.title,
+          description: changes.description ?? task.description,
+          owner: changes.owner ?? task.owner,
+          status: changes.status ?? task.status,
+          time_logged: changes.time_logged ?? task.time_logged,
+          target_date: changes.target_date ?? task.target_date,
+        });
+        break;
+      }
+      case 'activity': {
+        const activity = activities.find((a) => a.id === id);
+        if (!activity) break;
+
+        await updateActivity(id, {
+          title: changes.title ?? activity.title,
+          description: changes.description ?? activity.description,
+          owner: changes.owner ?? activity.owner,
+          status: changes.status ?? activity.status,
+        });
+        break;
+      }
       }
       loadAll();
     } catch (err) {

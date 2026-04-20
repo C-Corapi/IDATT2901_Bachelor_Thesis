@@ -4,6 +4,7 @@ import {
   getEpics, getDeliverables, getTasks, getActivities, getDecisions,
   updateEpic, updateDeliverable, updateTask, updateActivity, updateDecision,
   deleteEpic, deleteDeliverable, deleteTask, deleteActivity, deleteDecision,
+  updateKanbanCard,
 } from '../api';
 import type { KanbanItemFull, MetadataType } from '../types';
 
@@ -14,17 +15,17 @@ interface ColumnDef {
 }
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
-  { id: 'backlog',     title: 'Backlog',     statuses: ['backlog'] },
-  { id: 'open',        title: 'Open',        statuses: ['open'] },
-  { id: 'in-progress', title: 'In Progress', statuses: ['in progress', 'in-progress'] },
-  { id: 'closed',      title: 'Closed',      statuses: ['closed', 'done'] },
+  { id: 'backlog', title: 'Backlog', statuses: ['backlog'] },
+  { id: 'todo', title: 'To Do', statuses: ['todo'] },
+  { id: 'in_progress', title: 'In Progress', statuses: ['in_progress'] },
+  { id: 'done', title: 'Done', statuses: ['done'] },
 ];
 
 const KanbanPage: React.FC = () => {
-  const [allItems, setAllItems]       = useState<KanbanItemFull[]>([]);
-  const [columns, setColumns]         = useState<ColumnDef[]>(DEFAULT_COLUMNS);
+  const [allItems, setAllItems] = useState<KanbanItemFull[]>([]);
+  const [columns, setColumns] = useState<ColumnDef[]>(DEFAULT_COLUMNS);
   const [showBacklog, setShowBacklog] = useState(false);
-  const [loading, setLoading]         = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -37,9 +38,9 @@ const KanbanPage: React.FC = () => {
     ]).then(([epics, deliverables, tasks, activities, decisions]) => {
       const items: KanbanItemFull[] = [
         ...epics.map((e: any) => ({
-          id: e.id, title: e.name, owner: e.owner,
+          id: e.id, title: e.title, owner: e.owner,
           type: 'epic' as MetadataType,
-          status: (e.status ?? 'open').toLowerCase(),
+          status: (e.kanban_status ?? 'backlog').toLowerCase(),
           description: e.description,
           extraDetails: [
             ...(e.classification ? [{ label: 'Classification', value: e.classification, key: 'classification' }] : []),
@@ -50,26 +51,26 @@ const KanbanPage: React.FC = () => {
           raw: e,
         })),
         ...deliverables.map((d: any) => ({
-          id: d.id, title: d.name, owner: d.owner,
+          id: d.id, title: d.title, owner: d.owner,
           type: 'deliverable' as MetadataType,
-          status: (d.status ?? 'open').toLowerCase(),
+          status: (d.kanban_status ?? 'backlog').toLowerCase(),
           description: d.description,
           nature: d.nature, reach: d.reach, alternatives: d.alternatives,
           extraDetails: d.deadline ? [{ label: 'Deadline', value: d.deadline, key: 'deadline' }] : [],
           raw: d,
         })),
         ...tasks.map((t: any) => ({
-          id: t.id, title: t.name, owner: t.owner,
+          id: t.id, title: t.title, owner: t.owner,
           type: 'task' as MetadataType,
-          status: (t.status ?? 'open').toLowerCase(),
+          status: (t.kanban_status ?? 'backlog').toLowerCase(),
           description: t.description,
           extraDetails: t.target_date ? [{ label: 'Target Date', value: t.target_date, key: 'target_date' }] : [],
           raw: t,
         })),
         ...activities.map((a: any) => ({
-          id: a.id, title: a.name, owner: a.owner,
+          id: a.id, title: a.title, owner: a.owner,
           type: 'activity' as MetadataType,
-          status: (a.status ?? 'open').toLowerCase(),
+          status: (a.kanban_status ?? 'backlog').toLowerCase(),
           description: a.description,
           extraDetails: [],
           raw: a,
@@ -77,7 +78,7 @@ const KanbanPage: React.FC = () => {
         ...decisions.map((d: any) => ({
           id: d.id, title: d.title, owner: d.owner,
           type: 'decision' as MetadataType,
-          status: 'open',
+          status: (d.kanban_status ?? 'backlog').toLowerCase(),
           description: d.description,
           nature: d.nature, reach: d.reach, alternatives: d.alternatives,
           extraDetails: d.deadline ? [{ label: 'Deadline', value: d.deadline, key: 'deadline' }] : [],
@@ -128,6 +129,33 @@ const KanbanPage: React.FC = () => {
     }
   };
 
+  const handleDropToColumn = async (item: KanbanItemFull, targetColumnId: string) => {
+    const targetColumn = columns.find((c) => c.id === targetColumnId);
+    if (!targetColumn) return;
+
+    const newStatus = targetColumn.statuses[0];
+    if (!newStatus || item.status === newStatus) return;
+
+    const updatedItem = { ...item, status: newStatus };
+
+    setAllItems((prev) =>
+      prev.map((i) => (i.id === item.id && i.type === item.type ? updatedItem : i))
+    );
+
+    try {
+      await updateKanbanCard({
+        id: item.id,
+        title: item.title,
+        type: item.type.charAt(0).toUpperCase() + item.type.slice(1),
+        kanban_status: newStatus,
+      });
+      loadData();
+    } catch (err) {
+      console.error('Drag/drop update failed', err);
+      loadData();
+    }
+  };
+
   const visibleColumns = showBacklog ? columns : columns.filter((c) => c.id !== 'backlog');
 
   return (
@@ -158,6 +186,7 @@ const KanbanPage: React.FC = () => {
               onTitleChange={(newTitle) => renameColumn(col.id, newTitle)}
               onSaveItem={handleSaveItem}
               onDeleteItem={handleDeleteItem}
+              onDropItem={(item) => handleDropToColumn(item, col.id)}
             />
           ))}
         </div>
