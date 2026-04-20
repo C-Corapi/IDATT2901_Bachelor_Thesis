@@ -4,6 +4,7 @@ import {
   getEpics, getDeliverables, getTasks, getActivities, getDecisions,
   updateEpic, updateDeliverable, updateTask, updateActivity, updateDecision,
   deleteEpic, deleteDeliverable, deleteTask, deleteActivity, deleteDecision,
+  updateKanbanCard,
 } from '../api';
 import type { KanbanItemFull, MetadataType } from '../types';
 
@@ -15,16 +16,16 @@ interface ColumnDef {
 
 const DEFAULT_COLUMNS: ColumnDef[] = [
   { id: 'backlog',     title: 'Backlog',     statuses: ['backlog'] },
-  { id: 'open',        title: 'Open',        statuses: ['open'] },
-  { id: 'in-progress', title: 'In Progress', statuses: ['in progress', 'in-progress'] },
-  { id: 'closed',      title: 'Closed',      statuses: ['closed', 'done'] },
+  { id: 'todo',        title: 'To Do',        statuses: ['to do'] },
+  { id: 'in progress', title: 'In Progress', statuses: ['in progress'] },
+  { id: 'done',      title: 'Done',      statuses: ['done'] },
 ];
 
 const KanbanPage: React.FC = () => {
-  const [allItems, setAllItems]       = useState<KanbanItemFull[]>([]);
-  const [columns, setColumns]         = useState<ColumnDef[]>(DEFAULT_COLUMNS);
+  const [allItems, setAllItems] = useState<KanbanItemFull[]>([]);
+  const [columns, setColumns] = useState<ColumnDef[]>(DEFAULT_COLUMNS);
   const [showBacklog, setShowBacklog] = useState(false);
-  const [loading, setLoading]         = useState(true);
+  const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(() => {
     setLoading(true);
@@ -128,6 +129,33 @@ const KanbanPage: React.FC = () => {
     }
   };
 
+  const handleDropToColumn = async (item: KanbanItemFull, targetColumnId: string) => {
+    const targetColumn = columns.find((c) => c.id === targetColumnId);
+    if (!targetColumn) return;
+
+    const newStatus = targetColumn.statuses[0];
+    if (!newStatus || item.status === newStatus) return;
+
+    const updatedItem = { ...item, status: newStatus };
+
+    setAllItems((prev) =>
+      prev.map((i) => (i.id === item.id && i.type === item.type ? updatedItem : i))
+    );
+
+    try {
+      await updateKanbanCard({
+        id: item.id,
+        title: item.title,
+        type: item.type.charAt(0).toUpperCase() + item.type.slice(1),
+        kanban_status: newStatus,
+      });
+      loadData();
+    } catch (err) {
+      console.error('Drag/drop update failed', err);
+      loadData();
+    }
+  };
+
   const visibleColumns = showBacklog ? columns : columns.filter((c) => c.id !== 'backlog');
 
   return (
@@ -158,6 +186,7 @@ const KanbanPage: React.FC = () => {
               onTitleChange={(newTitle) => renameColumn(col.id, newTitle)}
               onSaveItem={handleSaveItem}
               onDeleteItem={handleDeleteItem}
+              onDropItem={(item) => handleDropToColumn(item, col.id)}
             />
           ))}
         </div>
