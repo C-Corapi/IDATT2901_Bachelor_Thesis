@@ -1,4 +1,4 @@
-export type MetadataType = 'epic' | 'decision' | 'deliverable' | 'task' | 'activity';
+export type MetadataType = 'all' | 'epic' | 'decision' | 'deliverable' | 'task' | 'activity';
 
 export interface Epic {
   id: number;
