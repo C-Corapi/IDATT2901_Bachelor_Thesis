@@ -31,7 +31,21 @@ To close the program, deactivate the virtual environment with the command:
 deactivate 
 
 ## Running the application
-TBA
+To run the backend, navigate to the source code folder:
+
+cd src
+
+Then run main.py using the command:
+
+python -m fastapi dev main.py
+
+To run the frontend, navigate to the frontend folder:
+
+cd frontend
+
+Then run the application using the command:
+
+npm run dev
 
 ## Running tests
 TBA
