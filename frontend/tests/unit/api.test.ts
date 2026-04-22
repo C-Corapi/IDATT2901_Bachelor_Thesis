@@ -116,7 +116,7 @@ describe('API client', () => {
 
   // Decisions
   it('should POST to createDecision', async () => {
-    const input = { name: 'decision1' }, output = { id: 2, name: 'decision2' };
+    const input = { name: 'decision2' }, output = { id: 2, name: 'decision2' };
     mockFetch(output);
     expect(await createDecision(input)).toEqual(output);
     expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\//), expect.objectContaining({
@@ -211,7 +211,7 @@ describe('API client', () => {
     expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/3/));
   });
 
-  it('should throw for not found decision by id', async () => {
+  it('should throw for not found deliverable by id', async () => {
     mockFetchReject(404);
     await expect(getDeliverableById(404)).rejects.toThrow(/GET \/deliverables\/404/);
   });
@@ -254,7 +254,7 @@ describe('API client', () => {
 
   it('should throw for failed updateEpic', async () => {
     mockFetchReject(500);
-    await expect(updateEpic(4, { updateData: "data4" })).rejects.toThrow(/PUT \/epics\/4/);
+    await expect(updateEpic(4, { update: "data4" })).rejects.toThrow(/PUT \/epics\/4/);
   });
 
   // Decisions
@@ -270,7 +270,7 @@ describe('API client', () => {
 
   it('should throw for failed updateDecision', async () => {
     mockFetchReject(500);
-    await expect(updateDecision(4, { updateData: "data4" })).rejects.toThrow(/PUT \/decisions\/4/);
+    await expect(updateDecision(4, { update: "data4" })).rejects.toThrow(/PUT \/decisions\/4/);
   });
 
   // Deliverables
@@ -286,7 +286,7 @@ describe('API client', () => {
 
   it('should throw for failed updateDeliverable', async () => {
     mockFetchReject(500);
-    await expect(updateDeliverable(4, { updateData: "data4" })).rejects.toThrow(/PUT \/deliverables\/4/);
+    await expect(updateDeliverable(4, { update: "data4" })).rejects.toThrow(/PUT \/deliverables\/4/);
   });
 
   // Activities
@@ -302,7 +302,7 @@ describe('API client', () => {
 
   it('should throw for failed updateActivity', async () => {
     mockFetchReject(500);
-    await expect(updateActivity(4, { updateData: "data4" })).rejects.toThrow(/PUT \/activities\/4/);
+    await expect(updateActivity(4, { update: "data4" })).rejects.toThrow(/PUT \/activities\/4/);
   });
 
   // Tasks
@@ -318,7 +318,7 @@ describe('API client', () => {
 
   it('should throw for failed updateTasks', async () => {
     mockFetchReject(500);
-    await expect(updateTask(4, { updateData: "data4" })).rejects.toThrow(/PUT \/tasks\/4/);
+    await expect(updateTask(4, { update: "data4" })).rejects.toThrow(/PUT \/tasks\/4/);
   });
 
   // 5. Testing DELETE
@@ -353,7 +353,7 @@ describe('API client', () => {
     expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/5/), expect.objectContaining({ method: 'DELETE' }));
   });
 
-  it('should throw for failed deleteEpic', async () => {
+  it('should throw for failed deleteDeliverable', async () => {
     mockFetchReject(404);
     await expect(deleteDeliverable(5)).rejects.toThrow(/DELETE \/deliverables\/5/);
   });
@@ -384,8 +384,9 @@ describe('API client', () => {
 
 
   // 6. Testing EXTRACT (LLM POST)
+  // Epics
   it('should POST to extractEpics with filepath', async () => {
-    const epics = [{ id: 1, name: "e" }];
+    const epics = [{ id: 6, name: "epics" }];
     mockFetch(epics);
     const result = await extractEpics("file.yaml");
     expect(result).toBe(epics);
@@ -393,7 +394,7 @@ describe('API client', () => {
   });
 
   it('should handle filepaths with special characters in extractEpics', async () => {
-    const epics = [{ id: 2 }];
+    const epics = [{ id: 6 }];
     mockFetch(epics);
     await extractEpics("a b/ç&e$.yaml");
     expect(fetch).toHaveBeenCalledWith(
@@ -405,6 +406,127 @@ describe('API client', () => {
   it('should throw on failed extractEpics', async () => {
     mockFetchReject(500);
     await expect(extractEpics("file.yaml")).rejects.toThrow();
+  });
+
+  it('should throw on extractEpics with empty filepath', async () => {
+  mockFetchReject(400);
+  await expect(extractEpics("")).rejects.toThrow();
+  });
+
+  // Decisions
+  it('should POST to extractDecisions with filepath', async () => {
+    const decisions = [{ id: 6, name: "decisions" }];
+    mockFetch(decisions);
+    const result = await extractDecisions("file.yaml");
+    expect(result).toBe(decisions);
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+  });
+
+  it('should handle filepaths with special characters in extractDecisions', async () => {
+    const decisions = [{ id: 6 }];
+    mockFetch(decisions);
+    await extractDecisions("a b/ç&e$.yaml");
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
+      expect.anything()
+    );
+  });
+
+  it('should throw on failed extractDecisions', async () => {
+    mockFetchReject(500);
+    await expect(extractDecisions("file.yaml")).rejects.toThrow();
+  });
+
+  it('should throw on extractDecisions with empty filepath', async () => {
+  mockFetchReject(400);
+  await expect(extractDecisions("")).rejects.toThrow();
+  });
+
+  // Deliverables
+  it('should POST to extractDeliverables with filepath', async () => {
+    const deliverables = [{ id: 6, name: "deliverables" }];
+    mockFetch(deliverables);
+    const result = await extractDeliverables("file.yaml");
+    expect(result).toBe(deliverables);
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+  });
+
+  it('should handle filepaths with special characters in extractDeliverables', async () => {
+    const deliverables = [{ id: 6 }];
+    mockFetch(deliverables);
+    await extractDeliverables("a b/ç&e$.yaml");
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
+      expect.anything()
+    );
+  });
+
+  it('should throw on failed extractDeliverables', async () => {
+    mockFetchReject(500);
+    await expect(extractDeliverables("file.yaml")).rejects.toThrow();
+  });
+
+  it('should throw on extractDeliverables with empty filepath', async () => {
+  mockFetchReject(400);
+  await expect(extractDeliverables("")).rejects.toThrow();
+  });
+
+  // Activities
+    it('should POST to extractActivities with filepath', async () => {
+    const activities = [{ id: 6, name: "activities" }];
+    mockFetch(activities);
+    const result = await extractActivities("file.yaml");
+    expect(result).toBe(activities);
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+  });
+
+  it('should handle filepaths with special characters in extractActivities', async () => {
+    const activities = [{ id: 6 }];
+    mockFetch(activities);
+    await extractActivities("a b/ç&e$.yaml");
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
+      expect.anything()
+    );
+  });
+
+  it('should throw on failed extractActivities', async () => {
+    mockFetchReject(500);
+    await expect(extractActivities("file.yaml")).rejects.toThrow();
+  });
+
+  it('should throw on extractActivities with empty filepath', async () => {
+  mockFetchReject(400);
+  await expect(extractActivities("")).rejects.toThrow();
+  });
+
+  // Tasks
+    it('should POST to extractTasks with filepath', async () => {
+    const tasks = [{ id: 6, name: "tasks" }];
+    mockFetch(tasks);
+    const result = await extractTasks("file.yaml");
+    expect(result).toBe(tasks);
+    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+  });
+
+  it('should handle filepaths with special characters in extractTasks', async () => {
+    const tasks = [{ id: 6 }];
+    mockFetch(tasks);
+    await extractTasks("a b/ç&e$.yaml");
+    expect(fetch).toHaveBeenCalledWith(
+      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
+      expect.anything()
+    );
+  });
+
+  it('should throw on failed extractTasks', async () => {
+    mockFetchReject(500);
+    await expect(extractTasks("file.yaml")).rejects.toThrow();
+  });
+
+  it('should throw on extractTasks with empty filepath', async () => {
+  mockFetchReject(400);
+  await expect(extractTasks("")).rejects.toThrow();
   });
 
   // 7. Testing UPLOAD DOCUMENT
@@ -440,6 +562,11 @@ describe('API client', () => {
       expect.stringMatching(/\/documents\/a%20b%26c.doc/)
     );
   });
+
+  it('should throw for getDocumentByName not found', async () => {
+  mockFetchReject(404);
+  await expect(getDocumentByName("doesnotexist.pdf")).rejects.toThrow(/GET \/documents\//);
+});
 
   // 10. Testing KANBAN update
   it('should update a Kanban card', async () => {
