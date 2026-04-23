@@ -31,3 +31,4 @@ black
 fastapi[standard]
 python-docx
 pytest
+pytest-cov
