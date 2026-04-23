@@ -25,7 +25,7 @@ def db_session():
 
 
 def test_build_empty_board(db_session):
-    """Test that build_kanban_board returns an empty board when there are no tasks in the database."""
+    """Test that build_kanban_board returns an empty board when there is no metadata."""
     board = build_kanban_board(db_session)
 
     assert board.todo == []
