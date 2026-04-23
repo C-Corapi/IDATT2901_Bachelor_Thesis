@@ -5,3 +5,4 @@ venv/
 src/test.db
 src/documents/
 frontend/node_modules/
+.coverage
