@@ -11,27 +11,42 @@ import {
 } from '../../src/api';
 
 import { vi, it, describe, expect, afterEach } from 'vitest';
+import { cleanup } from '@testing-library/react';
 
 // Helpers to mock fetch
+const fetchMock = () => (globalThis.fetch as unknown as ReturnType<typeof vi.fn>);
+
 function mockFetch(response: unknown, ok = true, status = 200) {
-  vi.spyOn(global, 'fetch').mockResolvedValue({
+  const resolved = {
     ok,
     status,
     json: async () => response,
-    text: async () => typeof response === "string" ? response : JSON.stringify(response),
-  } as any);
+    text: async () => (typeof response === 'string' ? response : JSON.stringify(response)),
+  };
+
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(resolved) as any);
 }
 
-function mockFetchReject(status = 500, statusText = "error") {
-  vi.spyOn(global, 'fetch').mockResolvedValue({
+function mockFetchReject(status = 500, statusText = 'error') {
+  const resolved = {
     ok: false,
     status,
     text: async () => statusText,
-  } as any);
+  };
+
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(resolved) as any);
 }
 
+afterEach(() => {
+  vi.resetAllMocks();
+  vi.unstubAllGlobals();
+  cleanup();
+});
+
+export { mockFetch, mockFetchReject };
 describe('API client', () => {
   afterEach(() => {
+    cleanup();
     vi.restoreAllMocks();
   });
 
@@ -41,7 +56,7 @@ describe('API client', () => {
   it('should fetch for successful getEpics', async () => {
     mockFetch([{ id: 1, name: "epic1" }]);
     expect(await getEpics()).toEqual([{ id: 1, name: "epic1" }]);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/epics\//));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\//));
   });
 
   it('should throw for failed getEpics', async () => {
@@ -53,7 +68,7 @@ describe('API client', () => {
   it('should fetch for successful getDecisions', async () => {
     mockFetch([{ id: 1, name: "decision1" }]);
     expect(await getDecisions()).toEqual([{ id: 1, name: "decision1" }]);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\//));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\//));
   });
 
   it('should throw for failed getDecisions', async () => {
@@ -65,7 +80,7 @@ describe('API client', () => {
   it('should fetch for successful getDeliverables', async () => {
     mockFetch([{ id: 1, name: "deliverable1" }]);
     expect(await getDeliverables()).toEqual([{ id: 1, name: "deliverable1" }]);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\//));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\//));
   });
 
   it('should throw for failed getDeliverables', async () => {
@@ -77,7 +92,7 @@ describe('API client', () => {
   it('should fetch for successful getActivities', async () => {
     mockFetch([{ id: 1, name: "activity1" }]);
     expect(await getActivities()).toEqual([{ id: 1, name: "activity1" }]);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/activities\//));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\//));
   });
 
   it('should throw for failed getActivities', async () => {
@@ -89,7 +104,7 @@ describe('API client', () => {
   it('should fetch for successful getTasks', async () => {
     mockFetch([{ id: 1, name: "task1" }]);
     expect(await getTasks()).toEqual([{ id: 1, name: "task1" }]);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\//));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\//));
   });
 
   it('should throw for failed getTasks', async () => {
@@ -103,7 +118,7 @@ describe('API client', () => {
     const input = { name: 'epic2' }, output = { id: 2, name: 'epic2' };
     mockFetch(output);
     expect(await createEpic(input)).toEqual(output);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/epics\//), expect.objectContaining({
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\//), expect.objectContaining({
       method: 'POST',
       body: JSON.stringify(input),
     }));
@@ -119,7 +134,7 @@ describe('API client', () => {
     const input = { name: 'decision2' }, output = { id: 2, name: 'decision2' };
     mockFetch(output);
     expect(await createDecision(input)).toEqual(output);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\//), expect.objectContaining({
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\//), expect.objectContaining({
       method: 'POST',
       body: JSON.stringify(input),
     }));
@@ -135,7 +150,7 @@ describe('API client', () => {
     const input = { name: 'deliverable2' }, output = { id: 2, name: 'deliverable2' };
     mockFetch(output);
     expect(await createDeliverable(input)).toEqual(output);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\//), expect.objectContaining({
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\//), expect.objectContaining({
       method: 'POST',
       body: JSON.stringify(input),
     }));
@@ -151,7 +166,7 @@ describe('API client', () => {
     const input = { name: 'activity2' }, output = { id: 2, name: 'activity2' };
     mockFetch(output);
     expect(await createActivity(input)).toEqual(output);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/activities\//), expect.objectContaining({
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\//), expect.objectContaining({
       method: 'POST',
       body: JSON.stringify(input),
     }));
@@ -167,7 +182,7 @@ describe('API client', () => {
     const input = { name: 'task2' }, output = { id: 2, name: 'task2' };
     mockFetch(output);
     expect(await createTask(input)).toEqual(output);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\//), expect.objectContaining({
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\//), expect.objectContaining({
       method: 'POST',
       body: JSON.stringify(input),
     }));
@@ -184,7 +199,7 @@ describe('API client', () => {
   it('should fetch an epic by id', async () => {
     mockFetch({ id: 3, name: 'epic3' });
     expect(await getEpicById(3)).toEqual({ id: 3, name: 'epic3' });
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/3/));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/3/));
   });
 
   it('should throw for not found epic by id', async () => {
@@ -196,7 +211,7 @@ describe('API client', () => {
   it('should fetch a decision by id', async () => {
     mockFetch({ id: 3, name: 'decision3' });
     expect(await getDecisionById(3)).toEqual({ id: 3, name: 'decision3' });
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/3/));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/3/));
   });
 
   it('should throw for not found decision by id', async () => {
@@ -208,7 +223,7 @@ describe('API client', () => {
   it('should fetch a deliverable by id', async () => {
     mockFetch({ id: 3, name: 'deliverable3' });
     expect(await getDeliverableById(3)).toEqual({ id: 3, name: 'deliverable3' });
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/3/));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/3/));
   });
 
   it('should throw for not found deliverable by id', async () => {
@@ -220,7 +235,7 @@ describe('API client', () => {
   it('should fetch an activity by id', async () => {
     mockFetch({ id: 3, name: 'activity3' });
     expect(await getActivityById(3)).toEqual({ id: 3, name: 'activity3' });
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/3/));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/3/));
   });
 
   it('should throw for not found activity by id', async () => {
@@ -232,7 +247,7 @@ describe('API client', () => {
   it('should fetch a task by id', async () => {
     mockFetch({ id: 3, name: 'task3' });
     expect(await getTaskById(3)).toEqual({ id: 3, name: 'task3' });
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/3/));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/3/));
   });
 
   it('should throw for not found task by id', async () => {
@@ -246,7 +261,7 @@ describe('API client', () => {
     const updateData = { update: "data4" };
     mockFetch({ id: 4, update: "data4" });
     expect(await updateEpic(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/\/epics\/4/),
       expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
     );
@@ -262,7 +277,7 @@ describe('API client', () => {
     const updateData = { update: "data4" };
     mockFetch({ id: 4, update: "data4" });
     expect(await updateDecision(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/\/decisions\/4/),
       expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
     );
@@ -278,7 +293,7 @@ describe('API client', () => {
     const updateData = { update: "data4" };
     mockFetch({ id: 4, update: "data4" });
     expect(await updateDeliverable(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/\/deliverables\/4/),
       expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
     );
@@ -294,7 +309,7 @@ describe('API client', () => {
     const updateData = { update: "data4" };
     mockFetch({ id: 4, update: "data4" });
     expect(await updateActivity(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/\/activities\/4/),
       expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
     );
@@ -310,7 +325,7 @@ describe('API client', () => {
     const updateData = { update: "data4" };
     mockFetch({ id: 4, update: "data4" });
     expect(await updateTask(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/\/tasks\/4/),
       expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
     );
@@ -326,7 +341,7 @@ describe('API client', () => {
   it('should DELETE an epic', async () => {
     mockFetch(undefined);
     await expect(deleteEpic(5)).resolves.toBeUndefined();
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/5/), expect.objectContaining({ method: 'DELETE' }));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/5/), expect.objectContaining({ method: 'DELETE' }));
   });
 
   it('should throw for failed deleteEpic', async () => {
@@ -338,7 +353,7 @@ describe('API client', () => {
   it('should DELETE a decision', async () => {
     mockFetch(undefined);
     await expect(deleteDecision(5)).resolves.toBeUndefined();
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/5/), expect.objectContaining({ method: 'DELETE' }));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/5/), expect.objectContaining({ method: 'DELETE' }));
   });
 
   it('should throw for failed deleteDecision', async () => {
@@ -350,7 +365,7 @@ describe('API client', () => {
   it('should DELETE a deliverable', async () => {
     mockFetch(undefined);
     await expect(deleteDeliverable(5)).resolves.toBeUndefined();
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/5/), expect.objectContaining({ method: 'DELETE' }));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/5/), expect.objectContaining({ method: 'DELETE' }));
   });
 
   it('should throw for failed deleteDeliverable', async () => {
@@ -362,7 +377,7 @@ describe('API client', () => {
     it('should DELETE an activity', async () => {
     mockFetch(undefined);
     await expect(deleteActivity(5)).resolves.toBeUndefined();
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/5/), expect.objectContaining({ method: 'DELETE' }));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/5/), expect.objectContaining({ method: 'DELETE' }));
   });
 
   it('should throw for failed deleteActivity', async () => {
@@ -374,7 +389,7 @@ describe('API client', () => {
     it('should DELETE a task', async () => {
     mockFetch(undefined);
     await expect(deleteTask(5)).resolves.toBeUndefined();
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/5/), expect.objectContaining({ method: 'DELETE' }));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/5/), expect.objectContaining({ method: 'DELETE' }));
   });
 
   it('should throw for failed deleteTask', async () => {
@@ -390,14 +405,14 @@ describe('API client', () => {
     mockFetch(epics);
     const result = await extractEpics("file.yaml");
     expect(result).toBe(epics);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
   });
 
   it('should handle filepaths with special characters in extractEpics', async () => {
     const epics = [{ id: 6 }];
     mockFetch(epics);
     await extractEpics("a b/ç&e$.yaml");
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
       expect.anything()
     );
@@ -419,14 +434,14 @@ describe('API client', () => {
     mockFetch(decisions);
     const result = await extractDecisions("file.yaml");
     expect(result).toBe(decisions);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
   });
 
   it('should handle filepaths with special characters in extractDecisions', async () => {
     const decisions = [{ id: 6 }];
     mockFetch(decisions);
     await extractDecisions("a b/ç&e$.yaml");
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
       expect.anything()
     );
@@ -448,14 +463,14 @@ describe('API client', () => {
     mockFetch(deliverables);
     const result = await extractDeliverables("file.yaml");
     expect(result).toBe(deliverables);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
   });
 
   it('should handle filepaths with special characters in extractDeliverables', async () => {
     const deliverables = [{ id: 6 }];
     mockFetch(deliverables);
     await extractDeliverables("a b/ç&e$.yaml");
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
       expect.anything()
     );
@@ -477,14 +492,14 @@ describe('API client', () => {
     mockFetch(activities);
     const result = await extractActivities("file.yaml");
     expect(result).toBe(activities);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
   });
 
   it('should handle filepaths with special characters in extractActivities', async () => {
     const activities = [{ id: 6 }];
     mockFetch(activities);
     await extractActivities("a b/ç&e$.yaml");
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
       expect.anything()
     );
@@ -506,14 +521,14 @@ describe('API client', () => {
     mockFetch(tasks);
     const result = await extractTasks("file.yaml");
     expect(result).toBe(tasks);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
   });
 
   it('should handle filepaths with special characters in extractTasks', async () => {
     const tasks = [{ id: 6 }];
     mockFetch(tasks);
     await extractTasks("a b/ç&e$.yaml");
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
       expect.anything()
     );
@@ -536,7 +551,7 @@ describe('API client', () => {
     mockFetch(resp);
     const result = await uploadDocument(mockFile);
     expect(result).toEqual(resp);
-    expect(fetch).toHaveBeenCalledWith(expect.stringContaining('/documents/upload'), expect.objectContaining({ method: 'POST' }));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringContaining('/documents/upload'), expect.objectContaining({ method: 'POST' }));
   });
 
   it('should throw on failed uploadDocument', async () => {
@@ -550,7 +565,7 @@ describe('API client', () => {
     mockFetch(["a.pdf", "b.docx"]);
     const result = await getDocuments();
     expect(result).toEqual(["a.pdf", "b.docx"]);
-    expect(fetch).toHaveBeenCalledWith(expect.stringMatching(/\/documents\//));
+    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/documents\//));
   });
 
   // 9. Testing retrieval of Document by name (URL encode edge case)
@@ -558,7 +573,7 @@ describe('API client', () => {
     const file = "a b&c.doc";
     mockFetch("CONTENT");
     await getDocumentByName(file);
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/\/documents\/a%20b%26c.doc/)
     );
   });
@@ -575,7 +590,7 @@ describe('API client', () => {
     mockFetch(ret);
     const result = await updateKanbanCard(card);
     expect(result).toEqual(ret);
-    expect(fetch).toHaveBeenCalledWith(
+    expect(fetchMock()).toHaveBeenCalledWith(
       expect.stringMatching(/\/kanban\/update/),
       expect.objectContaining({ method: 'POST', body: JSON.stringify(card) })
     );
