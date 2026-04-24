@@ -8,11 +8,10 @@ from sqlalchemy.orm import Session
 from exceptions.common import ActivityNotFound
 from model.activity import Activity
 from prompts.activity_extraction import ACTIVITY_EXTRACTION_PROMPT
+from repository import acitvity_repository
 from schemas.activity import ActivityCreateModel
 from utils.file_loader import load_file
 from utils.llm_client import LlamaClient
-
-from repository import acitvity_repository
 
 
 def extract_activities(filepath: str) -> list[ActivityCreateModel]:
@@ -41,9 +40,10 @@ def save_activities_to_db(activities: list[ActivityCreateModel], db: Session) ->
         db.refresh(activity)
     return db_activities
 
+
 def get_all_activities(db: Session) -> list[Activity]:
     """Retrieve all activities from the database.
-    
+
     Args:
         db (Session): The database session.
 
@@ -52,13 +52,14 @@ def get_all_activities(db: Session) -> list[Activity]:
     """
     return acitvity_repository.get_all(db)
 
+
 def get_activity(db: Session, activity_id: int) -> Activity:
     """Retrieve an activity by its ID.
-    
+
     Args:
         db (Session): The database session.
         activity_id (int): The ID of the activity to retrieve.
-    
+
     Returns:
         Activity: The activity with the specified ID.
 
@@ -69,8 +70,9 @@ def get_activity(db: Session, activity_id: int) -> Activity:
 
     if activity is None:
         raise ActivityNotFound()
-    
+
     return activity
+
 
 def delete_activity(db: Session, activity_id: int) -> bool:
     """Delete an activity by its ID.
@@ -78,13 +80,16 @@ def delete_activity(db: Session, activity_id: int) -> bool:
     Args:
         db (Session): The database session.
         activity_id (int): The ID of the activity to delete.
-    
+
     Returns:
         bool: True if an activity was deleted, False otherwise.
     """
     return acitvity_repository.delete(db, activity_id)
 
-def update_activity(db: Session, activity_id: int, updated_activity: ActivityCreateModel) -> Activity:
+
+def update_activity(
+    db: Session, activity_id: int, updated_activity: ActivityCreateModel
+) -> Activity:
     """Update an activity by its ID.
 
     Args:
@@ -102,5 +107,5 @@ def update_activity(db: Session, activity_id: int, updated_activity: ActivityCre
 
     if activity is None:
         raise ActivityNotFound()
-    
+
     return activity
