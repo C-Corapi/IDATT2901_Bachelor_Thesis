@@ -81,15 +81,15 @@ def delete_epic(db: Session, epic_id: int):
     """
     return epic_repository.delete(db, epic_id)
 
-def update_epic(db: Session, epic_id: int, updated_epic: EpicCreateModel):
+def update_epic(db: Session, epic_id: int, updated_epic: EpicCreateModel) -> Epic:
     """Updates an epic by its ID.
     
-    Args;
+    Args:
         db (Session): The database session.
         epic_id (int): The ID of the epic to update.
 
     Returns:
-        The updated epic.
+        Epic: The updated epic.
     
     Raises:
         EpicNotFound: If no peic with the specified ID is found.
