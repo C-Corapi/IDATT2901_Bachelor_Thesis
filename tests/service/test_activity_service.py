@@ -4,15 +4,12 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from exceptions.common import ActivityNotFound
 from model.activity import Activity
 from schemas.activity import ActivityCreateModel
 from service import activity_service
 from service.activity_service import extract_activities, save_activities_to_db
-from utils.database import Base
 
 
 def test_extract_activities_should_return_list_of_activities():
@@ -72,21 +69,6 @@ def test_extract_activities_should_handle_empty_response():
 
         assert isinstance(result, list)
         assert len(result) == 0
-
-
-@pytest.fixture
-def db_session():
-    """Fixture for creating a database session for testing."""
-    engine = create_engine("sqlite:///:memory:")
-
-    Base.metadata.create_all(engine)
-
-    TestingSession = sessionmaker(bind=engine)
-    session = TestingSession()
-
-    yield session
-
-    session.close()
 
 
 def test_save_activities_to_db_should_save_activities_to_database(db_session):

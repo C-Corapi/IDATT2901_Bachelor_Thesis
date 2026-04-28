@@ -4,15 +4,12 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from exceptions.common import DecisionNotFound
 from model.decision import Decision
 from schemas.decision import DecisionCreateModel
 from service import decision_service
 from service.decision_service import extract_decisions, save_decisions_to_db
-from utils.database import Base
 
 
 def test_extract_decisions_should_return_list_of_decisions():
@@ -78,21 +75,6 @@ def test_extract_decisions_should_handle_empty_response():
 
         assert isinstance(result, list)
         assert len(result) == 0
-
-
-@pytest.fixture
-def db_session():
-    """Fixture for creating a temporary database session for testing."""
-    engine = create_engine("sqlite:///:memory:")
-
-    Base.metadata.create_all(engine)
-
-    TestingSession = sessionmaker(bind=engine)
-    session = TestingSession()
-
-    yield session
-
-    session.close()
 
 
 def test_save_decisions_to_db_should_save_decisions_to_database(db_session):

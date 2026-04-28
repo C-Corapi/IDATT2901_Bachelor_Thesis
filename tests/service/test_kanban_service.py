@@ -1,31 +1,12 @@
 """Tests for the kanban service."""
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from enums.kanban_status import KanbanStatus
 from model.task import Task
 from schemas.kanban import KanbanCard
 from service import kanban_service
 from service.kanban_service import build_kanban_board
-from utils.database import Base
-
-
-@pytest.fixture
-def db_session():
-    """Fixture to create a new database session for each test."""
-    engine = create_engine("sqlite:///:memory:")
-
-    Base.metadata.create_all(engine)
-
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-    yield session
-
-    session.close()
-
 
 def test_build_empty_board(db_session):
     """Test that build_kanban_board returns an empty board when there is no metadata."""

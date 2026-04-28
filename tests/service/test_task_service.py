@@ -4,15 +4,12 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from exceptions.common import TaskNotFound
 from model.task import Task
 from schemas.task import TaskCreateModel
 from service import task_service
 from service.task_service import extract_tasks, save_tasks_to_db
-from utils.database import Base
 
 
 def test_extract_tasks_should_return_list_of_tasks():
@@ -72,21 +69,6 @@ def test_extract_tasks_should_handle_empty_response():
 
         assert isinstance(result, list)
         assert len(result) == 0
-
-
-@pytest.fixture
-def db_session():
-    """Fixture to create a new database session for each test."""
-    engine = create_engine("sqlite:///:memory:")
-
-    Base.metadata.create_all(engine)
-
-    TestingSession = sessionmaker(bind=engine)
-    session = TestingSession()
-
-    yield session
-
-    session.close()
 
 
 def test_save_tasks_to_db(db_session):

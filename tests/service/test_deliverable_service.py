@@ -4,15 +4,12 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from exceptions.common import DeliverableNotFound
 from model.deliverable import Deliverable
 from schemas.deliverable import DeliverableCreateModel
 from service import deliverable_service
 from service.deliverable_service import extract_deliverables, save_deliverables_to_db
-from utils.database import Base
 
 
 def test_extract_deliverables_should_return_list_of_deliverables():
@@ -72,21 +69,6 @@ def test_extract_deliverables_should_handle_empty_response():
 
         assert isinstance(result, list)
         assert len(result) == 0
-
-
-@pytest.fixture
-def db_session():
-    """Fixture for creating a temporary database session for testing."""
-    engine = create_engine("sqlite:///:memory:")
-
-    Base.metadata.create_all(engine)
-
-    TestingSession = sessionmaker(bind=engine)
-    session = TestingSession()
-
-    yield session
-
-    session.close()
 
 
 def test_save_deliverables_to_db_should_save_deliverables(db_session):

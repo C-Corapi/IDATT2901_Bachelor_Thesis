@@ -4,15 +4,12 @@ import json
 from unittest.mock import MagicMock, patch
 
 import pytest
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 from exceptions.common import EpicNotFound
 from model.epic import Epic
 from schemas.epic import EpicCreateModel
 from service import epic_service
 from service.epic_service import extract_epics, save_epics_to_db
-from utils.database import Base
 
 
 def test_extract_epics_should_return_list_of_epics():
@@ -73,21 +70,6 @@ def test_extract_epics_should_handle_empty_response():
 
         assert isinstance(result, list)
         assert len(result) == 0
-
-
-@pytest.fixture
-def db_session():
-    """Test fixture for creating a database session for testing."""
-    engine = create_engine("sqlite:///:memory:")
-
-    Base.metadata.create_all(engine)
-
-    TestingSession = sessionmaker(bind=engine)
-    session = TestingSession()
-
-    yield session
-
-    session.close()
 
 
 def test_save_epics_to_db(db_session):
