@@ -12,7 +12,6 @@ from schemas.kanban import KanbanBoard, KanbanCard
 
 def build_kanban_board(db: Session) -> KanbanBoard:
     """Builds the Kanban board data structure."""
-    print("Building Kanban board...")
     activities: list[Activity] = db.query(Activity).all()
     decisions: list[Decision] = db.query(Decision).all()
     deliverables: list[Deliverable] = db.query(Deliverable).all()
