@@ -44,7 +44,7 @@ def create_deliverable(deliverable: DeliverableCreateModel, db: Session = Depend
 def get_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # type: ignore[assignment]
     """Retrieve a specific deliverable by its ID."""
     try:
-        return deliverable_service.delete_deliverable(db, deliverable_id)
+        return deliverable_service.get_deliverable(db, deliverable_id)
     except DeliverableNotFound:
         raise HTTPException(status_code=404, detail="Deliverable not found")
 
@@ -55,7 +55,7 @@ def delete_deliverable(deliverable_id: int, db: Session = Depends(get_db)):  # t
     deleted: bool = deliverable_service.delete_deliverable(db, deliverable_id)
 
     if not deleted:
-        raise HTTPException(status_code=404, detail="DeliverableNotFound")
+        raise HTTPException(status_code=404, detail="Deliverable not found")
 
 
 @router.put("/{deliverable_id}", response_model=DeliverableResponseModel)
@@ -63,11 +63,7 @@ def update_deliverable(
     deliverable_id: int, updated_deliverable: DeliverableCreateModel, db: Session = Depends(get_db)  # type: ignore[assignment]
 ):  # type: ignore[assignment]
     """Update a specific deliverable by its ID."""
-    deliverable: Deliverable | None = deliverable_service.update_deliverable(
-        db, deliverable_id, updated_deliverable
-    )
-
-    if deliverable is None:
+    try:
+        return deliverable_service.update_deliverable(db, deliverable_id, updated_deliverable)
+    except DeliverableNotFound:
         raise HTTPException(status_code=404, detail="Deliverable not found")
-
-    return deliverable

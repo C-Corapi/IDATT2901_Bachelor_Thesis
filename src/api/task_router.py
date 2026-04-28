@@ -62,6 +62,6 @@ def update_task(
 ):  # type: ignore[assignment]
     """Update a specific task by its ID."""
     try:
-        task: Task | None = task_service.update_task(db, task_id, updated_task)
+        return task_service.update_task(db, task_id, updated_task)
     except TaskNotFound:
         raise HTTPException(status_code=404, detail="Task not found")

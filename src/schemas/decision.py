@@ -11,12 +11,12 @@ class DecisionBaseModel(BaseModel):
     """Base Pydantic model for Decision."""
 
     title: str
-    description: str
-    alternatives: Optional[str] = None
-    nature: Optional[str] = None
-    reach: Optional[str] = None
-    deadline: Optional[str] = None
-    owner: Optional[str] = None
+    description: str | None = None
+    alternatives: str | None = None
+    nature: str | None = None
+    reach: str | None = None
+    deadline: str | None = None
+    owner: str | None = None
 
 
 class DecisionCreateModel(DecisionBaseModel):
@@ -29,6 +29,6 @@ class DecisionResponseModel(DecisionBaseModel):
     """Pydantic model for Decision API responses."""
 
     id: int
-    kanban_status: Optional[KanbanStatus]
+    kanban_status: KanbanStatus
 
     model_config = ConfigDict(from_attributes=True)
