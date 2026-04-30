@@ -109,18 +109,12 @@ def test_get_all_tasks_should_return_list_of_tasks(monkeypatch):
     """Test that get_all_tasks returns a list of tasks."""
     fake_db = MagicMock()
 
-    fake_tasks = [
-        Task(id=1, title="task1"),
-        Task(id=2, title="task2")
-    ]
+    fake_tasks = [Task(id=1, title="task1"), Task(id=2, title="task2")]
 
     def mock_get_all(db):
         return fake_tasks
-    
-    monkeypatch.setattr(
-        "src.service.task_service.task_repository.get_all",
-        mock_get_all
-    )
+
+    monkeypatch.setattr("src.service.task_service.task_repository.get_all", mock_get_all)
 
     result = task_service.get_all_tasks(fake_db)
 
@@ -136,14 +130,12 @@ def test_get_task_should_return_task_with_id_if_exists(monkeypatch):
     def mock_get_task(db, task_id):
         return fake_task
 
-    monkeypatch.setattr(
-        "src.service.task_service.task_repository.get_by_id",
-        mock_get_task
-    )
+    monkeypatch.setattr("src.service.task_service.task_repository.get_by_id", mock_get_task)
 
     result = task_service.get_task(fake_db, 1)
 
     assert result == fake_task
+
 
 def test_get_task_should_raise_on_invalid_id(monkeypatch):
     """Test that get task raises when repository returns None."""
@@ -153,16 +145,12 @@ def test_get_task_should_raise_on_invalid_id(monkeypatch):
 
     def mock_get_task(db, task_id):
         return None
-    
-    monkeypatch.setattr(
-        task_service.task_repository,
-        "get_by_id",
-        mock_get_task
-    )
+
+    monkeypatch.setattr(task_service.task_repository, "get_by_id", mock_get_task)
 
     with pytest.raises(TaskNotFound):
         task_service.get_task(fake_db, fake_id)
-    
+
 
 def test_delete_task_should_return_true_when_deleted(monkeypatch):
     """Tests that delete_task returns True after deleting an task."""
@@ -171,15 +159,12 @@ def test_delete_task_should_return_true_when_deleted(monkeypatch):
     def mock_delete(db, task_id):
         return True
 
-    monkeypatch.setattr(
-        task_service.task_repository,
-        "delete",
-        mock_delete
-    )
+    monkeypatch.setattr(task_service.task_repository, "delete", mock_delete)
 
     result = task_service.delete_task(fake_db, 1)
 
     assert result is True
+
 
 def test_delete_task_should_return_false_when_not_found(monkeypatch):
     """Tests that delete_task returns false when given invalid ID."""
@@ -188,15 +173,12 @@ def test_delete_task_should_return_false_when_not_found(monkeypatch):
     def mock_delete(db, task_id):
         return False
 
-    monkeypatch.setattr(
-        task_service.task_repository,
-        "delete",
-        mock_delete
-    )
+    monkeypatch.setattr(task_service.task_repository, "delete", mock_delete)
 
     result = task_service.delete_task(fake_db, 999)
 
     assert result is False
+
 
 def test_update_task_should_return_updated_task_when_updated(monkeypatch):
     """Tests that update_task returns the updated task."""
@@ -211,12 +193,8 @@ def test_update_task_should_return_updated_task_when_updated(monkeypatch):
         assert id == task_id
         assert update == updated_input
         return updated_task
-    
-    monkeypatch.setattr(
-        task_service.task_repository,
-        "update",
-        mock_update
-    )
+
+    monkeypatch.setattr(task_service.task_repository, "update", mock_update)
 
     result = task_service.update_task(fake_db, task_id, updated_input)
 
@@ -224,7 +202,7 @@ def test_update_task_should_return_updated_task_when_updated(monkeypatch):
 
 
 def test_update_task_should_raise_when_not_found(monkeypatch):
-    """Test that update_task raises exception when given invalid ID"""
+    """Test that update_task raises exception when given invalid ID."""
     fake_db = MagicMock()
     task_id = 999
 
@@ -233,12 +211,7 @@ def test_update_task_should_raise_when_not_found(monkeypatch):
     def mock_update(db, id, updated):
         return None
 
-    monkeypatch.setattr(
-        task_service.task_repository,
-        "update",
-        mock_update
-    )
+    monkeypatch.setattr(task_service.task_repository, "update", mock_update)
 
     with pytest.raises(TaskNotFound):
         task_service.update_task(fake_db, task_id, updated_input)
-

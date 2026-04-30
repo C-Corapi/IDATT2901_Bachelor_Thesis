@@ -1,3 +1,5 @@
+"""Pytest configuration file providing database fixtures for testing."""
+
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker

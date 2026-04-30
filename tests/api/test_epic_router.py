@@ -1,3 +1,5 @@
+"""Tests for epic router."""
+
 from unittest.mock import patch
 
 from exceptions.common import EpicNotFound
@@ -21,6 +23,7 @@ def test_get_all_epics(client):
     assert data[0]["title"] == "D1"
     assert data[0]["kanban_status"] == "todo"
 
+
 def test_create_epic(client):
     """Test create epic responds 201."""
     input_data = {"title": "New epic"}
@@ -33,11 +36,12 @@ def test_create_epic(client):
         response = client.post("/epics/", json=input_data)
 
     assert response.status_code == 201
-    
+
     data = response.json()
 
     assert data["title"] == "New epic"
     assert data["kanban_status"] == "backlog"
+
 
 def test_get_epic_success(client):
     """Test get epic success responds 200."""
@@ -50,12 +54,13 @@ def test_get_epic_success(client):
         response = client.get("/epics/1")
 
     assert response.status_code == 200
-    
+
     data = response.json()
 
     assert data["id"] == 1
     assert data["title"] == "Test"
     assert data["kanban_status"] == "backlog"
+
 
 def test_get_epic_not_found(client):
     """Test epic not found responds 404."""
@@ -68,8 +73,9 @@ def test_get_epic_not_found(client):
     assert response.status_code == 404
     assert response.json()["detail"] == "Epic not found"
 
+
 def test_delete_epic_success(client):
-    """Test delete epic success responds 204"""
+    """Test delete epic success responds 204."""
     with patch(
         "api.epic_router.epic_service.delete_epic",
         return_value=True,
@@ -78,6 +84,7 @@ def test_delete_epic_success(client):
 
     assert response.status_code == 204
     assert response.content == b""
+
 
 def test_delete_epic_not_found(client):
     """Test delete epic not found responds 404."""
@@ -89,6 +96,7 @@ def test_delete_epic_not_found(client):
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Epic not found"
+
 
 def test_update_epic_success(client):
     """Test update epic success responds 200."""
@@ -102,11 +110,12 @@ def test_update_epic_success(client):
         response = client.put("/epics/1", json=payload)
 
     assert response.status_code == 200
-    
+
     data = response.json()
 
     assert data["id"] == 1
     assert data["title"] == "Updated"
+
 
 def test_update_epic_not_found(client):
     """Test that update epic returns 404 when not found."""

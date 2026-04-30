@@ -1,7 +1,5 @@
 """Pydantic models for Deliverable API requests and responses."""
 
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict
 
 from enums.kanban_status import KanbanStatus

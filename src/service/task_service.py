@@ -38,20 +38,22 @@ def save_tasks_to_db(tasks: list[TaskCreateModel], db: Session) -> list[Task]:
         db.refresh(task)
     return db_tasks
 
+
 def get_all_tasks(db: Session) -> list[Task]:
     """Retrieve all tasks from the database.
-    
+
     Args:
         db (Session): The database session.
-    
+
     Returns:
         A list of all the tasks in the database.
     """
     return task_repository.get_all(db)
 
+
 def get_task(db: Session, task_id: int) -> Task:
     """Retrieves a task by its ID.
-    
+
     Args:
         db (Session): The database session.
         task_id (int): The ID of the task to retrieve.
@@ -66,12 +68,13 @@ def get_task(db: Session, task_id: int) -> Task:
 
     if task is None:
         raise TaskNotFound()
-    
+
     return task
+
 
 def delete_task(db: Session, task_id: int) -> bool:
     """Deletes a task by its ID.
-    
+
     Args:
         db (Session): The database session.
         task_id (int): The ID of the task to delete.
@@ -81,17 +84,18 @@ def delete_task(db: Session, task_id: int) -> bool:
     """
     return task_repository.delete(db, task_id)
 
+
 def update_task(db: Session, task_id: int, updated_task: TaskCreateModel) -> Task:
     """Updates a task.
-    
+
     Args:
         db (Session): The database session.
         task_id: The ID of the task to update.
         updated_task: The updated task data.
-    
+
     Returns:
         Task: The updated task.
-    
+
     Raises:
         TaskNotFound: If no task with the specified ID is found.
     """
@@ -99,5 +103,5 @@ def update_task(db: Session, task_id: int, updated_task: TaskCreateModel) -> Tas
 
     if task is None:
         raise TaskNotFound()
-    
+
     return task

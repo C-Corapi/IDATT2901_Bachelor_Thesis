@@ -37,9 +37,10 @@ def save_epics_to_db(epics: list[EpicCreateModel], db: Session) -> list[Epic]:
         db.refresh(epic)
     return db_epics
 
+
 def get_all_epics(db: Session) -> list[Epic]:
     """Retrives all epics from the database.
-    
+
     Args:
         db (Session): The database session.
 
@@ -48,9 +49,10 @@ def get_all_epics(db: Session) -> list[Epic]:
     """
     return epic_repository.get_all(db)
 
+
 def get_epic(db: Session, epic_id: int) -> Epic:
     """Retrieve an epic by its ID.
-    
+
     Args:
         db (Session): The database session.
         epic_id (int): The ID of the epic to retrieve.
@@ -65,13 +67,13 @@ def get_epic(db: Session, epic_id: int) -> Epic:
 
     if epic is None:
         raise EpicNotFound()
-    
+
     return epic
 
 
 def delete_epic(db: Session, epic_id: int):
     """Deletes an epic by its id.
-    
+
     Args:
         db (Session): The database session.
         epic_id (int): The ID of the epic to delete.
@@ -81,16 +83,18 @@ def delete_epic(db: Session, epic_id: int):
     """
     return epic_repository.delete(db, epic_id)
 
+
 def update_epic(db: Session, epic_id: int, updated_epic: EpicCreateModel) -> Epic:
     """Updates an epic by its ID.
-    
+
     Args:
         db (Session): The database session.
         epic_id (int): The ID of the epic to update.
+        updated_epic (EpicCreateModel): The updated epic data.
 
     Returns:
         Epic: The updated epic.
-    
+
     Raises:
         EpicNotFound: If no peic with the specified ID is found.
     """
@@ -98,5 +102,5 @@ def update_epic(db: Session, epic_id: int, updated_epic: EpicCreateModel) -> Epi
 
     if epic is None:
         raise EpicNotFound()
-    
+
     return epic

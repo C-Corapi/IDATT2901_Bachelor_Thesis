@@ -8,6 +8,7 @@ from schemas.kanban import KanbanCard
 from service import kanban_service
 from service.kanban_service import build_kanban_board
 
+
 def test_build_empty_board(db_session):
     """Test that build_kanban_board returns an empty board when there is no metadata."""
     board = build_kanban_board(db_session)
@@ -49,6 +50,7 @@ def test_build_board_with_tasks(db_session):
     assert len(board.done) == 1
     assert board.done[0].title == "Task 3"
 
+
 def test_update_task_status(db_session):
     """Test updating card status in DB."""
     task = Task(title="Task", kanban_status=KanbanStatus.TODO)
@@ -62,12 +64,14 @@ def test_update_task_status(db_session):
     updated = db_session.query(Task).first()
     assert updated.kanban_status == "done"
 
+
 def test_update_unknown_type_raises(db_session):
-    """Test that invalid metadata type raises"""
+    """Test that invalid metadata type raises."""
     card = KanbanCard(id=1, type="Unknown", title="X", kanban_status=KanbanStatus.TODO)
 
     with pytest.raises(ValueError, match="Unknown card type"):
         kanban_service.update_kanban_card_in_db(card, db_session)
+
 
 def test_update_nonexistent_element_raises(db_session):
     """Test that updating a invalid metadata ID raises."""
@@ -75,6 +79,7 @@ def test_update_nonexistent_element_raises(db_session):
 
     with pytest.raises(ValueError, match="not found"):
         kanban_service.update_kanban_card_in_db(card, db_session)
+
 
 def test_map_task_to_card():
     """Test mapping a metadata type to a card."""

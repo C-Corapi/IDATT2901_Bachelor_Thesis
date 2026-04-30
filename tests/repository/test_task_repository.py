@@ -1,11 +1,15 @@
+"""Tests for task repository."""
+
 from model.task import Task
 from repository import task_repository
 from schemas.task import TaskCreateModel
+
 
 def test_get_all_empty(db_session):
     """Test that get_all returns empty list if DB is table is empty."""
     result = task_repository.get_all(db_session)
     assert result == []
+
 
 def test_get_all_with_data(db_session):
     """Test that get_all retrieves the stored tasks."""
@@ -20,6 +24,7 @@ def test_get_all_with_data(db_session):
     assert len(result) == 2
     assert {a.title for a in result} == {"A1", "A2"}
 
+
 def test_get_by_id_found(db_session):
     """Test that get_by_id retrieves the task."""
     task = Task(title="Test task")
@@ -32,10 +37,12 @@ def test_get_by_id_found(db_session):
     assert result.id == task.id
     assert result.title == "Test task"
 
+
 def test_get_by_id_not_found(db_session):
     """Test that None is returned on invalid ID."""
     result = task_repository.get_by_id(db_session, 999)
     assert result is None
+
 
 def test_add_task(db_session):
     """Test that new task is stored."""
@@ -51,6 +58,7 @@ def test_add_task(db_session):
     assert db_task is not None
     assert db_task.title == "New task"
 
+
 def test_delete_existing_task(db_session):
     """Test that delete returns True on delete and it deletes the task."""
     task = Task(title="To Delete")
@@ -61,6 +69,7 @@ def test_delete_existing_task(db_session):
 
     assert result is True
     assert db_session.query(Task).count() == 0
+
 
 def test_delete_nonexistent_task(db_session):
     """Test that delete returns False on invalid ID."""
@@ -74,7 +83,7 @@ def test_update_task(db_session):
     db_session.add(task)
     db_session.commit()
 
-    updated_data = TaskCreateModel(title="Updated Title",  description="Description")
+    updated_data = TaskCreateModel(title="Updated Title", description="Description")
 
     result = task_repository.update(db_session, task.id, updated_data)
 
@@ -84,6 +93,7 @@ def test_update_task(db_session):
     db_task = db_session.query(Task).first()
     assert db_task.title == "Updated Title"
 
+
 def test_update_nonexistent_task(db_session):
     """Test that update returns none if no task matches the ID."""
     updated_data = TaskCreateModel(title="Updated", description="Description")
@@ -92,16 +102,14 @@ def test_update_nonexistent_task(db_session):
 
     assert result is None
 
+
 def test_update_multiple_fields(db_session):
     """Test that all fields are updated."""
     task = Task(title="Old", description="Old desc")
     db_session.add(task)
     db_session.commit()
 
-    updated_data = TaskCreateModel(
-        title="New",
-        description="New desc"
-    )
+    updated_data = TaskCreateModel(title="New", description="New desc")
 
     result = task_repository.update(db_session, task.id, updated_data)
 

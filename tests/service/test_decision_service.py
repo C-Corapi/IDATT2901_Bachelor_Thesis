@@ -109,22 +109,17 @@ def test_save_decisions_to_db_should_save_decisions_to_database(db_session):
     stored = db_session.query(Decision).all()
     assert len(stored) == 2
 
+
 def test_get_all_decisions_should_return_list_of_decisions(monkeypatch):
     """Test that get_all_decisions returns a list of decisions."""
     fake_db = MagicMock()
 
-    fake_decisions = [
-        Decision(id=1, title="decision1"),
-        Decision(id=2, title="decision2")
-    ]
+    fake_decisions = [Decision(id=1, title="decision1"), Decision(id=2, title="decision2")]
 
     def mock_get_all(db):
         return fake_decisions
-    
-    monkeypatch.setattr(
-        "src.service.decision_service.decision_repository.get_all",
-        mock_get_all
-    )
+
+    monkeypatch.setattr("src.service.decision_service.decision_repository.get_all", mock_get_all)
 
     result = decision_service.get_all_decisions(fake_db)
 
@@ -141,13 +136,13 @@ def test_get_decision_should_return_decision_with_id_if_exists(monkeypatch):
         return fake_decision
 
     monkeypatch.setattr(
-        "src.service.decision_service.decision_repository.get_by_id",
-        mock_get_decision
+        "src.service.decision_service.decision_repository.get_by_id", mock_get_decision
     )
 
     result = decision_service.get_decision(fake_db, 1)
 
     assert result == fake_decision
+
 
 def test_get_decision_should_raise_on_invalid_id(monkeypatch):
     """Test that get decision raises when repository returns None."""
@@ -157,16 +152,12 @@ def test_get_decision_should_raise_on_invalid_id(monkeypatch):
 
     def mock_get_decision(db, decision_id):
         return None
-    
-    monkeypatch.setattr(
-        decision_service.decision_repository,
-        "get_by_id",
-        mock_get_decision
-    )
+
+    monkeypatch.setattr(decision_service.decision_repository, "get_by_id", mock_get_decision)
 
     with pytest.raises(DecisionNotFound):
         decision_service.get_decision(fake_db, fake_id)
-    
+
 
 def test_delete_decision_should_return_true_when_deleted(monkeypatch):
     """Tests that delete_decision returns True after deleting an decision."""
@@ -175,15 +166,12 @@ def test_delete_decision_should_return_true_when_deleted(monkeypatch):
     def mock_delete(db, decision_id):
         return True
 
-    monkeypatch.setattr(
-        decision_service.decision_repository,
-        "delete",
-        mock_delete
-    )
+    monkeypatch.setattr(decision_service.decision_repository, "delete", mock_delete)
 
     result = decision_service.delete_decision(fake_db, 1)
 
     assert result is True
+
 
 def test_delete_decision_should_return_false_when_not_found(monkeypatch):
     """Tests that delete_decision returns false when given invalid ID."""
@@ -192,15 +180,12 @@ def test_delete_decision_should_return_false_when_not_found(monkeypatch):
     def mock_delete(db, decision_id):
         return False
 
-    monkeypatch.setattr(
-        decision_service.decision_repository,
-        "delete",
-        mock_delete
-    )
+    monkeypatch.setattr(decision_service.decision_repository, "delete", mock_delete)
 
     result = decision_service.delete_decision(fake_db, 999)
 
     assert result is False
+
 
 def test_update_decision_should_return_updated_decision_when_updated(monkeypatch):
     """Tests that update_decision returns the updated decision."""
@@ -215,12 +200,8 @@ def test_update_decision_should_return_updated_decision_when_updated(monkeypatch
         assert id == decision_id
         assert update == updated_input
         return updated_decision
-    
-    monkeypatch.setattr(
-        decision_service.decision_repository,
-        "update",
-        mock_update
-    )
+
+    monkeypatch.setattr(decision_service.decision_repository, "update", mock_update)
 
     result = decision_service.update_decision(fake_db, decision_id, updated_input)
 
@@ -228,7 +209,7 @@ def test_update_decision_should_return_updated_decision_when_updated(monkeypatch
 
 
 def test_update_decision_should_raise_when_not_found(monkeypatch):
-    """Test that update_decision raises exception when given invalid ID"""
+    """Test that update_decision raises exception when given invalid ID."""
     fake_db = MagicMock()
     decision_id = 999
 
@@ -237,12 +218,7 @@ def test_update_decision_should_raise_when_not_found(monkeypatch):
     def mock_update(db, id, updated):
         return None
 
-    monkeypatch.setattr(
-        decision_service.decision_repository,
-        "update",
-        mock_update
-    )
+    monkeypatch.setattr(decision_service.decision_repository, "update", mock_update)
 
     with pytest.raises(DecisionNotFound):
         decision_service.update_decision(fake_db, decision_id, updated_input)
-

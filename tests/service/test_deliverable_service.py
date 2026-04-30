@@ -101,21 +101,21 @@ def test_save_deliverables_to_db_should_save_deliverables(db_session):
     stored = db_session.query(Deliverable).all()
     assert len(stored) == 2
 
+
 def test_get_all_deliverables_should_return_list_of_deliverables(monkeypatch):
     """Test that get_all_deliverables returns a list of deliverables."""
     fake_db = MagicMock()
 
     fake_deliverables = [
         Deliverable(id=1, title="deliverable1"),
-        Deliverable(id=2, title="deliverable2")
+        Deliverable(id=2, title="deliverable2"),
     ]
 
     def mock_get_all(db):
         return fake_deliverables
-    
+
     monkeypatch.setattr(
-        "src.service.deliverable_service.deliverable_repository.get_all",
-        mock_get_all
+        "src.service.deliverable_service.deliverable_repository.get_all", mock_get_all
     )
 
     result = deliverable_service.get_all_deliverables(fake_db)
@@ -133,13 +133,13 @@ def test_get_deliverable_should_return_deliverable_with_id_if_exists(monkeypatch
         return fake_deliverable
 
     monkeypatch.setattr(
-        "src.service.deliverable_service.deliverable_repository.get_by_id",
-        mock_get_deliverable
+        "src.service.deliverable_service.deliverable_repository.get_by_id", mock_get_deliverable
     )
 
     result = deliverable_service.get_deliverable(fake_db, 1)
 
     assert result == fake_deliverable
+
 
 def test_get_deliverable_should_raise_on_invalid_id(monkeypatch):
     """Test that get deliverable raises when repository returns None."""
@@ -149,16 +149,14 @@ def test_get_deliverable_should_raise_on_invalid_id(monkeypatch):
 
     def mock_get_deliverable(db, deliverable_id):
         return None
-    
+
     monkeypatch.setattr(
-        deliverable_service.deliverable_repository,
-        "get_by_id",
-        mock_get_deliverable
+        deliverable_service.deliverable_repository, "get_by_id", mock_get_deliverable
     )
 
     with pytest.raises(DeliverableNotFound):
         deliverable_service.get_deliverable(fake_db, fake_id)
-    
+
 
 def test_delete_deliverable_should_return_true_when_deleted(monkeypatch):
     """Tests that delete_deliverable returns True after deleting an deliverable."""
@@ -167,15 +165,12 @@ def test_delete_deliverable_should_return_true_when_deleted(monkeypatch):
     def mock_delete(db, deliverable_id):
         return True
 
-    monkeypatch.setattr(
-        deliverable_service.deliverable_repository,
-        "delete",
-        mock_delete
-    )
+    monkeypatch.setattr(deliverable_service.deliverable_repository, "delete", mock_delete)
 
     result = deliverable_service.delete_deliverable(fake_db, 1)
 
     assert result is True
+
 
 def test_delete_deliverable_should_return_false_when_not_found(monkeypatch):
     """Tests that delete_deliverable returns false when given invalid ID."""
@@ -184,15 +179,12 @@ def test_delete_deliverable_should_return_false_when_not_found(monkeypatch):
     def mock_delete(db, deliverable_id):
         return False
 
-    monkeypatch.setattr(
-        deliverable_service.deliverable_repository,
-        "delete",
-        mock_delete
-    )
+    monkeypatch.setattr(deliverable_service.deliverable_repository, "delete", mock_delete)
 
     result = deliverable_service.delete_deliverable(fake_db, 999)
 
     assert result is False
+
 
 def test_update_deliverable_should_return_updated_deliverable_when_updated(monkeypatch):
     """Tests that update_deliverable returns the updated deliverable."""
@@ -207,12 +199,8 @@ def test_update_deliverable_should_return_updated_deliverable_when_updated(monke
         assert id == deliverable_id
         assert update == updated_input
         return updated_deliverable
-    
-    monkeypatch.setattr(
-        deliverable_service.deliverable_repository,
-        "update",
-        mock_update
-    )
+
+    monkeypatch.setattr(deliverable_service.deliverable_repository, "update", mock_update)
 
     result = deliverable_service.update_deliverable(fake_db, deliverable_id, updated_input)
 
@@ -220,7 +208,7 @@ def test_update_deliverable_should_return_updated_deliverable_when_updated(monke
 
 
 def test_update_deliverable_should_raise_when_not_found(monkeypatch):
-    """Test that update_deliverable raises exception when given invalid ID"""
+    """Test that update_deliverable raises exception when given invalid ID."""
     fake_db = MagicMock()
     deliverable_id = 999
 
@@ -229,12 +217,7 @@ def test_update_deliverable_should_raise_when_not_found(monkeypatch):
     def mock_update(db, id, updated):
         return None
 
-    monkeypatch.setattr(
-        deliverable_service.deliverable_repository,
-        "update",
-        mock_update
-    )
+    monkeypatch.setattr(deliverable_service.deliverable_repository, "update", mock_update)
 
     with pytest.raises(DeliverableNotFound):
         deliverable_service.update_deliverable(fake_db, deliverable_id, updated_input)
-

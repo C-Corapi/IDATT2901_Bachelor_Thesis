@@ -1,3 +1,5 @@
+"""Test for task router."""
+
 from unittest.mock import patch
 
 from exceptions.common import TaskNotFound
@@ -21,6 +23,7 @@ def test_get_all_tasks(client):
     assert data[0]["title"] == "D1"
     assert data[0]["kanban_status"] == "todo"
 
+
 def test_create_task(client):
     """Test create task responds 201."""
     input_data = {"title": "New task"}
@@ -33,11 +36,12 @@ def test_create_task(client):
         response = client.post("/tasks/", json=input_data)
 
     assert response.status_code == 201
-    
+
     data = response.json()
 
     assert data["title"] == "New task"
     assert data["kanban_status"] == "backlog"
+
 
 def test_get_task_success(client):
     """Test get task success responds 200."""
@@ -50,12 +54,13 @@ def test_get_task_success(client):
         response = client.get("/tasks/1")
 
     assert response.status_code == 200
-    
+
     data = response.json()
 
     assert data["id"] == 1
     assert data["title"] == "Test"
     assert data["kanban_status"] == "backlog"
+
 
 def test_get_task_not_found(client):
     """Test task not found responds 404."""
@@ -68,8 +73,9 @@ def test_get_task_not_found(client):
     assert response.status_code == 404
     assert response.json()["detail"] == "Task not found"
 
+
 def test_delete_task_success(client):
-    """Test delete task success responds 204"""
+    """Test delete task success responds 204."""
     with patch(
         "api.task_router.task_service.delete_task",
         return_value=True,
@@ -78,6 +84,7 @@ def test_delete_task_success(client):
 
     assert response.status_code == 204
     assert response.content == b""
+
 
 def test_delete_task_not_found(client):
     """Test delete task not found responds 404."""
@@ -89,6 +96,7 @@ def test_delete_task_not_found(client):
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Task not found"
+
 
 def test_update_task_success(client):
     """Test update task success responds 200."""
@@ -102,11 +110,12 @@ def test_update_task_success(client):
         response = client.put("/tasks/1", json=payload)
 
     assert response.status_code == 200
-    
+
     data = response.json()
 
     assert data["id"] == 1
     assert data["title"] == "Updated"
+
 
 def test_update_task_not_found(client):
     """Test that update task returns 404 when not found."""

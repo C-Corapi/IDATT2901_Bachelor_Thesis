@@ -1,3 +1,5 @@
+"""Tests for activity router."""
+
 from unittest.mock import patch
 
 from exceptions.common import ActivityNotFound
@@ -21,6 +23,7 @@ def test_get_all_activities(client):
     assert data[0]["title"] == "A1"
     assert data[0]["kanban_status"] == "todo"
 
+
 def test_create_activity(client):
     """Test create activity responds 201."""
     input_data = {"title": "New Activity"}
@@ -33,11 +36,12 @@ def test_create_activity(client):
         response = client.post("/activities/", json=input_data)
 
     assert response.status_code == 201
-    
+
     data = response.json()
 
     assert data["title"] == "New Activity"
     assert data["kanban_status"] == "backlog"
+
 
 def test_get_activity_success(client):
     """Test get activity success responds 200."""
@@ -50,12 +54,13 @@ def test_get_activity_success(client):
         response = client.get("/activities/1")
 
     assert response.status_code == 200
-    
+
     data = response.json()
 
     assert data["id"] == 1
     assert data["title"] == "Test"
     assert data["kanban_status"] == "backlog"
+
 
 def test_get_activity_not_found(client):
     """Test activity not found responds 404."""
@@ -68,8 +73,9 @@ def test_get_activity_not_found(client):
     assert response.status_code == 404
     assert response.json()["detail"] == "Activity not found"
 
+
 def test_delete_activity_success(client):
-    """Test delete activity success responds 204"""
+    """Test delete activity success responds 204."""
     with patch(
         "api.activity_router.activity_service.delete_activity",
         return_value=True,
@@ -78,6 +84,7 @@ def test_delete_activity_success(client):
 
     assert response.status_code == 204
     assert response.content == b""
+
 
 def test_delete_activity_not_found(client):
     """Test delete activity not found responds 404."""
@@ -89,6 +96,7 @@ def test_delete_activity_not_found(client):
 
     assert response.status_code == 404
     assert response.json()["detail"] == "Activity not found"
+
 
 def test_update_activity_success(client):
     """Test update activity success responds 200."""
@@ -102,11 +110,12 @@ def test_update_activity_success(client):
         response = client.put("/activities/1", json=payload)
 
     assert response.status_code == 200
-    
+
     data = response.json()
 
     assert data["id"] == 1
     assert data["title"] == "Updated"
+
 
 def test_update_activity_not_found(client):
     """Test that update activity returns 404 when not found."""
