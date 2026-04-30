@@ -119,7 +119,14 @@ deactivate
 ```
 
 ## Running tests
-TBA
+To run the backend tests, from the project folder run:
+```
+pytest
+```
+To get a coverage report run:
+```
+pytest --cov="src"
+```
 
 ## Documentation
 Code should be documented with docstrings. For a more detailed description of the project see the wiki.
