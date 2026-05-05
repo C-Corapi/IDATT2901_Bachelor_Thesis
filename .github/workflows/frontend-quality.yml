@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -29,8 +29,12 @@ jobs:
         working-directory: frontend
         run: |
           npx tsc --noEmit
+      
+      - name: Lint (ESLint)
+        working-directory: frontend
+        run: npx eslint src --max-warnings=0
 
       - name: Run unit tests (vitest)
         working-directory: frontend
         run: |
-          npm run test:unit -- --run
+          npm run test:unit:ci
