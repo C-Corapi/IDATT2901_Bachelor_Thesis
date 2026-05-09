@@ -120,8 +120,7 @@ describe('UploadPage', () => {
       expect(workingBtn).toBeDisabled();
     });
   });
-
-  it('shows success message and extraction progress', async () => {
+   it('shows success message and extraction progress', async () => {
     vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
     vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
     vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
@@ -238,7 +237,6 @@ describe('UploadPage', () => {
 
     expect(dropzone).toHaveAttribute('tabIndex', '0');
   });
-});
 
   it('handles file selection through dropzone click', async () => {
     render(<UploadPage />);
@@ -426,3 +424,4 @@ describe('UploadPage', () => {
       expect(screen.getByRole('button', { name: /Click or drag a file here to upload/i })).toBeTruthy();
     });
   });
+});
