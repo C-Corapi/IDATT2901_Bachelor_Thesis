@@ -19,7 +19,7 @@ async function renderWithRouter(ui: React.ReactElement) {
   return result;
 }
 
-describe('DocumentsPage (focused tests)', () => {
+describe('DocumentsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

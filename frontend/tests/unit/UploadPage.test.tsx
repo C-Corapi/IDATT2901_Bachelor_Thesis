@@ -12,7 +12,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('UploadPage (focused tests)', () => {
+describe('UploadPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

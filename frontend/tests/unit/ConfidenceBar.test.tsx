@@ -7,7 +7,7 @@ afterEach(() => {
   cleanup();
 });
 
-describe('ConfidenceBar (focused tests)', () => {
+describe('ConfidenceBar', () => {
   it('renders as a meter element with correct accessible attributes', () => {
     render(<ConfidenceBar value={75} />);
 

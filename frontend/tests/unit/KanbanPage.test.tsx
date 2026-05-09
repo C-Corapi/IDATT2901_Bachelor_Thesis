@@ -20,7 +20,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('KanbanPage (focused tests)', () => {
+describe('KanbanPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);

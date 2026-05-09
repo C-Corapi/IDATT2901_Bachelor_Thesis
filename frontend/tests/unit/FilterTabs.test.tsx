@@ -17,7 +17,7 @@ function makeTabs(): Tab[] {
   ];
 }
 
-describe('FilterTabs (small focused tests)', () => {
+describe('FilterTabs', () => {
   it('renders the tablist with correct accessible name', () => {
     render(<FilterTabs tabs={makeTabs()} active="epics" onChange={vi.fn()} />);
     const tablist = screen.getByRole('tablist', { name: /Filter by metadata type/i });

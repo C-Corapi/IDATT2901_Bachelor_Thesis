@@ -58,7 +58,7 @@ function makeItems(n = 2): KanbanItemFull[] {
   return Array.from({ length: n }).map((_, i) => makeItem({ id: i + 1, title: `Item ${i + 1}` }));
 }
 
-describe('KanbanColumn (focused tests)', () => {
+describe('KanbanColumn', () => {
   it('renders header with title, count and accessible attributes', () => {
     const items = makeItems(3);
     render(<KanbanColumn title="To Do" items={items} />);
@@ -149,7 +149,6 @@ describe('KanbanColumn (focused tests)', () => {
     const item = makeItem({ id: 5, title: 'ExpandMe' });
     render(<KanbanColumn title="Col" items={[item]} />);
 
-    // Initially not expanded
     expect(screen.queryByTestId('metadata-card')).toBeNull();
 
     const article = screen.getByRole('button', { name: /ExpandMe, draggable/i });
@@ -180,22 +179,31 @@ describe('KanbanColumn (focused tests)', () => {
     expect(onDeleteItem).toHaveBeenCalledWith(item);
   });
 
-  it('toggles expansion with Enter and with Space on the article (separate flows)', async () => {
+  it('toggles expansion with Enter and with Space on the article', async () => {
     const item = makeItem({ id: 7, title: 'KeyToggle' });
     const user = userEvent.setup();
 
-    // First flow: Enter opens
     const { unmount } = render(<KanbanColumn title="Col" items={[item]} />);
     const article1 = screen.getByRole('button', { name: /KeyToggle, draggable/i });
     article1.focus();
     await user.keyboard('{Enter}');
     expect(screen.getByTestId('metadata-card')).toBeTruthy();
 
-    // Reset and test Space opens (separate flow)
     unmount();
     render(<KanbanColumn title="Col" items={[item]} />);
     const article2 = screen.getByRole('button', { name: /KeyToggle, draggable/i });
     article2.focus();
+    await user.keyboard(' ');
+    expect(screen.getByTestId('metadata-card')).toBeTruthy();
+  });
+
+    it('toggles expansion with Space on the article', async () => {
+    const item = makeItem({ id: 7, title: 'KeyToggle' });
+    const user = userEvent.setup();
+
+    const { unmount } = render(<KanbanColumn title="Col" items={[item]} />);
+    const article1 = screen.getByRole('button', { name: /KeyToggle, draggable/i });
+    article1.focus();
     await user.keyboard(' ');
     expect(screen.getByTestId('metadata-card')).toBeTruthy();
   });
@@ -267,37 +275,6 @@ describe('KanbanColumn (focused tests)', () => {
     expect(onDropItem).not.toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
-  });
-});
-
-describe('KanbanColumn (focused tests)', () => {
-  it('renders header with title, count and accessible attributes', () => {
-    const items = makeItems(3);
-    render(<KanbanColumn title="To Do" items={items} />);
-
-    const section = screen.getByLabelText(/To Do column — 3 items/i);
-    expect(section).toBeTruthy();
-
-    const titleEl = screen.getByText('To Do');
-    expect(titleEl).toBeTruthy();
-
-    const count = screen.getByLabelText('3 items');
-    expect(count).toBeTruthy();
-    expect(count).toHaveTextContent('3');
-    expect(count).toHaveAttribute('title', '3 items in To Do');
-  });
-
-  it('shows edit button only when onTitleChange is provided', async () => {
-    const items = makeItems();
-    const onTitleChange = vi.fn();
-    const { rerender } = render(<KanbanColumn title="Backlog" items={items} onTitleChange={onTitleChange} />);
-
-    const editBtn = screen.getByRole('button', { name: /Rename "Backlog" column/i });
-    expect(editBtn).toBeTruthy();
-
-    rerender(<KanbanColumn title="Backlog" items={items} />);
-    const maybe = screen.queryByRole('button', { name: /Rename "Backlog" column/i });
-    expect(maybe).toBeNull();
   });
 
   it('allows editing the title and commits on Enter (calls onTitleChange with trimmed value)', async () => {

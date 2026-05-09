@@ -41,7 +41,7 @@ afterEach(() => {
   cleanup();
 });
 
-describe('App (focused tests)', () => {
+describe('App', () => {
   it('renders the app container with correct structure', () => {
     render(<App />);
 

@@ -39,7 +39,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('OverviewPage (focused tests)', () => {
+describe('OverviewPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);

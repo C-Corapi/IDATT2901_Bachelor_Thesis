@@ -7,7 +7,7 @@ afterEach(() => {
   cleanup();
 });
 
-describe('AboutPage (focused tests)', () => {
+describe('AboutPage', () => {
   it('renders a section landmark with the expected heading', () => {
     render(<AboutPage />);
 
