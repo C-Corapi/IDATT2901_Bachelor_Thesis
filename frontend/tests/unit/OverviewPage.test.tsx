@@ -26,7 +26,7 @@ vi.mock('../../src/components/FilterTabs', () => ({
 }));
 vi.mock('../../src/components/MetadataCard', () => ({
   default: (props: any) => (
-    <div data-testid="metadata-card">
+    <div data-testid="metadata-card" data-type={props.displayType}>
       <div>{props.title}</div>
       <button onClick={() => props.onSave && props.onSave({ title: 'changed' })}>Save</button>
       <button onClick={() => props.onDelete && props.onDelete()}>Delete</button>
@@ -232,6 +232,27 @@ describe('OverviewPage (focused tests)', () => {
     });
   });
 
+  it('clicking modal overlay closes the create modal', async () => {
+    render(<OverviewPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Create New/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeTruthy();
+    });
+
+    const overlay = document.querySelector('.modal-overlay') as HTMLElement;
+    await userEvent.click(overlay);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
+  });
+
   it('calls createEpic API when creating an epic', async () => {
     const createEpicSpy = vi.spyOn(api, 'createEpic').mockResolvedValue({ id: 1 } as any);
     const user = userEvent.setup();
@@ -266,16 +287,6 @@ describe('OverviewPage (focused tests)', () => {
       );
     });
   });
-
-  it('handles API errors gracefully', async () => {
-    vi.spyOn(api, 'getEpics').mockRejectedValue(new Error('Failed'));
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(api.getEpics).toHaveBeenCalled();
-    });
-  });
-});
 
   it('creates a decision when decision type is selected', async () => {
     const createDecisionSpy = vi.spyOn(api, 'createDecision').mockResolvedValue({ id: 1 } as any);
@@ -409,37 +420,12 @@ describe('OverviewPage (focused tests)', () => {
     });
   });
 
-  it('changes tab when filter tab is clicked', async () => {
-    vi.spyOn(api, 'getEpics').mockResolvedValue([
-      { id: 1, title: 'Epic 1', owner: 'alice', description: 'desc', kanban_status: 'todo' },
-    ]);
-
+  it('handles API errors gracefully', async () => {
+    vi.spyOn(api, 'getEpics').mockRejectedValue(new Error('Failed'));
     render(<OverviewPage />);
 
     await waitFor(() => {
-      const tabs = screen.getByTestId('filter-tabs');
-      expect(tabs).toBeTruthy();
-    });
-
-    const epicsBtn = screen.getByRole('button', { name: /Epics/i });
-    await userEvent.click(epicsBtn);
-
-    expect(epicsBtn).toBeTruthy();
-  });
-
-  it('renders cards for each metadata type on All tab', async () => {
-    vi.spyOn(api, 'getEpics').mockResolvedValue([
-      { id: 1, title: 'Epic 1', owner: 'alice', description: 'desc', kanban_status: 'todo' },
-    ]);
-    vi.spyOn(api, 'getDecisions').mockResolvedValue([
-      { id: 2, title: 'Decision 1', owner: 'bob', description: 'desc', kanban_status: 'done', nature: 'structural', reach: 'global' },
-    ]);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBe(2);
+      expect(api.getEpics).toHaveBeenCalled();
     });
   });
 
@@ -476,7 +462,41 @@ describe('OverviewPage (focused tests)', () => {
     consoleError.mockRestore();
   });
 
- it('saves epic with all fields', async () => {
+  it('changes tab when filter tab is clicked', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'alice', description: 'desc', kanban_status: 'todo' },
+    ]);
+
+    render(<OverviewPage />);
+
+    await waitFor(() => {
+      const tabs = screen.getByTestId('filter-tabs');
+      expect(tabs).toBeTruthy();
+    });
+
+    const epicsBtn = screen.getByRole('button', { name: /Epics/i });
+    await userEvent.click(epicsBtn);
+
+    expect(epicsBtn).toBeTruthy();
+  });
+
+  it('renders cards for each metadata type on All tab', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'alice', description: 'desc', kanban_status: 'todo' },
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 2, title: 'Decision 1', owner: 'bob', description: 'desc', kanban_status: 'done', nature: 'structural', reach: 'global' },
+    ]);
+
+    render(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByTestId('metadata-card');
+      expect(cards.length).toBe(2);
+    });
+  });
+
+  it('saves epic with all fields', async () => {
     const updateEpicSpy = vi.spyOn(api, 'updateEpic').mockResolvedValue({} as any);
 
     vi.spyOn(api, 'getEpics').mockResolvedValue([
@@ -493,12 +513,16 @@ describe('OverviewPage (focused tests)', () => {
         non_functional_requirements: 'NFR'
       },
     ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
 
     render(<OverviewPage />);
 
     await waitFor(() => {
       const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBeGreaterThan(0);
+      expect(cards.length).toBe(1);
     });
 
     const saveBtn = screen.getAllByRole('button', { name: /Save/i })[0];
@@ -509,10 +533,9 @@ describe('OverviewPage (focused tests)', () => {
     });
   });
 
-   it('saves decision with all fields', async () => {
+  it('saves decision with all fields', async () => {
     const updateDecisionSpy = vi.spyOn(api, 'updateDecision').mockResolvedValue({} as any);
 
-    // Only load decisions
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([
       {
@@ -546,10 +569,9 @@ describe('OverviewPage (focused tests)', () => {
     });
   });
 
-    it('saves deliverable with all fields', async () => {
+  it('saves deliverable with all fields', async () => {
     const updateDeliverableSpy = vi.spyOn(api, 'updateDeliverable').mockResolvedValue({} as any);
 
-    // Only load deliverables
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([
@@ -585,7 +607,6 @@ describe('OverviewPage (focused tests)', () => {
   it('saves task with all fields', async () => {
     const updateTaskSpy = vi.spyOn(api, 'updateTask').mockResolvedValue({} as any);
 
-    // Only load tasks
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
@@ -618,8 +639,9 @@ describe('OverviewPage (focused tests)', () => {
     });
   });
 
-   it('saves activity with all fields', async () => {
+  it('saves activity with all fields', async () => {
     const updateActivitySpy = vi.spyOn(api, 'updateActivity').mockResolvedValue({} as any);
+
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
@@ -650,18 +672,51 @@ describe('OverviewPage (focused tests)', () => {
     });
   });
 
+  it('handles save error gracefully', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'updateEpic').mockRejectedValue(new Error('Save failed'));
+
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'alice', description: 'desc', kanban_status: 'todo' },
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    render(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByTestId('metadata-card');
+      expect(cards.length).toBe(1);
+    });
+
+    const saveBtn = screen.getAllByRole('button', { name: /Save/i })[0];
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalledWith('Save failed', expect.any(Error));
+    });
+
+    consoleError.mockRestore();
+  });
+
   it('deletes epic', async () => {
     const deleteEpicSpy = vi.spyOn(api, 'deleteEpic').mockResolvedValue();
 
     vi.spyOn(api, 'getEpics').mockResolvedValue([
       { id: 1, title: 'Epic 1', owner: 'alice', description: 'desc', kanban_status: 'todo' },
     ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
 
     render(<OverviewPage />);
 
     await waitFor(() => {
       const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBeGreaterThan(0);
+      expect(cards.length).toBe(1);
     });
 
     const deleteBtn = screen.getAllByRole('button', { name: /Delete/i })[0];
@@ -674,6 +729,7 @@ describe('OverviewPage (focused tests)', () => {
 
   it('deletes decision', async () => {
     const deleteDecisionSpy = vi.spyOn(api, 'deleteDecision').mockResolvedValue();
+
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([
       { id: 2, title: 'Decision 1', owner: 'bob', description: 'desc', kanban_status: 'done' },
@@ -699,6 +755,7 @@ describe('OverviewPage (focused tests)', () => {
 
   it('deletes deliverable', async () => {
     const deleteDeliverableSpy = vi.spyOn(api, 'deleteDeliverable').mockResolvedValue();
+
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([
@@ -724,6 +781,7 @@ describe('OverviewPage (focused tests)', () => {
 
   it('deletes task', async () => {
     const deleteTaskSpy = vi.spyOn(api, 'deleteTask').mockResolvedValue();
+
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
@@ -749,6 +807,7 @@ describe('OverviewPage (focused tests)', () => {
 
   it('deletes activity', async () => {
     const deleteActivitySpy = vi.spyOn(api, 'deleteActivity').mockResolvedValue();
+
     vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
@@ -779,12 +838,16 @@ describe('OverviewPage (focused tests)', () => {
     vi.spyOn(api, 'getEpics').mockResolvedValue([
       { id: 1, title: 'Epic 1', owner: 'alice', description: 'desc', kanban_status: 'todo' },
     ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
 
     render(<OverviewPage />);
 
     await waitFor(() => {
       const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBeGreaterThan(0);
+      expect(cards.length).toBe(1);
     });
 
     const deleteBtn = screen.getAllByRole('button', { name: /Delete/i })[0];
@@ -902,118 +965,4 @@ describe('OverviewPage (focused tests)', () => {
       expect(cards.length).toBe(1);
     });
   });
-
-  it('handles missing epic when saving', async () => {
-    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(api.getEpics).toHaveBeenCalled();
-    });
-  });
-
-  it('renders epic cards with all extra details', async () => {
-    vi.spyOn(api, 'getEpics').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Epic Complete',
-        owner: 'alice',
-        description: 'desc',
-        kanban_status: 'todo',
-        classification: 'Feature',
-        scope: 'System-wide',
-        use_case: 'UC-001',
-        user_story: 'As a user...',
-        non_functional_requirements: 'Performance'
-      },
-    ]);
-    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
-    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
-    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
-    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBe(1);
-    });
-  });
-
-  it('renders decision cards with deadline', async () => {
-    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
-    vi.spyOn(api, 'getDecisions').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Decision with Deadline',
-        owner: 'bob',
-        description: 'desc',
-        kanban_status: 'done',
-        nature: 'structural',
-        reach: 'global',
-        alternatives: 'options',
-        deadline: '2024-12-31'
-      },
-    ]);
-    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
-    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
-    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBe(1);
-    });
-  });
-
-  it('renders deliverable cards with deadline', async () => {
-    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
-    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
-    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Deliverable with Deadline',
-        owner: 'charlie',
-        kanban_status: 'in_progress',
-        nature: 'functional',
-        reach: 'local',
-        alternatives: 'none',
-        deadline: '2024-11-30'
-      },
-    ]);
-    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
-    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBe(1);
-    });
-  });
-
-it('renders task cards with target date', async () => {
-    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
-    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
-    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
-    vi.spyOn(api, 'getTasks').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Task with Date',
-        owner: 'dave',
-        description: 'desc',
-        kanban_status: 'todo',
-        target_date: '2024-12-15'
-      },
-    ]);
-    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      const cards = screen.getAllByTestId('metadata-card');
-      expect(cards.length).toBe(1);
-    });
-  });
+});
