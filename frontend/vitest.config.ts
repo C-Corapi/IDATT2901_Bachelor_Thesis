@@ -10,7 +10,13 @@ export default defineConfig({
     include: ['tests/unit/**/*.test.{ts,tsx}'],
     coverage: {
       reporter: ['text', 'html'],
-      include: ['src/**/*.{ts,tsx}']
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: [
+        'src/index.tsx',
+        'src/vite-env.d.ts',
+        '**/*.d.ts',
+        'node_modules/**',
+      ],
     }
   }
 });
