@@ -1,3 +1,5 @@
+# ruff: noqa: E501
+
 """System prompt for extracting project-management tasks as strict JSON."""
 
 TASK_EXTRACTION_PROMPT = """
