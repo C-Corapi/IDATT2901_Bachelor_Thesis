@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from exceptions.common import TaskNotFound
 from model.task import Task
-from prompts.task_extraction import TASK_EXTRACTION_PROMPT
+from prompts.task_extraction import TASK_EVALUATION_PROMPT, TASK_EXTRACTION_PROMPT
 from repository import task_repository
 from schemas.task import TaskCreateModel
 from utils.file_loader import load_file
@@ -21,9 +21,10 @@ def extract_tasks(filepath: str) -> list[TaskCreateModel]:
     document: str = load_file(filepath)
 
     response: str = llm.generate(system_prompt=TASK_EXTRACTION_PROMPT, prompt=document)
+    evaluated_response: str = llm.generate(system_prompt=TASK_EVALUATION_PROMPT, prompt=response)
 
     # Converts response to dictionary, then to list of TaskCreateModel instances.
-    data: dict[str, Any] = json.loads(response)
+    data: dict[str, Any] = json.loads(evaluated_response)
     tasks: list[TaskCreateModel] = [TaskCreateModel(**d) for d in data.get("tasks", [])]
 
     return tasks

@@ -32,7 +32,7 @@ class LlamaClient:
             token=os.getenv("API_TOKEN"),
         )
 
-    def generate(self, system_prompt, prompt, max_new_tokens=800, temperature=0.2):
+    def generate(self, system_prompt, prompt, max_new_tokens=1000, temperature=0.2):
         """Generates a chat completion from the model.
 
         Args:
