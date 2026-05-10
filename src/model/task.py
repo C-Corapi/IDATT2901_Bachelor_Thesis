@@ -20,6 +20,7 @@ class Task(Base):
     target_date: Mapped[str | None] = mapped_column(nullable=True)
     kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
     source: Mapped[str | None] = mapped_column(nullable=True)
+    confidence: Mapped[float | None] = mapped_column(nullable=True)
 
     def __repr__(self):
         """Return a string representation of the Task instance."""
