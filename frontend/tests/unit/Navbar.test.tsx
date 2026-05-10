@@ -26,7 +26,7 @@ async function renderWithRouter(ui: React.ReactElement, route = '/') {
   return result;
 }
 
-describe('Navbar (focused tests)', () => {
+describe('Navbar', () => {
   it('renders a nav landmark and a non-link logo with accessible name', async () => {
     await renderWithRouter(<Navbar />, '/');
 
