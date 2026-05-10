@@ -17,6 +17,7 @@ class TaskBaseModel(BaseModel):
     status: str | None = None
     time_logged: str | None = None
     target_date: str | None = None
+    source: str | None = None
 
 
 class TaskCreateModel(TaskBaseModel):
