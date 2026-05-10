@@ -32,7 +32,7 @@ jobs:
       
       - name: Lint (ESLint)
         working-directory: frontend
-        run: npx eslint src --max-warnings=0
+        run: npx eslint --max-warnings=0
 
       - name: Run unit tests (vitest)
         working-directory: frontend
