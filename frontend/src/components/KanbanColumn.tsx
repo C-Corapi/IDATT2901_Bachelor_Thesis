@@ -144,7 +144,6 @@ const KanbanColumn: React.FC<Props> = ({
                   role="button"
                   draggable
                   onDragStart={(e) => {
-                    console.log('drag item', i);
                     e.dataTransfer.effectAllowed = 'move';
                     e.dataTransfer.setData('application/json', JSON.stringify(i));
                   }}

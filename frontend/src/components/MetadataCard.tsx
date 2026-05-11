@@ -23,7 +23,7 @@ interface Props {
   displayType?: string;
 }
 
-const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in progress','urgent','important','local','global'];
+const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in-progress','urgent','important','local','global'];
 const badgeCls = (v: string) => {
   const k = v.toLowerCase().replace(/\s+/g, '-');
   return `badge badge--${KNOWN.includes(k) ? k : 'default'}`;
@@ -50,7 +50,6 @@ const MetadataCard: React.FC<Props> = ({
   useEffect(() => { setDAlts(alternatives ?? ''); }, [alternatives]);
   useEffect(() => { setDExtras(extraDetails ?? []); }, [extraDetails]);
 
-  const displayTag = showKanbanStatus ? status : displayType;
   const primaryBadge = showKanbanStatus ? status : displayType;
   const badges = [primaryBadge, nature, reach].filter(Boolean) as string[];
   const uid = useRef(`card-${Math.random().toString(36).slice(2, 8)}`).current;

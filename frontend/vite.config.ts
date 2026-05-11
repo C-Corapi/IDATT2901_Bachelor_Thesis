@@ -12,6 +12,7 @@ export default defineConfig({
       '/tasks':       'http://localhost:8000',
       '/activities':  'http://localhost:8000',
       '/documents':   'http://localhost:8000',
+      '/kanban':      'http://localhost:8000',
     },
   },
 });

@@ -87,6 +87,9 @@ const KanbanPage: React.FC = () => {
       ];
       setAllItems(items);
       setLoading(false);
+    }).catch((err) => {
+      console.error('Failed to load kanban data', err);
+      setLoading(false);
     });
   }, []);
 

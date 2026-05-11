@@ -28,13 +28,27 @@ const UploadPage: React.FC = () => {
   const [results, setResults] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const submit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!file) return;
+const ALLOWED_TYPES = ['text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+const ALLOWED_EXTENSIONS = ['.txt', '.docx'];
 
-    setBusy(true);
-    setMsg({ text: 'Uploading document…', ok: true });
-    setResults([]);
+const submit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!file) return;
+  const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+  if (!ALLOWED_EXTENSIONS.includes(ext) || !ALLOWED_TYPES.includes(file.type)) {
+    setMsg({ text: 'Invalid file type. Only .txt and .docx files are accepted.', ok: false });
+    return;
+  }
+
+  const MAX_SIZE_MB = 10;
+  if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+    setMsg({ text: `File too large. Maximum size is ${MAX_SIZE_MB} MB.`, ok: false });
+    return;
+  }
+
+  setBusy(true);
+  setMsg({ text: 'Uploading document…', ok: true });
+  setResults([]);
 
     try {
       const uploaded = await uploadDocument(file);
@@ -81,6 +95,7 @@ const UploadPage: React.FC = () => {
       setResults(extracted);
       setMsg({ text: 'Metadata extraction completed!', ok: true });
       setFile(null);
+      if (inputRef.current) inputRef.current.value = '';
     } catch (err: any) {
       setMsg({ text: err.message ?? 'Upload failed', ok: false });
     } finally {

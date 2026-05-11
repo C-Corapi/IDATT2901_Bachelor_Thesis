@@ -1,7 +1,5 @@
 /*
  * Centralized API client.
- *
- * Backend endpoints (main branch)
  */
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
@@ -37,7 +35,7 @@ async function del(path: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE ${path} → ${res.status}`);
 }
 
-/* ── 1. GET all ────────────────────────────────────────��─────────── */
+/* ── 1. GET all ─────────────────────────────────────────────────── */
 export const getEpics        = () => get<any[]>('/epics/');
 export const getDecisions    = () => get<any[]>('/decisions/');
 export const getDeliverables = () => get<any[]>('/deliverables/');

@@ -37,6 +37,7 @@ import type { MetadataType } from '../types';
 
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [createType, setCreateType] = useState<MetadataType>('epic');
+  const [creating, setCreating] = useState(false);
   const [createForm, setCreateForm] = useState<Record<string, string>>({
     title: '',
     description: '',
@@ -59,9 +60,10 @@ import type { MetadataType } from '../types';
     status: '',
   });
 
-  /* ── Create handler ────────────────────────────────────────────── */
 
 const handleCreate = async () => {
+  if (creating) return;
+  setCreating(true);
   try {
     switch (createType) {
       case 'epic':
@@ -90,10 +92,11 @@ const handleCreate = async () => {
       case 'deliverable':
         await createDeliverable({
           title: createForm.title,
-          requirements: createForm.requirements,
-          specifications: createForm.specifications,
-          properties: createForm.properties,
-          fit_criterion: createForm.fit_criterion,
+          description: createForm.description,
+          alternatives: createForm.alternatives,
+          nature: createForm.nature,
+          reach: createForm.reach,
+          deadline: createForm.deadline,
           owner: createForm.owner,
         });
         break;
@@ -142,10 +145,10 @@ const handleCreate = async () => {
     loadAll();
   } catch (err) {
     console.error('Create failed', err);
+  } finally {
+    setCreating(false);
   }
 };
-
-  /* ── Save / Delete handlers per type ──────────────────────────── */
 
   const handleSave = async (type: MetadataType, id: number, changes: Record<string, string>) => {
     try {
@@ -187,10 +190,11 @@ const handleCreate = async () => {
 
         await updateDeliverable(id, {
           title: changes.title ?? deliverable.title,
-          requirements: changes.requirements ?? deliverable.requirements,
-          specifications: changes.specifications ?? deliverable.specifications,
-          properties: changes.properties ?? deliverable.properties,
-          fit_criterion: changes.fit_criterion ?? deliverable.fit_criterion,
+          description: changes.description ?? deliverable.description,
+          alternatives: changes.alternatives ?? deliverable.alternatives,
+          nature: changes.nature ?? deliverable.nature,
+          reach: changes.reach ?? deliverable.reach,
+          deadline: changes.deadline ?? deliverable.deadline,
           owner: changes.owner ?? deliverable.owner,
         });
         break;
@@ -398,8 +402,9 @@ const handleCreate = async () => {
                 <h2>Create New</h2>
 
                 <div className="form-group">
-                  <label className="form-label">Metadata type</label>
+                  <label className="form-label" htmlFor="create-metadata-type">Metadata type</label>
                   <select
+                      id="create-metadata-type"
                       className="form-select"
                       value={createType}
                       onChange={(e) => setCreateType(e.target.value as MetadataType)}
@@ -414,8 +419,9 @@ const handleCreate = async () => {
 
                 <div className="form-grid">
                   <div className="form-group">
-                    <label className="form-label">Title</label>
+                    <label className="form-label" htmlFor="create-title">Title</label>
                     <input
+                        id="create-title"
                         className="detail-input"
                         value={createForm.title}
                         onChange={(e) => setCreateForm({...createForm, title: e.target.value})}
@@ -423,8 +429,9 @@ const handleCreate = async () => {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Owner</label>
+                    <label className="form-label" htmlFor="create-owner">Owner</label>
                     <input
+                        id="create-owner"
                         className="detail-input"
                         value={createForm.owner}
                         onChange={(e) => setCreateForm({...createForm, owner: e.target.value})}
@@ -432,8 +439,9 @@ const handleCreate = async () => {
                   </div>
 
                   <div className="form-group form-group--full">
-                    <label className="form-label">Description</label>
+                    <label className="form-label" htmlFor="create-description">Description</label>
                     <textarea
+                        id="create-description"
                         className="detail-textarea"
                         value={createForm.description}
                         onChange={(e) => setCreateForm({...createForm, description: e.target.value})}
@@ -444,40 +452,45 @@ const handleCreate = async () => {
                 {createType === 'epic' && (
                     <div className="form-grid">
                       <div className="form-group">
-                        <label className="form-label">Classification</label>
+                        <label className="form-label" htmlFor="create-classification">Classification</label>
                         <input
+                            id="create-classification"
                             className="detail-input"
                             value={createForm.classification}
                             onChange={(e) => setCreateForm({...createForm, classification: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Scope</label>
+                        <label className="form-label" htmlFor="create-scope">Scope</label>
                         <input
+                            id="create-scope"
                             className="detail-input"
                             value={createForm.scope}
                             onChange={(e) => setCreateForm({...createForm, scope: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Use Case</label>
+                        <label className="form-label" htmlFor="create-use-case">Use Case</label>
                         <input
+                            id="create-use-case"
                             className="detail-input"
                             value={createForm.use_case}
                             onChange={(e) => setCreateForm({...createForm, use_case: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">User Story</label>
+                        <label className="form-label" htmlFor="create-user-story">User Story</label>
                         <input
+                            id="create-user-story"
                             className="detail-input"
                             value={createForm.user_story}
                             onChange={(e) => setCreateForm({...createForm, user_story: e.target.value})}
                         />
                       </div>
                       <div className="form-group form-group--full">
-                        <label className="form-label">Non-Functional Requirements</label>
+                        <label className="form-label" htmlFor="create-non-functional-requirements">Non-Functional Requirements</label>
                         <input
+                            id="create-non-funcitonal-requirements"
                             className="detail-input"
                             value={createForm.non_functional_requirements}
                             onChange={(e) => setCreateForm({
@@ -492,32 +505,36 @@ const handleCreate = async () => {
                 {createType === 'decision' && (
                     <div className="form-grid">
                       <div className="form-group">
-                        <label className="form-label">Alternatives</label>
+                        <label className="form-label" htmlFor="create-alternatives">Alternatives</label>
                         <input
+                            id="create-alternatives"
                             className="detail-input"
                             value={createForm.alternatives}
                             onChange={(e) => setCreateForm({...createForm, alternatives: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Nature</label>
+                        <label className="form-label" htmlFor="create-nature">Nature</label>
                         <input
+                            id="create-nature"
                             className="detail-input"
                             value={createForm.nature}
                             onChange={(e) => setCreateForm({...createForm, nature: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Reach</label>
+                        <label className="form-label" htmlFor="create-reach">Reach</label>
                         <input
+                            id="create-reach"
                             className="detail-input"
                             value={createForm.reach}
                             onChange={(e) => setCreateForm({...createForm, reach: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Deadline</label>
+                        <label className="form-label" htmlFor="create-deadline">Deadline</label>
                         <input
+                            id="create-deadline"
                             className="detail-input"
                             value={createForm.deadline}
                             onChange={(e) => setCreateForm({...createForm, deadline: e.target.value})}
@@ -527,37 +544,51 @@ const handleCreate = async () => {
                 )}
 
                 {createType === 'deliverable' && (
+                <div className="form-grid">
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="create-alternatives">Alternatives</label>
+                    <input
+                        id="create-alternatives"
+                        className="detail-input"
+                        value={createForm.alternatives}
+                      onChange={(e) => setCreateForm({...createForm, alternatives: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="create-nature">Nature</label>
+                    <input
+                        id="create-nature"
+                        className="detail-input"
+                        value={createForm.nature}
+                      onChange={(e) => setCreateForm({...createForm, nature: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="create-reach">Reach</label>
+                    <input
+                        id="create-reach"
+                        className="detail-input"
+                        value={createForm.reach}
+                      onChange={(e) => setCreateForm({...createForm, reach: e.target.value})} />
+                  </div>
+                  <div className="form-group">
+                    <label className="form-label" htmlFor="create-deadline">Deadline</label>
+                    <input
+                        id="create-deadline"
+                        className="detail-input"
+                        value={createForm.deadline}
+                      onChange={(e) => setCreateForm({...createForm, deadline: e.target.value})} />
+                  </div>
+                </div>
+              )}
+
+                {createType === 'activity' && (
                     <div className="form-grid">
                       <div className="form-group">
-                        <label className="form-label">Requirements</label>
+                        <label className="form-label" htmlFor="create-status">Status</label>
                         <input
+                            id="create-status"
                             className="detail-input"
-                            value={createForm.requirements}
-                            onChange={(e) => setCreateForm({...createForm, requirements: e.target.value})}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Specifications</label>
-                        <input
-                            className="detail-input"
-                            value={createForm.specifications}
-                            onChange={(e) => setCreateForm({...createForm, specifications: e.target.value})}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Properties</label>
-                        <input
-                            className="detail-input"
-                            value={createForm.properties}
-                            onChange={(e) => setCreateForm({...createForm, properties: e.target.value})}
-                        />
-                      </div>
-                      <div className="form-group">
-                        <label className="form-label">Fit Criterion</label>
-                        <input
-                            className="detail-input"
-                            value={createForm.fit_criterion}
-                            onChange={(e) => setCreateForm({...createForm, fit_criterion: e.target.value})}
+                            value={createForm.status}
+                            onChange={(e) => setCreateForm({...createForm, status: e.target.value})}
                         />
                       </div>
                     </div>
@@ -566,40 +597,30 @@ const handleCreate = async () => {
                 {createType === 'task' && (
                     <div className="form-grid">
                       <div className="form-group">
-                        <label className="form-label">Status</label>
+                        <label className="form-label" htmlFor="create-status">Status</label>
                         <input
+                            id="create-status"
                             className="detail-input"
                             value={createForm.status}
                             onChange={(e) => setCreateForm({...createForm, status: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Time Logged</label>
+                        <label className="form-label" htmlFor="create-time-logged">Time Logged</label>
                         <input
+                            id="create-time-logged"
                             className="detail-input"
                             value={createForm.time_logged}
                             onChange={(e) => setCreateForm({...createForm, time_logged: e.target.value})}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label">Target Date</label>
+                        <label className="form-label" htmlFor="create-target-date">Target Date</label>
                         <input
+                            id="create-target-date"
                             className="detail-input"
                             value={createForm.target_date}
                             onChange={(e) => setCreateForm({...createForm, target_date: e.target.value})}
-                        />
-                      </div>
-                    </div>
-                )}
-
-                {createType === 'activity' && (
-                    <div className="form-grid">
-                      <div className="form-group">
-                        <label className="form-label">Status</label>
-                        <input
-                            className="detail-input"
-                            value={createForm.status}
-                            onChange={(e) => setCreateForm({...createForm, status: e.target.value})}
                         />
                       </div>
                     </div>
@@ -609,8 +630,8 @@ const handleCreate = async () => {
                   <button className="btn-cancel" onClick={() => setShowCreateModal(false)}>
                     Cancel
                   </button>
-                  <button className="btn-primary" onClick={handleCreate}>
-                    Create
+                  <button className="btn-primary" onClick={handleCreate} disabled={creating} aria-disabled={creating}>
+                    {creating ? 'Creating…' : 'Create'}
                   </button>
                 </div>
               </div>

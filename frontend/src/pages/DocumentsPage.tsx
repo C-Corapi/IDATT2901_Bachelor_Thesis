@@ -83,15 +83,16 @@ const DocumentsPage: React.FC = () => {
 
       {showViewModal && selectedFile && (
         <div className="modal-overlay" role="presentation" onClick={() => setShowViewModal(false)}>
-          <div className="modal modal--wide" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+          <div className="modal modal--wide" role="dialog" aria-modal="true"
+               onClick={(e) => e.stopPropagation()}>
             <h2>{selectedFile}</h2>
 
             {docLoading ? (
-              <div className="empty-state" role="status">Loading document…</div>
+                <div className="empty-state" role="status">Loading document…</div>
             ) : (
-              <div className="document-viewer">
-                <pre>{docContent}</pre>
-              </div>
+                <div className="document-viewer">
+                  <pre>{docContent}</pre>
+                </div>
             )}
 
             <div className="modal-actions">
