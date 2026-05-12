@@ -34,7 +34,11 @@ Output format (JSON):
             "deadline": "latest date at which decision can be made",
             "owner": "name or title of who is responsible for the final decision and 
             its implementation",
-            "source": "the exact text from which the task was extracted. If the task was inferred from multiple sentences, include all relevant sentences. The sentances should be included verbatim, without any modifications or paraphrasing.",
+            "source": "the exact text from which the decision was extracted. If the decision was inferred from multiple sentences, include all relevant sentences. The sentences should be included verbatim, without any modifications or paraphrasing.",
+            "confidence": "a number between 0 and 1 indicating the confidence level of the extraction.
+            This should be based on how explicitly the decision is stated in the text. If the decision is explicitly stated,
+            confidence should be close to 1. If the decision is inferred or not clearly stated, confidence should be lower.
+            Confidence should also be based on how much the extracted decision adheres to the rules specified.",
         }
     ]
 }
