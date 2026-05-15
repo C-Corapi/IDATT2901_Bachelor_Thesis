@@ -6,13 +6,12 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      '/epics':       'http://localhost:8000',
-      '/decisions':   'http://localhost:8000',
-      '/deliverables':'http://localhost:8000',
-      '/tasks':       'http://localhost:8000',
-      '/activities':  'http://localhost:8000',
-      '/documents':   'http://localhost:8000',
-      '/kanban':      'http://localhost:8000',
+      '/epics': 'http://localhost:8000',
+      '/decisions': 'http://localhost:8000',
+      '/deliverables': 'http://localhost:8000',
+      '/tasks': 'http://localhost:8000',
+      '/activities': 'http://localhost:8000',
+      '/documents': 'http://localhost:8000',
     },
   },
 });

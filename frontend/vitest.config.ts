@@ -17,6 +17,6 @@ export default defineConfig({
         '**/*.d.ts',
         'node_modules/**',
       ],
-    }
-  }
+    },
+  },
 });
