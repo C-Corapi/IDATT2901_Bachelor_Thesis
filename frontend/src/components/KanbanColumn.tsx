@@ -36,7 +36,6 @@ const KanbanColumn: React.FC<Props> = ({
   const [isOver, setIsOver] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => { setDraft(title); }, [title]);
   useEffect(() => { if (editingTitle) inputRef.current?.focus(); }, [editingTitle]);
 
   const commitTitle = () => {
@@ -60,8 +59,8 @@ const KanbanColumn: React.FC<Props> = ({
     try {
       const item = JSON.parse(raw) as KanbanItemFull;
       onDropItem?.(item);
-    } catch (err) {
-      console.error('Invalid drag payload', err);
+    } catch {
+      console.error('Invalid drag payload');
     }
   };
 

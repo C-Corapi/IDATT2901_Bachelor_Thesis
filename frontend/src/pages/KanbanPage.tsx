@@ -87,16 +87,16 @@ const KanbanPage: React.FC = () => {
       ];
       setAllItems(items);
       setLoading(false);
-    }).catch((err) => {
-      console.error('Failed to load kanban data', err);
-      setLoading(false);
     });
   }, []);
 
-  useEffect(() => { loadData(); }, [loadData]);
+   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadData();
+  }, [loadData]);
 
   const itemsForColumn = (col: ColumnDef): KanbanItemFull[] =>
-    allItems.filter((i) => col.statuses.includes(i.status));
+    allItems.filter((i) => i.status && col.statuses.includes(i.status));
 
   const renameColumn = (colId: string, newTitle: string) => {
     setColumns((prev) => prev.map((c) => (c.id === colId ? { ...c, title: newTitle } : c)));
@@ -112,8 +112,8 @@ const KanbanPage: React.FC = () => {
         case 'decision':    await updateDecision(item.id, changes); break;
       }
       loadData();
-    } catch (err) {
-      console.error('Save failed', err);
+    } catch {
+      console.error('Save failed');
     }
   };
 
@@ -127,14 +127,14 @@ const KanbanPage: React.FC = () => {
         case 'decision':    await deleteDecision(item.id); break;
       }
       loadData();
-    } catch (err) {
-      console.error('Delete failed', err);
+    } catch {
+      console.error('Delete failed');
     }
   };
 
   const handleDropToColumn = async (item: KanbanItemFull, targetColumnId: string) => {
     const targetColumn = columns.find((c) => c.id === targetColumnId);
-    if (!targetColumn) return;
+    if (!targetColumn || !item.status) return;
 
     const newStatus = targetColumn.statuses[0];
     if (!newStatus || item.status === newStatus) return;
@@ -153,8 +153,8 @@ const KanbanPage: React.FC = () => {
         kanban_status: newStatus,
       });
       loadData();
-    } catch (err) {
-      console.error('Drag/drop update failed', err);
+    } catch {
+      console.error('Drag/drop update failed');
       loadData();
     }
   };

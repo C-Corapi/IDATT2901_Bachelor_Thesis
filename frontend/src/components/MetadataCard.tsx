@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import ConfidenceBar from './ConfidenceBar';
 
 export interface DetailField { label: string; value: string; key?: string; }
@@ -23,7 +23,7 @@ interface Props {
   displayType?: string;
 }
 
-const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in-progress','urgent','important','local','global'];
+const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in progress','urgent','important','local','global'];
 const badgeCls = (v: string) => {
   const k = v.toLowerCase().replace(/\s+/g, '-');
   return `badge badge--${KNOWN.includes(k) ? k : 'default'}`;
@@ -44,16 +44,26 @@ const MetadataCard: React.FC<Props> = ({
   const [dAlts, setDAlts] = useState<string>(alternatives ?? '');
   const [dExtras, setDExtras] = useState<DetailField[]>(extraDetails ?? []);
 
-  useEffect(() => { setDTitle(title ?? ''); }, [title]);
-  useEffect(() => { setDOwner(owner ?? ''); }, [owner]);
-  useEffect(() => { setDDesc(description ?? ''); }, [description]);
-  useEffect(() => { setDAlts(alternatives ?? ''); }, [alternatives]);
-  useEffect(() => { setDExtras(extraDetails ?? []); }, [extraDetails]);
+  const uid = useId();
+  const detailId = `${uid}-detail`;
+
+useEffect(() => {
+  if (!editing) {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setDTitle(title ?? '');
+     
+    setDOwner(owner ?? '');
+     
+    setDDesc(description ?? '');
+     
+    setDAlts(alternatives ?? '');
+     
+    setDExtras(extraDetails ?? []);
+  }
+}, [title, owner, description, alternatives, extraDetails, editing]);
 
   const primaryBadge = showKanbanStatus ? status : displayType;
   const badges = [primaryBadge, nature, reach].filter(Boolean) as string[];
-  const uid = useRef(`card-${Math.random().toString(36).slice(2, 8)}`).current;
-  const detailId = `${uid}-detail`;
 
   const toggle = () => { if (!editing) setOpen(!open); };
   const onKey = (e: React.KeyboardEvent) => {

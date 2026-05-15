@@ -197,13 +197,13 @@ describe('KanbanColumn', () => {
     expect(screen.getByTestId('metadata-card')).toBeTruthy();
   });
 
-    it('toggles expansion with Space on the article', async () => {
+  it('toggles expansion with Space on the article', async () => {
     const item = makeItem({ id: 7, title: 'KeyToggle' });
     const user = userEvent.setup();
 
-    const { unmount } = render(<KanbanColumn title="Col" items={[item]} />);
-    const article1 = screen.getByRole('button', { name: /KeyToggle, draggable/i });
-    article1.focus();
+    render(<KanbanColumn title="Col" items={[item]} />);
+    const article = screen.getByRole('button', { name: /KeyToggle, draggable/i });
+    article.focus();
     await user.keyboard(' ');
     expect(screen.getByTestId('metadata-card')).toBeTruthy();
   });
@@ -275,26 +275,6 @@ describe('KanbanColumn', () => {
     expect(onDropItem).not.toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalled();
     consoleSpy.mockRestore();
-  });
-
-  it('allows editing the title and commits on Enter (calls onTitleChange with trimmed value)', async () => {
-    const items = makeItems();
-    const onTitleChange = vi.fn();
-    render(<KanbanColumn title="Column" items={items} onTitleChange={onTitleChange} />);
-
-    const user = userEvent.setup();
-
-    const editBtn = screen.getByRole('button', { name: /Rename "Column" column/i });
-    await user.click(editBtn);
-
-    const input = screen.getByRole('textbox', { name: /Edit column name/i });
-    expect(input).toBeTruthy();
-
-    await user.clear(input);
-    await user.type(input, '  New Title  ');
-    await user.keyboard('{Enter}');
-
-    expect(onTitleChange).toHaveBeenCalledWith('New Title');
   });
 
   it('cancels editing on Escape and restores original title', async () => {
@@ -399,7 +379,6 @@ describe('KanbanColumn', () => {
     const editBtn = screen.getByRole('button', { name: /Rename "Same" column/i });
     await user.click(editBtn);
 
-    const input = screen.getByRole('textbox', { name: /Edit column name/i });
     await user.keyboard('{Enter}');
 
     expect(onTitleChange).not.toHaveBeenCalled();

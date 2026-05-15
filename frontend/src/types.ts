@@ -1,37 +1,44 @@
-export type MetadataType = 'all' | 'epic' | 'decision' | 'deliverable' | 'task' | 'activity';
+export type MetadataType = 'all' | 'epic' | 'decision' | 'deliverable' | 'activity' | 'task' ;
 
 export interface Epic {
   id: number;
   title: string;
-  description: string;
-  classification?: string;
+  description?: string;
   owner?: string;
+  classification?: string;
   scope?: string;
   use_case?: string;
   user_story?: string;
   non_functional_requirements?: string;
+  kanban_status?: string;
 }
 
 export interface Decision {
   id: number;
   title: string;
-  description: string;
+  description?: string;
+  owner?: string;
   alternatives?: string;
   nature?: string;
   reach?: string;
   deadline?: string;
-  owner?: string;
+  kanban_status?: string;
 }
 
 export interface Deliverable {
   id: number;
   title: string;
-  description: string;
-  alternatives: string;
-  nature: string;
-  reach: string;
-  deadline?: string;
+  description?: string;
   owner?: string;
+  requirements?: string;
+  specifications?: string;
+  properties?: string;
+  fit_criterion?: string;
+  nature?: string;
+  reach?: string;
+  alternatives?: string;
+  deadline?: string;
+  kanban_status?: string;
 }
 
 export interface Task {
@@ -40,9 +47,9 @@ export interface Task {
   description?: string;
   owner?: string;
   status?: string;
-  time_logged: string;
+  time_logged?: string;
   target_date?: string;
-  epic_id?: number;
+  kanban_status?: string;
 }
 
 export interface Activity {
@@ -51,7 +58,7 @@ export interface Activity {
   description?: string;
   owner?: string;
   status?: string;
-  epic_id?: number;
+  kanban_status?: string;
 }
 
 export interface DocEntry {
@@ -60,17 +67,17 @@ export interface DocEntry {
 
 export interface KanbanItemFull {
   id: number;
+  type: MetadataType;
   title: string;
   owner?: string;
-  type: MetadataType;
-  status: string;
   description?: string;
+  status?: string;
   nature?: string;
   reach?: string;
   alternatives?: string;
   evidence?: string;
   confidence?: number;
   verified?: boolean;
-  extraDetails?: { label: string; value: string; key?: string }[];
-  raw: any;
+  extraDetails?: any[];
+  raw?: any;
 }
