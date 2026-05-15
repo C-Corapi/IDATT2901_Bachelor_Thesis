@@ -16,6 +16,8 @@ class EpicBaseModel(BaseModel):
     use_case: str | None = None
     user_story: str | None = None
     non_functional_requirements: str | None = None
+    source: str | None = None
+    confidence: float | None = None
 
 
 class EpicCreateModel(EpicBaseModel):

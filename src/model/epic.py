@@ -30,6 +30,9 @@ class Epic(Base):
         use_case (Optional[str]): The primary use case addressed by the epic.
         user_story (Optional[str]): Associated user story or stories.
         non_functional_requirements (Optional[str]): Non-functional requirements for the epic.
+        kanban_status (KanbanStatus): The current status of the epic in the Kanban workflow.
+        source (Optional[str]): The source document or reference for the epic.
+        confidence (Optional[float]): The confidence level of the epic's extraction.
     """
 
     __tablename__ = "epic"
@@ -44,6 +47,8 @@ class Epic(Base):
     user_story: Mapped[str | None] = mapped_column(nullable=True)
     non_functional_requirements: Mapped[str | None] = mapped_column(nullable=True)
     kanban_status: Mapped[KanbanStatus] = mapped_column(default=KanbanStatus.BACKLOG)
+    source: Mapped[str | None] = mapped_column(nullable=True)
+    confidence: Mapped[float | None] = mapped_column(nullable=True)
 
     def __repr__(self) -> str:
         """Return a string representation of the Epic instance."""
