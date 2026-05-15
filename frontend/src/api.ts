@@ -65,6 +65,21 @@ export const updateDeliverable = (id: number, d: Partial<Omit<Deliverable, 'id'>
 export const updateTask        = (id: number, d: Partial<Omit<Task, 'id'>>)        => put<Task>(`/tasks/${id}`, d);
 export const updateActivity    = (id: number, d: Partial<Omit<Activity, 'id'>>)    => put<Activity>(`/activities/${id}`, d);
 
+export async function convertMetadataType(
+  oldType: string,
+  id: number,
+  newType: string,
+  data: Record<string, unknown>
+): Promise<any> {
+  const res = await fetch(`${BASE}/convert/${oldType}/${id}/${newType}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Convert failed: ${res.status}`);
+  return res.json();
+}
+
 /* ── 5. DELETE ───────────────────────────────────────────────────── */
 export const deleteEpic        = (id: number) => del(`/epics/${id}`);
 export const deleteDecision    = (id: number) => del(`/decisions/${id}`);
@@ -73,8 +88,6 @@ export const deleteTask        = (id: number) => del(`/tasks/${id}`);
 export const deleteActivity    = (id: number) => del(`/activities/${id}`);
 
 /* ── 6. EXTRACT (LLM) ───────────────────────────────────────────── */
-// LLM responses are unstructured — typed as the closest matching entity,
-// but individual fields may be missing until verified.
 export const extractEpics = (filepath: string) =>
   post<Partial<Epic>[]>(`/epics/extract?filepath=${encodeURIComponent(filepath)}`);
 
@@ -90,7 +103,7 @@ export const extractTasks = (filepath: string) =>
 export const extractActivities = (filepath: string) =>
   post<Partial<Activity>[]>(`/activities/extract?filepath=${encodeURIComponent(filepath)}`);
 
-/* ── 7. UPLOAD DOCUMENT ─────────────────────────────────────────── */
+/* ── 7. DOCUMENTs ─────────────────────────────────────────── */
 export async function uploadDocument(file: File): Promise<{ filename: string; message: string }> {
   const form = new FormData();
   form.append('file', file);
@@ -104,13 +117,15 @@ export async function uploadDocument(file: File): Promise<{ filename: string; me
   return res.json();
 }
 
-/* ── 8. GET DOCUMENTS ────────────────────────────────────────────── */
 export const getDocuments = () => get<string[]>('/documents/');
 
 export const getDocumentByName = (filename: string) =>
   get<string>(`/documents/${encodeURIComponent(filename)}`);
 
-/* ── 9. KANBAN ───────────────────────────────────────────────────── */
+export const deleteDocument = (filename: string) =>
+  del(`/documents/${encodeURIComponent(filename)}`);
+
+/* ── 8. KANBAN ───────────────────────────────────────────────────── */
 export interface KanbanUpdatePayload {
   id: number;
   title: string;

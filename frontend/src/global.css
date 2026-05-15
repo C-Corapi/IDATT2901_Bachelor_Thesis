@@ -357,6 +357,84 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
 .btn-delete { border: 2px solid var(--red);    color: var(--red); }
 .btn-delete:hover { background: var(--red);    color: var(--white); }
 
+/* ── Type conversion menu ────────────────────────────────────────── */
+.type-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.type-badge-btn {
+  background: var(--blue-dark);
+  color: var(--white);
+  border: none;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .4px;
+  cursor: pointer;
+  min-height: 28px;
+  transition: background .15s;
+}
+
+.type-badge-btn:hover {
+  background: var(--blue);
+}
+
+.type-badge-btn:focus-visible {
+  outline: 2px solid var(--peach);
+  outline-offset: 2px;
+}
+
+.type-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-hover);
+  z-index: 50;
+  min-width: 150px;
+  margin-top: 4px;
+}
+
+.type-menu-item {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  color: var(--gray-500);
+  font-size: .85rem;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  min-height: 40px;
+}
+
+.type-menu-item:first-child {
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+}
+
+.type-menu-item:last-child {
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+}
+
+.type-menu-item:hover {
+  background: var(--blue-light);
+  color: var(--blue-dark);
+}
+
+.type-menu-item:focus-visible {
+  background: var(--blue-light);
+  outline: 2px solid var(--blue);
+  outline-offset: -2px;
+}
+
 /* ── Confidence bar ─────────────────────────────────────────────── */
 .conf       { display: inline-flex; align-items: center; gap: 7px; }
 .conf-track { width: 72px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden; }
@@ -629,21 +707,40 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
 
 .document-viewer {
   max-height: 70vh;
-  overflow: auto;
-  background: var(--off-white);
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius);
-  padding: 16px;
-}
-
-.document-viewer {
-  max-height: 70vh;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   background: var(--off-white);
   border: 1px solid var(--gray-200);
   border-radius: var(--radius);
   padding: 16px;
   margin-bottom: 20px;
+}
+
+.document-viewer pre {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: .9rem;
+  line-height: 1.6;
+  color: var(--black);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.doc-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.btn-outline--delete {
+  border-color: var(--red);
+  color: var(--red);
+}
+
+.btn-outline--delete:hover {
+  background: var(--red);
+  color: var(--white);
 }
 
 /* ── Upload ─────────────────────────────────────────────────────── */

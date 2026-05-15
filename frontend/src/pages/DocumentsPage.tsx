@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getDocuments, getDocumentByName } from '../api';
+import { getDocuments, getDocumentByName, deleteDocument } from '../api';
 
 const DocumentsPage: React.FC = () => {
   const [docs, setDocs] = useState<string[]>([]);
@@ -10,6 +10,10 @@ const DocumentsPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [docContent, setDocContent] = useState('');
   const [docLoading, setDocLoading] = useState(false);
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   const nav = useNavigate();
 
@@ -34,6 +38,28 @@ const DocumentsPage: React.FC = () => {
       setDocContent('Unable to load document.');
     } finally {
       setDocLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (filename: string) => {
+    setDeleteTarget(filename);
+    setShowDeleteModal(true);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    setDeleting(true);
+    try {
+      await deleteDocument(deleteTarget);
+      setDocs((prev) => prev.filter((f) => f !== deleteTarget));
+      setShowDeleteModal(false);
+      setDeleteTarget(null);
+    } catch (err) {
+      console.error('Delete failed:', err);
+      alert('Failed to delete document');
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -68,14 +94,24 @@ const DocumentsPage: React.FC = () => {
                 <div className="doc-name">{filename}</div>
               </div>
 
-              <button
-                className="btn-outline"
-                title={`View document: ${filename}`}
-                aria-label={`View document: ${filename}`}
-                onClick={() => handleView(filename)}
-              >
-                View
-              </button>
+              <div className="doc-actions">
+                <button
+                  className="btn-outline"
+                  title={`View document: ${filename}`}
+                  aria-label={`View document: ${filename}`}
+                  onClick={() => handleView(filename)}
+                >
+                  View
+                </button>
+                <button
+                  className="btn-outline btn-outline--delete"
+                  title={`Delete document: ${filename}`}
+                  aria-label={`Delete document: ${filename}`}
+                  onClick={() => handleDeleteClick(filename)}
+                >
+                  Delete
+                </button>
+              </div>
             </article>
           ))}
         </div>
@@ -83,21 +119,50 @@ const DocumentsPage: React.FC = () => {
 
       {showViewModal && selectedFile && (
         <div className="modal-overlay" role="presentation" onClick={() => setShowViewModal(false)}>
-          <div className="modal modal--wide" role="dialog" aria-modal="true"
-               onClick={(e) => e.stopPropagation()}>
+          <div className="modal modal--wide" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
             <h2>{selectedFile}</h2>
 
             {docLoading ? (
-                <div className="empty-state" role="status">Loading document…</div>
+              <div className="empty-state" role="status">Loading document…</div>
             ) : (
-                <div className="document-viewer">
-                  <pre>{docContent}</pre>
-                </div>
+              <div className="document-viewer">
+                <pre>{docContent}</pre>
+              </div>
             )}
 
             <div className="modal-actions">
               <button className="btn-cancel" onClick={() => setShowViewModal(false)}>
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showDeleteModal && deleteTarget && (
+        <div className="modal-overlay" role="presentation" onClick={() => !deleting && setShowDeleteModal(false)}>
+          <div className="modal" role="alertdialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+            <h2>Delete document?</h2>
+            <p>
+              Are you sure you want to delete <span className="modal-item-name">"{deleteTarget}"</span>?
+              This will remove the document file (metadata will be preserved).
+            </p>
+            <div className="modal-actions">
+              <button
+                className="btn-cancel"
+                onClick={() => setShowDeleteModal(false)}
+                disabled={deleting}
+                aria-label="Cancel deletion"
+              >
+                Cancel
+              </button>
+              <button
+                className="btn-delete"
+                onClick={confirmDelete}
+                disabled={deleting}
+                aria-label={`Confirm delete "${deleteTarget}"`}
+              >
+                {deleting ? 'Deleting…' : 'Yes, delete'}
               </button>
             </div>
           </div>
