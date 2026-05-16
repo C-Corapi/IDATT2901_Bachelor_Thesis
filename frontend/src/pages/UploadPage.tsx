@@ -1,5 +1,4 @@
 import React, { useRef, useState } from 'react';
-import MetadataCard from '../components/MetadataCard';
 import {
   uploadDocument,
   extractEpics,
@@ -8,6 +7,7 @@ import {
   extractTasks,
   extractActivities,
 } from '../api';
+import MetadataCard from '../components/MetadataCard';
 import type { MetadataType } from '../types';
 
 type ExtractType = MetadataType | 'all';
@@ -53,34 +53,34 @@ const UploadPage: React.FC = () => {
         ]);
 
         extracted = [
-          ...epics.map((item) => ({ kind: 'epic', ...item })),
-          ...decisions.map((item) => ({ kind: 'decision', ...item })),
-          ...deliverables.map((item) => ({ kind: 'deliverable', ...item })),
-          ...tasks.map((item) => ({ kind: 'task', ...item })),
-          ...activities.map((item) => ({ kind: 'activity', ...item })),
+          ...epics.map((item) => ({ kind: 'Epic', ...item })),
+          ...decisions.map((item) => ({ kind: 'Decision', ...item })),
+          ...deliverables.map((item) => ({ kind: 'Deliverable', ...item })),
+          ...tasks.map((item) => ({ kind: 'Task', ...item })),
+          ...activities.map((item) => ({ kind: 'Activity', ...item })),
         ];
       } else {
         switch (type) {
           case 'epic':
-            extracted = (await extractEpics(uploaded.filename)).map((item) => ({ kind: 'epic', ...item }));
+            extracted = (await extractEpics(uploaded.filename)).map(item => ({ kind: 'Epic', ...item }));
             break;
           case 'decision':
-            extracted = (await extractDecisions(uploaded.filename)).map((item) => ({ kind: 'decision', ...item }));
+            extracted = (await extractDecisions(uploaded.filename)).map(item => ({ kind: 'Decision', ...item }));
             break;
           case 'deliverable':
-            extracted = (await extractDeliverables(uploaded.filename)).map((item) => ({ kind: 'deliverable', ...item }));
+            extracted = (await extractDeliverables(uploaded.filename)).map(item => ({ kind: 'Deliverable', ...item }));
             break;
           case 'task':
-            extracted = (await extractTasks(uploaded.filename)).map((item) => ({ kind: 'task', ...item }));
+            extracted = (await extractTasks(uploaded.filename)).map(item => ({ kind: 'Task', ...item }));
             break;
           case 'activity':
-            extracted = (await extractActivities(uploaded.filename)).map((item) => ({ kind: 'activity', ...item }));
+            extracted = (await extractActivities(uploaded.filename)).map(item => ({ kind: 'Activity', ...item }));
             break;
         }
       }
 
       setResults(extracted);
-      setMsg({ text: `Extracted ${extracted.length} metadata item${extracted.length !== 1 ? 's' : ''}!`, ok: true });
+      setMsg({ text: 'Metadata extraction completed!', ok: true });
       setFile(null);
     } catch (err: any) {
       setMsg({ text: err.message ?? 'Upload failed', ok: false });
@@ -164,26 +164,31 @@ const UploadPage: React.FC = () => {
 
       {results.length > 0 && (
         <div style={{ marginTop: '24px' }}>
-          <h2 className="page-title" style={{ fontSize: '1.1rem', marginBottom: '16px' }}>
-            Extracted Metadata ({results.length})
-          </h2>
-          <div role="region" aria-live="polite" aria-label="Extracted metadata cards">
+          <h2 className="page-title" style={{ fontSize: '1.1rem' }}>Extracted Metadata</h2>
+          <div>
             {results.map((item, i) => (
               <MetadataCard
-                key={`${item.kind}-${i}`}
-                title={item.title ?? item.name ?? `${item.kind} ${i + 1}`}
-                type={item.kind as MetadataType}
+                key={i}
+                title={item.title ?? item.name ?? `Item ${i + 1}`}
                 owner={item.owner}
-                description={item.description}
+                status={item.status}
                 nature={item.nature}
                 reach={item.reach}
+                description={item.description}
                 alternatives={item.alternatives}
-                evidence={item.evidence}
-                confidence={item.confidence}
-                extraDetails={item.extraDetails}
+                evidence={item.source}
+                confidence={item.confidence ? Math.round(item.confidence * 100) : undefined}
+                verified={false}
                 displayType={item.kind}
                 defaultOpen={false}
-                raw={item}
+                extraDetails={[
+                  ...(item.deadline ? [{ label: 'Deadline', value: item.deadline, key: 'deadline' }] : []),
+                  ...(item.target_date ? [{ label: 'Target Date', value: item.target_date, key: 'target_date' }] : []),
+                  ...(item.classification ? [{ label: 'Classification', value: item.classification, key: 'classification' }] : []),
+                  ...(item.scope ? [{ label: 'Scope', value: item.scope, key: 'scope' }] : []),
+                  ...(item.use_case ? [{ label: 'Use Case', value: item.use_case, key: 'use_case' }] : []),
+                  ...(item.user_story ? [{ label: 'User Story', value: item.user_story, key: 'user_story' }] : []),
+                ]}
               />
             ))}
           </div>
