@@ -1,4 +1,5 @@
 import React, { useRef, useState } from 'react';
+import MetadataCard from '../components/MetadataCard';
 import {
   uploadDocument,
   extractEpics,
@@ -28,27 +29,13 @@ const UploadPage: React.FC = () => {
   const [results, setResults] = useState<any[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
 
-const ALLOWED_TYPES = ['text/plain', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-const ALLOWED_EXTENSIONS = ['.txt', '.docx'];
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!file) return;
 
-const submit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (!file) return;
-  const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
-  if (!ALLOWED_EXTENSIONS.includes(ext) || !ALLOWED_TYPES.includes(file.type)) {
-    setMsg({ text: 'Invalid file type. Only .txt and .docx files are accepted.', ok: false });
-    return;
-  }
-
-  const MAX_SIZE_MB = 10;
-  if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-    setMsg({ text: `File too large. Maximum size is ${MAX_SIZE_MB} MB.`, ok: false });
-    return;
-  }
-
-  setBusy(true);
-  setMsg({ text: 'Uploading document…', ok: true });
-  setResults([]);
+    setBusy(true);
+    setMsg({ text: 'Uploading document…', ok: true });
+    setResults([]);
 
     try {
       const uploaded = await uploadDocument(file);
@@ -66,36 +53,35 @@ const submit = async (e: React.FormEvent) => {
         ]);
 
         extracted = [
-          ...epics.map((item) => ({ kind: 'Epic', ...item })),
-          ...decisions.map((item) => ({ kind: 'Decision', ...item })),
-          ...deliverables.map((item) => ({ kind: 'Deliverable', ...item })),
-          ...tasks.map((item) => ({ kind: 'Task', ...item })),
-          ...activities.map((item) => ({ kind: 'Activity', ...item })),
+          ...epics.map((item) => ({ kind: 'epic', ...item })),
+          ...decisions.map((item) => ({ kind: 'decision', ...item })),
+          ...deliverables.map((item) => ({ kind: 'deliverable', ...item })),
+          ...tasks.map((item) => ({ kind: 'task', ...item })),
+          ...activities.map((item) => ({ kind: 'activity', ...item })),
         ];
       } else {
         switch (type) {
           case 'epic':
-            extracted = await extractEpics(uploaded.filename);
+            extracted = (await extractEpics(uploaded.filename)).map((item) => ({ kind: 'epic', ...item }));
             break;
           case 'decision':
-            extracted = await extractDecisions(uploaded.filename);
+            extracted = (await extractDecisions(uploaded.filename)).map((item) => ({ kind: 'decision', ...item }));
             break;
           case 'deliverable':
-            extracted = await extractDeliverables(uploaded.filename);
+            extracted = (await extractDeliverables(uploaded.filename)).map((item) => ({ kind: 'deliverable', ...item }));
             break;
           case 'task':
-            extracted = await extractTasks(uploaded.filename);
+            extracted = (await extractTasks(uploaded.filename)).map((item) => ({ kind: 'task', ...item }));
             break;
           case 'activity':
-            extracted = await extractActivities(uploaded.filename);
+            extracted = (await extractActivities(uploaded.filename)).map((item) => ({ kind: 'activity', ...item }));
             break;
         }
       }
 
       setResults(extracted);
-      setMsg({ text: 'Metadata extraction completed!', ok: true });
+      setMsg({ text: `Extracted ${extracted.length} metadata item${extracted.length !== 1 ? 's' : ''}!`, ok: true });
       setFile(null);
-      if (inputRef.current) inputRef.current.value = '';
     } catch (err: any) {
       setMsg({ text: err.message ?? 'Upload failed', ok: false });
     } finally {
@@ -178,15 +164,27 @@ const submit = async (e: React.FormEvent) => {
 
       {results.length > 0 && (
         <div style={{ marginTop: '24px' }}>
-          <h2 className="page-title" style={{ fontSize: '1.1rem' }}>Extracted Metadata</h2>
-          <div className="doc-list">
+          <h2 className="page-title" style={{ fontSize: '1.1rem', marginBottom: '16px' }}>
+            Extracted Metadata ({results.length})
+          </h2>
+          <div role="region" aria-live="polite" aria-label="Extracted metadata cards">
             {results.map((item, i) => (
-              <article className="doc-row" key={i}>
-                <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                  <strong>{item.kind ? `${item.kind}: ` : ''}{item.title ?? item.name ?? `Item ${i + 1}`}</strong>
-                  <div>{JSON.stringify(item, null, 2)}</div>
-                </div>
-              </article>
+              <MetadataCard
+                key={`${item.kind}-${i}`}
+                title={item.title ?? item.name ?? `${item.kind} ${i + 1}`}
+                type={item.kind as MetadataType}
+                owner={item.owner}
+                description={item.description}
+                nature={item.nature}
+                reach={item.reach}
+                alternatives={item.alternatives}
+                evidence={item.evidence}
+                confidence={item.confidence}
+                extraDetails={item.extraDetails}
+                displayType={item.kind}
+                defaultOpen={false}
+                raw={item}
+              />
             ))}
           </div>
         </div>

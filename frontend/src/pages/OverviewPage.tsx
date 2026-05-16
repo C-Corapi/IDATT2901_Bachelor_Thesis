@@ -493,7 +493,7 @@ const handleCreate = async () => {
                       <div className="form-group form-group--full">
                         <label className="form-label" htmlFor="create-non-functional-requirements">Non-Functional Requirements</label>
                         <input
-                            id="create-non-funcitonal-requirements"
+                            id="create-non-functional-requirements"
                             className="detail-input"
                             value={createForm.non_functional_requirements}
                             onChange={(e) => setCreateForm({

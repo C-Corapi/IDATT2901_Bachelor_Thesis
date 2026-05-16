@@ -265,21 +265,31 @@ const MetadataCard: React.FC<Props> = ({
 
             <div className="card-actions">
               {!editing && !verified && onVerify && (
-                <button className="btn-verify" onClick={(e) => { e.stopPropagation(); onVerify(); }}
-                  title={`Verify "${title}"`} aria-label={`Verify "${title}"`}>✓ Verify</button>
+                  <button className="btn-verify" onClick={(e) => {
+                    e.stopPropagation();
+                    onVerify();
+                  }}
+                          title={`Verify "${title}"`} aria-label={`Verify "${title}"`}>✓ Verify</button>
               )}
               {!editing && onSave && (
-                <button className="btn-edit" onClick={startEdit} title={`Edit "${title}"`} aria-label={`Edit "${title}"`}>Edit</button>
+                  <button className="btn-edit" onClick={startEdit} title={`Edit "${title}"`}
+                          aria-label={`Edit "${title}"`}>Edit</button>
               )}
               {editing && (
-                <>
-                  <button className="btn-save" onClick={save} title="Save changes" aria-label="Save changes">Save</button>
-                  <button className="btn-cancel" onClick={cancelEdit} title="Cancel editing" aria-label="Cancel editing">Cancel</button>
-                </>
+                  <>
+                    <button className="btn-save" onClick={save} title="Save changes" aria-label="Save changes">Save
+                    </button>
+                    <button className="btn-cancel" onClick={cancelEdit} title="Cancel editing"
+                            aria-label="Cancel editing">Cancel
+                    </button>
+                  </>
               )}
               {onDelete && (
-                <button className="btn-delete" onClick={(e) => { e.stopPropagation(); setShowModal(true); }}
-                  title={`Delete "${title}"`} aria-label={`Delete "${title}"`}>Delete</button>
+                  <button className="btn-delete" onClick={(e) => {
+                    e.stopPropagation();
+                    setShowModal(true);
+                  }}
+                          title={`Delete "${title}"`} aria-label={`Delete "${title}"`}>Delete</button>
               )}
             </div>
           </div>
@@ -287,20 +297,21 @@ const MetadataCard: React.FC<Props> = ({
       </article>
 
       {showModal && (
-        <div className="modal-overlay" role="presentation" onClick={() => setShowModal(false)}>
-          <div className="modal" ref={modalRef} role="alertdialog" aria-modal="true"
-            aria-labelledby={`${uid}-mtitle`} aria-describedby={`${uid}-mdesc`}
-            onClick={(e) => e.stopPropagation()} onKeyDown={modalKey}>
-            <h2 id={`${uid}-mtitle`}>Delete item?</h2>
-            <p id={`${uid}-mdesc`}>
-              Are you sure you want to delete <span className="modal-item-name">"{title}"</span>?
-              This action cannot be undone.
-            </p>
-            <div className="modal-actions">
-              <button className="btn-cancel" data-cancel onClick={() => setShowModal(false)}
-                aria-label="Cancel deletion">Cancel</button>
-              <button className="btn-delete" onClick={() => { setShowModal(false); onDelete?.(); }}
-                aria-label={`Confirm delete "${title}"`}>Yes, delete</button>
+          <div className="modal-overlay" role="presentation" onClick={() => setShowModal(false)}>
+            <div className="modal" ref={modalRef} role="alertdialog" aria-modal="true"
+                 aria-labelledby={`${uid}-mtitle`} aria-describedby={`${uid}-mdesc`}
+                 onClick={(e) => e.stopPropagation()} onKeyDown={modalKey}>
+              <h2 id={`${uid}-mtitle`}>Delete item?</h2>
+              <p id={`${uid}-mdesc`}>
+                Are you sure you want to delete <span className="modal-item-name">"{title}"</span>?
+                This action cannot be undone.
+              </p>
+              <div className="modal-actions">
+                <button className="btn-cancel" data-cancel onClick={() => setShowModal(false)}
+                        aria-label="Cancel deletion">Cancel
+                </button>
+                <button className="btn-delete" onClick={() => { setShowModal(false); onDelete?.(); }}
+                aria-label={`Confirm deletetion"${title}"`}>Yes, delete</button>
             </div>
           </div>
         </div>
