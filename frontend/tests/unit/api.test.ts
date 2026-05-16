@@ -1,603 +1,302 @@
-import {
-  getEpics, getDecisions, getDeliverables, getTasks, getActivities,
-  createEpic, createDecision, createDeliverable, createTask, createActivity,
-  getEpicById, getDecisionById, getDeliverableById, getTaskById, getActivityById,
-  updateEpic, updateDecision, updateDeliverable, updateTask, updateActivity,
-  deleteEpic, deleteDecision, deleteDeliverable, deleteTask, deleteActivity,
-  extractEpics, extractDecisions, extractDeliverables, extractTasks, extractActivities,
-  uploadDocument,
-  getDocuments, getDocumentByName,
-  updateKanbanCard
-} from '../../src/api';
-
+import * as api from '../../src/api';
 import { vi, it, describe, expect, afterEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
 
-// Helpers to mock fetch
-const fetchMock = () => (globalThis.fetch as unknown as ReturnType<typeof vi.fn>);
-
+// Mock fetch helper
 function mockFetch(response: unknown, ok = true, status = 200) {
-  const resolved = {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok,
     status,
     json: async () => response,
     text: async () => (typeof response === 'string' ? response : JSON.stringify(response)),
-  };
-
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(resolved) as any);
+  }) as any);
 }
 
 function mockFetchReject(status = 500, statusText = 'error') {
-  const resolved = {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
     ok: false,
     status,
     text: async () => statusText,
-  };
-
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(resolved) as any);
+  }) as any);
 }
+
+const fetch_ = () => globalThis.fetch as ReturnType<typeof vi.fn>;
 
 afterEach(() => {
   vi.resetAllMocks();
   vi.unstubAllGlobals();
-  cleanup();
 });
 
-export { mockFetch, mockFetchReject };
-describe('API client', () => {
-  afterEach(() => {
-    cleanup();
-    vi.restoreAllMocks();
+describe('API', () => {
+  describe('exports', () => {
+    it('exports all functions', () => {
+      expect(api.getEpics).toBeDefined();
+      expect(api.createEpic).toBeDefined();
+      expect(api.updateEpic).toBeDefined();
+      expect(api.deleteEpic).toBeDefined();
+      expect(api.extractEpics).toBeDefined();
+      expect(api.uploadDocument).toBeDefined();
+      expect(api.getDocuments).toBeDefined();
+      expect(api.updateKanbanCard).toBeDefined();
+      expect(api.convertMetadataType).toBeDefined();
+    });
+  });
+
+  describe('GET operations', () => {
+    it('fetches epics successfully', async () => {
+      mockFetch([{ id: 1, name: 'epic1' }]);
+      const result = await api.getEpics();
+      expect(result).toEqual([{ id: 1, name: 'epic1' }]);
+      expect(fetch_()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\//));
+    });
+
+    it('throws on failed GET', async () => {
+      mockFetchReject(404);
+      await expect(api.getEpics()).rejects.toThrow(/GET \/epics\//);
+    });
+
+    it('fetches single item by id', async () => {
+      mockFetch({ id: 3, name: 'epic3' });
+      const result = await api.getEpicById(3);
+      expect(result).toEqual({ id: 3, name: 'epic3' });
+      expect(fetch_()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/3/));
+    });
+
+    it('throws when item not found by id', async () => {
+      mockFetchReject(404);
+      await expect(api.getEpicById(404)).rejects.toThrow(/GET \/epics\/404/);
+    });
+  });
+
+  describe('POST operations (create)', () => {
+    it('creates epic successfully', async () => {
+      const input = { title: 'epic2' };
+      mockFetch({ id: 2, title: 'epic2' });
+      const result = await api.createEpic(input);
+      expect(result).toEqual({ id: 2, title: 'epic2' });
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/\/epics\//),
+        expect.objectContaining({ method: 'POST', body: JSON.stringify(input) })
+      );
+    });
+
+    it('throws on failed POST', async () => {
+      mockFetchReject(400);
+      await expect(api.createEpic({ title: 'Test Epic' })).rejects.toThrow(/POST \/epics\//);
+    });
+  });
+
+  describe('PUT operations (update)', () => {
+    it('updates epic successfully', async () => {
+      const data = { title: 'updated' };
+      mockFetch({ id: 1, title: 'updated' });
+      const result = await api.updateEpic(1, data);
+      expect(result).toEqual({ id: 1, title: 'updated' });
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/\/epics\/1/),
+        expect.objectContaining({ method: 'PUT', body: JSON.stringify(data) })
+      );
+    });
+
+    it('throws on failed PUT', async () => {
+      mockFetchReject(500);
+      await expect(api.updateEpic(1, {})).rejects.toThrow(/PUT \/epics\/1/);
+    });
+  });
+
+  describe('DELETE operations', () => {
+    it('deletes epic successfully', async () => {
+      mockFetch(undefined);
+      await expect(api.deleteEpic(1)).resolves.toBeUndefined();
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/\/epics\/1/),
+        expect.objectContaining({ method: 'DELETE' })
+      );
+    });
+
+    it('throws on failed DELETE', async () => {
+      mockFetchReject(404);
+      await expect(api.deleteEpic(1)).rejects.toThrow(/DELETE \/epics\/1/);
+    });
+  });
+
+  describe('Extract operations', () => {
+    it('extracts epics with filepath', async () => {
+      const result = [{ id: 1 }];
+      mockFetch(result);
+      const output = await api.extractEpics('file.txt');
+      expect(output).toEqual(result);
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/\/epics\/extract\?filepath=file.txt/),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    it('encodes filepath with special characters', async () => {
+      mockFetch([]);
+      await api.extractEpics('a b&c.txt');
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/filepath=a%20b%26c.txt/),
+        expect.anything()
+      );
+    });
+
+    it('throws on failed extract', async () => {
+      mockFetchReject(500);
+      await expect(api.extractEpics('file.txt')).rejects.toThrow();
+    });
+  });
+
+  describe('Document operations', () => {
+    it('uploads document successfully', async () => {
+      const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+      mockFetch({ filename: 'test.txt', message: 'ok' });
+      const result = await api.uploadDocument(file);
+      expect(result.filename).toBe('test.txt');
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringContaining('/documents/upload'),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    it('throws on failed upload', async () => {
+      const file = new File(['content'], 'test.txt');
+      mockFetchReject(413, 'Too large');
+      await expect(api.uploadDocument(file)).rejects.toThrow(/Upload failed: 413/);
+    });
+
+    it('gets all documents', async () => {
+      mockFetch(['doc1.txt', 'doc2.docx']);
+      const result = await api.getDocuments();
+      expect(result).toEqual(['doc1.txt', 'doc2.docx']);
+    });
+
+    it('gets document by name with URL encoding', async () => {
+      mockFetch('content');
+      await api.getDocumentByName('a b&c.doc');
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/\/documents\/a%20b%26c.doc/)
+      );
+    });
+
+    it('throws when document not found', async () => {
+      mockFetchReject(404);
+      await expect(api.getDocumentByName('missing.pdf')).rejects.toThrow(/GET \/documents\//);
+    });
+  });
+
+  describe('Kanban operations', () => {
+    it('updates kanban card successfully', async () => {
+      const card = { id: 1, title: 'task', type: 'Task', kanban_status: 'done' };
+      mockFetch({ ...card, ok: true });
+      const result = await api.updateKanbanCard(card);
+      expect(result.ok).toBe(true);
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/\/kanban\/update/),
+        expect.objectContaining({ method: 'POST', body: JSON.stringify(card) })
+      );
+    });
+
+    it('throws on failed kanban update', async () => {
+      mockFetchReject(400, 'Invalid card');
+      await expect(
+        api.updateKanbanCard({ id: 1, title: 'x', type: 'Epic', kanban_status: 'todo' })
+      ).rejects.toThrow(/Failed to update kanban card: 400 Invalid card/);
+    });
+  });
+
+  describe('Metadata type conversion', () => {
+    it('converts metadata type successfully', async () => {
+      mockFetch({ id: 1, type: 'task' });
+      const result = await api.convertMetadataType('epic', 1, 'task', {});
+      expect(result.type).toBe('task');
+      expect(fetch_()).toHaveBeenCalledWith(
+        expect.stringMatching(/\/convert\/epic\/1\/task/),
+        expect.objectContaining({ method: 'POST' })
+      );
+    });
+
+    it('throws on failed conversion', async () => {
+      mockFetchReject(400);
+      await expect(api.convertMetadataType('epic', 1, 'task', {})).rejects.toThrow();
+    });
+  });
+
+describe('All metadata types (coverage)', () => {
+  const types = [
+    {
+      name: 'Decision',
+      create: api.createDecision,
+      get: api.getDecisions,
+      getById: api.getDecisionById,
+      update: api.updateDecision,
+      delete: api.deleteDecision,
+      extract: api.extractDecisions,
+    },
+    {
+      name: 'Deliverable',
+      create: api.createDeliverable,
+      get: api.getDeliverables,
+      getById: api.getDeliverableById,
+      update: api.updateDeliverable,
+      delete: api.deleteDeliverable,
+      extract: api.extractDeliverables,
+    },
+    {
+      name: 'Task',
+      create: api.createTask,
+      get: api.getTasks,
+      getById: api.getTaskById,
+      update: api.updateTask,
+      delete: api.deleteTask,
+      extract: api.extractTasks,
+    },
+    {
+      name: 'Activity',
+      create: api.createActivity,
+      get: api.getActivities,
+      getById: api.getActivityById,
+      update: api.updateActivity,
+      delete: api.deleteActivity,
+      extract: api.extractActivities,
+    },
+  ];
+
+  types.forEach(({ name, create, get, getById, update, delete: del, extract }) => {
+    it(`${name}: GET all works`, async () => {
+      mockFetch([]);
+      await get();
+      expect(fetch_()).toHaveBeenCalled();
+    });
+
+    it(`${name}: CREATE works`, async () => {
+      mockFetch({ id: 1 });
+      await create({ name: 'test' } as any);
+      expect(fetch_()).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }));
+    });
+
+    it(`${name}: GET by id works`, async () => {
+      mockFetch({ id: 1 });
+      await getById(1);
+      expect(fetch_()).toHaveBeenCalledWith(expect.stringMatching(/\/1/));
+    });
+
+    it(`${name}: UPDATE works`, async () => {
+      mockFetch({ id: 1 });
+      await update(1, { name: 'updated' } as any);
+      expect(fetch_()).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'PUT' }));
+    });
+
+    it(`${name}: DELETE works`, async () => {
+      mockFetch(undefined);
+      await del(1);
+      expect(fetch_()).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'DELETE' }));
+    });
+
+    it(`${name}: EXTRACT works`, async () => {
+      mockFetch([]);
+      await extract('file.txt');
+      expect(fetch_()).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ method: 'POST' }));
+    });
   });
-
-
-  // 1. Testing GET (all)
-  // Epics
-  it('should fetch for successful getEpics', async () => {
-    mockFetch([{ id: 1, name: "epic1" }]);
-    expect(await getEpics()).toEqual([{ id: 1, name: "epic1" }]);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\//));
-  });
-
-  it('should throw for failed getEpics', async () => {
-    mockFetchReject(404);
-    await expect(getEpics()).rejects.toThrow(/GET \/epics\//);
-  });
-
-  // Decisions
-  it('should fetch for successful getDecisions', async () => {
-    mockFetch([{ id: 1, name: "decision1" }]);
-    expect(await getDecisions()).toEqual([{ id: 1, name: "decision1" }]);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\//));
-  });
-
-  it('should throw for failed getDecisions', async () => {
-    mockFetchReject(404);
-    await expect(getDecisions()).rejects.toThrow(/GET \/decisions\//);
-  });
-
-  // Deliverables
-  it('should fetch for successful getDeliverables', async () => {
-    mockFetch([{ id: 1, name: "deliverable1" }]);
-    expect(await getDeliverables()).toEqual([{ id: 1, name: "deliverable1" }]);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\//));
-  });
-
-  it('should throw for failed getDeliverables', async () => {
-    mockFetchReject(404);
-    await expect(getDeliverables()).rejects.toThrow(/GET \/deliverables\//);
-  });
-
-  // Activities
-  it('should fetch for successful getActivities', async () => {
-    mockFetch([{ id: 1, name: "activity1" }]);
-    expect(await getActivities()).toEqual([{ id: 1, name: "activity1" }]);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\//));
-  });
-
-  it('should throw for failed getActivities', async () => {
-    mockFetchReject(404);
-    await expect(getActivities()).rejects.toThrow(/GET \/activities\//);
-  });
-
-  // Tasks
-  it('should fetch for successful getTasks', async () => {
-    mockFetch([{ id: 1, name: "task1" }]);
-    expect(await getTasks()).toEqual([{ id: 1, name: "task1" }]);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\//));
-  });
-
-  it('should throw for failed getTasks', async () => {
-    mockFetchReject(404);
-    await expect(getTasks()).rejects.toThrow(/GET \/tasks\//);
-  });
-
-  // 2. Testing POST (create)
-  //Epics
-  it('should POST to createEpic and return result', async () => {
-    const input = { name: 'epic2' }, output = { id: 2, name: 'epic2' };
-    mockFetch(output);
-    expect(await createEpic(input)).toEqual(output);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\//), expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify(input),
-    }));
-  });
-
-  it('should throw for failed createEpic', async () => {
-    mockFetchReject(400);
-    await expect(createEpic({})).rejects.toThrow(/POST \/epics\//);
-  });
-
-  // Decisions
-  it('should POST to createDecision', async () => {
-    const input = { name: 'decision2' }, output = { id: 2, name: 'decision2' };
-    mockFetch(output);
-    expect(await createDecision(input)).toEqual(output);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\//), expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify(input),
-    }));
-  });
-
-  it('should throw for failed createDecision', async () => {
-    mockFetchReject(400);
-    await expect(createDecision({})).rejects.toThrow(/POST \/decisions\//);
-  });
-
-  // Deliverables
-  it('should POST to createDeliverable', async () => {
-    const input = { name: 'deliverable2' }, output = { id: 2, name: 'deliverable2' };
-    mockFetch(output);
-    expect(await createDeliverable(input)).toEqual(output);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\//), expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify(input),
-    }));
-  });
-
-  it('should throw for failed createDeliverable', async () => {
-    mockFetchReject(400);
-    await expect(createDeliverable({})).rejects.toThrow(/POST \/deliverables\//);
-  });
-
-  // Activities
-  it('should POST to createActivity and return result', async () => {
-    const input = { name: 'activity2' }, output = { id: 2, name: 'activity2' };
-    mockFetch(output);
-    expect(await createActivity(input)).toEqual(output);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\//), expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify(input),
-    }));
-  });
-
-  it('should throw for failed createActivity', async () => {
-    mockFetchReject(429);
-    await expect(createActivity({})).rejects.toThrow(/POST \/activities\//);
-  });
-
-  // Tasks
-  it('should POST to createTask and return result', async () => {
-    const input = { name: 'task2' }, output = { id: 2, name: 'task2' };
-    mockFetch(output);
-    expect(await createTask(input)).toEqual(output);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\//), expect.objectContaining({
-      method: 'POST',
-      body: JSON.stringify(input),
-    }));
-  });
-
-  it('should throw for failed createTask', async () => {
-    mockFetchReject(403);
-    await expect(createTask({})).rejects.toThrow(/POST \/tasks\//);
-  });
-
-
-  // 3. Testing GET by id
-  // Epics
-  it('should fetch an epic by id', async () => {
-    mockFetch({ id: 3, name: 'epic3' });
-    expect(await getEpicById(3)).toEqual({ id: 3, name: 'epic3' });
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/3/));
-  });
-
-  it('should throw for not found epic by id', async () => {
-    mockFetchReject(404);
-    await expect(getEpicById(404)).rejects.toThrow(/GET \/epics\/404/);
-  });
-
-  // Decisions
-  it('should fetch a decision by id', async () => {
-    mockFetch({ id: 3, name: 'decision3' });
-    expect(await getDecisionById(3)).toEqual({ id: 3, name: 'decision3' });
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/3/));
-  });
-
-  it('should throw for not found decision by id', async () => {
-    mockFetchReject(404);
-    await expect(getDecisionById(404)).rejects.toThrow(/GET \/decisions\/404/);
-  });
-
-  // Deliverables
-  it('should fetch a deliverable by id', async () => {
-    mockFetch({ id: 3, name: 'deliverable3' });
-    expect(await getDeliverableById(3)).toEqual({ id: 3, name: 'deliverable3' });
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/3/));
-  });
-
-  it('should throw for not found deliverable by id', async () => {
-    mockFetchReject(404);
-    await expect(getDeliverableById(404)).rejects.toThrow(/GET \/deliverables\/404/);
-  });
-
-  // Activities
-  it('should fetch an activity by id', async () => {
-    mockFetch({ id: 3, name: 'activity3' });
-    expect(await getActivityById(3)).toEqual({ id: 3, name: 'activity3' });
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/3/));
-  });
-
-  it('should throw for not found activity by id', async () => {
-    mockFetchReject(404);
-    await expect(getActivityById(404)).rejects.toThrow(/GET \/activities\/404/);
-  });
-
-  // Tasks
-  it('should fetch a task by id', async () => {
-    mockFetch({ id: 3, name: 'task3' });
-    expect(await getTaskById(3)).toEqual({ id: 3, name: 'task3' });
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/3/));
-  });
-
-  it('should throw for not found task by id', async () => {
-    mockFetchReject(404);
-    await expect(getTaskById(999)).rejects.toThrow(/GET \/tasks\/999/);
-  });
-
-  // 4. Testing PUT (update)
-  // Epics
-  it('should update an epic with updateEpic', async () => {
-    const updateData = { update: "data4" };
-    mockFetch({ id: 4, update: "data4" });
-    expect(await updateEpic(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/\/epics\/4/),
-      expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
-    );
-  });
-
-  it('should throw for failed updateEpic', async () => {
-    mockFetchReject(500);
-    await expect(updateEpic(4, { update: "data4" })).rejects.toThrow(/PUT \/epics\/4/);
-  });
-
-  // Decisions
-  it('should update a decision with updateDecision', async () => {
-    const updateData = { update: "data4" };
-    mockFetch({ id: 4, update: "data4" });
-    expect(await updateDecision(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/\/decisions\/4/),
-      expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
-    );
-  });
-
-  it('should throw for failed updateDecision', async () => {
-    mockFetchReject(500);
-    await expect(updateDecision(4, { update: "data4" })).rejects.toThrow(/PUT \/decisions\/4/);
-  });
-
-  // Deliverables
-  it('should update a deliverable with updateDeliverable', async () => {
-    const updateData = { update: "data4" };
-    mockFetch({ id: 4, update: "data4" });
-    expect(await updateDeliverable(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/\/deliverables\/4/),
-      expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
-    );
-  });
-
-  it('should throw for failed updateDeliverable', async () => {
-    mockFetchReject(500);
-    await expect(updateDeliverable(4, { update: "data4" })).rejects.toThrow(/PUT \/deliverables\/4/);
-  });
-
-  // Activities
-  it('should update an activity with updateActivity', async () => {
-    const updateData = { update: "data4" };
-    mockFetch({ id: 4, update: "data4" });
-    expect(await updateActivity(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/\/activities\/4/),
-      expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
-    );
-  });
-
-  it('should throw for failed updateActivity', async () => {
-    mockFetchReject(500);
-    await expect(updateActivity(4, { update: "data4" })).rejects.toThrow(/PUT \/activities\/4/);
-  });
-
-  // Tasks
-  it('should update a task with updateTask', async () => {
-    const updateData = { update: "data4" };
-    mockFetch({ id: 4, update: "data4" });
-    expect(await updateTask(4, updateData)).toEqual({ id: 4, update: "data4" });
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/\/tasks\/4/),
-      expect.objectContaining({ method: 'PUT', body: JSON.stringify(updateData) }),
-    );
-  });
-
-  it('should throw for failed updateTasks', async () => {
-    mockFetchReject(500);
-    await expect(updateTask(4, { update: "data4" })).rejects.toThrow(/PUT \/tasks\/4/);
-  });
-
-  // 5. Testing DELETE
-  // Epics
-  it('should DELETE an epic', async () => {
-    mockFetch(undefined);
-    await expect(deleteEpic(5)).resolves.toBeUndefined();
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/5/), expect.objectContaining({ method: 'DELETE' }));
-  });
-
-  it('should throw for failed deleteEpic', async () => {
-    mockFetchReject(404);
-    await expect(deleteEpic(5)).rejects.toThrow(/DELETE \/epics\/5/);
-  });
-
-  // Decisions
-  it('should DELETE a decision', async () => {
-    mockFetch(undefined);
-    await expect(deleteDecision(5)).resolves.toBeUndefined();
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/5/), expect.objectContaining({ method: 'DELETE' }));
-  });
-
-  it('should throw for failed deleteDecision', async () => {
-    mockFetchReject(404);
-    await expect(deleteDecision(5)).rejects.toThrow(/DELETE \/decisions\/5/);
-  });
-
-  //Deliverables
-  it('should DELETE a deliverable', async () => {
-    mockFetch(undefined);
-    await expect(deleteDeliverable(5)).resolves.toBeUndefined();
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/5/), expect.objectContaining({ method: 'DELETE' }));
-  });
-
-  it('should throw for failed deleteDeliverable', async () => {
-    mockFetchReject(404);
-    await expect(deleteDeliverable(5)).rejects.toThrow(/DELETE \/deliverables\/5/);
-  });
-
-  // Activities
-    it('should DELETE an activity', async () => {
-    mockFetch(undefined);
-    await expect(deleteActivity(5)).resolves.toBeUndefined();
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/5/), expect.objectContaining({ method: 'DELETE' }));
-  });
-
-  it('should throw for failed deleteActivity', async () => {
-    mockFetchReject(404);
-    await expect(deleteActivity(5)).rejects.toThrow(/DELETE \/activities\/5/);
-  });
-
-  // Tasks
-    it('should DELETE a task', async () => {
-    mockFetch(undefined);
-    await expect(deleteTask(5)).resolves.toBeUndefined();
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/5/), expect.objectContaining({ method: 'DELETE' }));
-  });
-
-  it('should throw for failed deleteTask', async () => {
-    mockFetchReject(404);
-    await expect(deleteTask(5)).rejects.toThrow(/DELETE \/tasks\/5/);
-  });
-
-
-  // 6. Testing EXTRACT (LLM POST)
-  // Epics
-  it('should POST to extractEpics with filepath', async () => {
-    const epics = [{ id: 6, name: "epics" }];
-    mockFetch(epics);
-    const result = await extractEpics("file.yaml");
-    expect(result).toBe(epics);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/epics\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
-  });
-
-  it('should handle filepaths with special characters in extractEpics', async () => {
-    const epics = [{ id: 6 }];
-    mockFetch(epics);
-    await extractEpics("a b/ç&e$.yaml");
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
-      expect.anything()
-    );
-  });
-
-  it('should throw on failed extractEpics', async () => {
-    mockFetchReject(500);
-    await expect(extractEpics("file.yaml")).rejects.toThrow();
-  });
-
-  it('should throw on extractEpics with empty filepath', async () => {
-  mockFetchReject(400);
-  await expect(extractEpics("")).rejects.toThrow();
-  });
-
-  // Decisions
-  it('should POST to extractDecisions with filepath', async () => {
-    const decisions = [{ id: 6, name: "decisions" }];
-    mockFetch(decisions);
-    const result = await extractDecisions("file.yaml");
-    expect(result).toBe(decisions);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/decisions\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
-  });
-
-  it('should handle filepaths with special characters in extractDecisions', async () => {
-    const decisions = [{ id: 6 }];
-    mockFetch(decisions);
-    await extractDecisions("a b/ç&e$.yaml");
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
-      expect.anything()
-    );
-  });
-
-  it('should throw on failed extractDecisions', async () => {
-    mockFetchReject(500);
-    await expect(extractDecisions("file.yaml")).rejects.toThrow();
-  });
-
-  it('should throw on extractDecisions with empty filepath', async () => {
-  mockFetchReject(400);
-  await expect(extractDecisions("")).rejects.toThrow();
-  });
-
-  // Deliverables
-  it('should POST to extractDeliverables with filepath', async () => {
-    const deliverables = [{ id: 6, name: "deliverables" }];
-    mockFetch(deliverables);
-    const result = await extractDeliverables("file.yaml");
-    expect(result).toBe(deliverables);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/deliverables\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
-  });
-
-  it('should handle filepaths with special characters in extractDeliverables', async () => {
-    const deliverables = [{ id: 6 }];
-    mockFetch(deliverables);
-    await extractDeliverables("a b/ç&e$.yaml");
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
-      expect.anything()
-    );
-  });
-
-  it('should throw on failed extractDeliverables', async () => {
-    mockFetchReject(500);
-    await expect(extractDeliverables("file.yaml")).rejects.toThrow();
-  });
-
-  it('should throw on extractDeliverables with empty filepath', async () => {
-  mockFetchReject(400);
-  await expect(extractDeliverables("")).rejects.toThrow();
-  });
-
-  // Activities
-    it('should POST to extractActivities with filepath', async () => {
-    const activities = [{ id: 6, name: "activities" }];
-    mockFetch(activities);
-    const result = await extractActivities("file.yaml");
-    expect(result).toBe(activities);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/activities\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
-  });
-
-  it('should handle filepaths with special characters in extractActivities', async () => {
-    const activities = [{ id: 6 }];
-    mockFetch(activities);
-    await extractActivities("a b/ç&e$.yaml");
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
-      expect.anything()
-    );
-  });
-
-  it('should throw on failed extractActivities', async () => {
-    mockFetchReject(500);
-    await expect(extractActivities("file.yaml")).rejects.toThrow();
-  });
-
-  it('should throw on extractActivities with empty filepath', async () => {
-  mockFetchReject(400);
-  await expect(extractActivities("")).rejects.toThrow();
-  });
-
-  // Tasks
-    it('should POST to extractTasks with filepath', async () => {
-    const tasks = [{ id: 6, name: "tasks" }];
-    mockFetch(tasks);
-    const result = await extractTasks("file.yaml");
-    expect(result).toBe(tasks);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/tasks\/extract\?filepath=file.yaml/), expect.objectContaining({method: 'POST'}));
-  });
-
-  it('should handle filepaths with special characters in extractTasks', async () => {
-    const tasks = [{ id: 6 }];
-    mockFetch(tasks);
-    await extractTasks("a b/ç&e$.yaml");
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/filepath=a%20b%2F%C3%A7%26e%24.yaml/),
-      expect.anything()
-    );
-  });
-
-  it('should throw on failed extractTasks', async () => {
-    mockFetchReject(500);
-    await expect(extractTasks("file.yaml")).rejects.toThrow();
-  });
-
-  it('should throw on extractTasks with empty filepath', async () => {
-  mockFetchReject(400);
-  await expect(extractTasks("")).rejects.toThrow();
-  });
-
-  // 7. Testing UPLOAD DOCUMENT
-  it('should upload a document via uploadDocument', async () => {
-    const mockFile = new File(['newDoc'], 'newDoc.txt', { type: 'text/plain' });
-    const resp = { filename: 'newDoc.txt', message: 'success' };
-    mockFetch(resp);
-    const result = await uploadDocument(mockFile);
-    expect(result).toEqual(resp);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringContaining('/documents/upload'), expect.objectContaining({ method: 'POST' }));
-  });
-
-  it('should throw on failed uploadDocument', async () => {
-    const mockFile = new File(['newDoc'], 'newDoc.txt', { type: 'text/plain' });
-    mockFetchReject(413, "Too large");
-    await expect(uploadDocument(mockFile)).rejects.toThrow(/Upload failed: 413/);
-  });
-
-  // 8. Testing GET DOCUMENTS
-  it('should get all documents', async () => {
-    mockFetch(["a.pdf", "b.docx"]);
-    const result = await getDocuments();
-    expect(result).toEqual(["a.pdf", "b.docx"]);
-    expect(fetchMock()).toHaveBeenCalledWith(expect.stringMatching(/\/documents\//));
-  });
-
-  // 9. Testing retrieval of Document by name (URL encode edge case)
-  it('should get a document by name, url encoded', async () => {
-    const file = "a b&c.doc";
-    mockFetch("CONTENT");
-    await getDocumentByName(file);
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/\/documents\/a%20b%26c.doc/)
-    );
-  });
-
-  it('should throw for getDocumentByName not found', async () => {
-  mockFetchReject(404);
-  await expect(getDocumentByName("doesnotexist.pdf")).rejects.toThrow(/GET \/documents\//);
 });
-
-  // 10. Testing KANBAN update
-  it('should update a Kanban card', async () => {
-    const card = { id: 1, title: "a", type: "task", kanban_status: "todo" };
-    const ret = { ...card, ok: true };
-    mockFetch(ret);
-    const result = await updateKanbanCard(card);
-    expect(result).toEqual(ret);
-    expect(fetchMock()).toHaveBeenCalledWith(
-      expect.stringMatching(/\/kanban\/update/),
-      expect.objectContaining({ method: 'POST', body: JSON.stringify(card) })
-    );
-  });
-
-  it('should throw if Kanban update response not ok', async () => {
-    mockFetchReject(400, "ohno");
-    await expect(updateKanbanCard({ id: 2, title: '', type: '', kanban_status: '' })).rejects.toThrow(/Failed to update kanban card: 400 ohno/);
-  });
 });

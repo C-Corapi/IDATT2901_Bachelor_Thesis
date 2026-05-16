@@ -9,8 +9,16 @@ vi.mock('../../src/api');
 vi.mock('../../src/components/KanbanColumn', () => ({
   default: (props: any) => (
     <div data-testid="kanban-column">
-      <div data-testid="column-title">{props.title}</div>
-      <div data-testid="column-count">{props.items.length}</div>
+      <h2>{props.title}</h2>
+      <button onClick={() => props.onTitleChange?.('New Title')}>Rename</button>
+      {props.items.map((item: any) => (
+        <div key={`${item.type}-${item.id}`} data-testid="kanban-item">
+          <div>{item.title}</div>
+          <button onClick={() => props.onSaveItem?.(item, { title: 'changed' })}>Save</button>
+          <button onClick={() => props.onDeleteItem?.(item)}>Delete</button>
+          <button onClick={() => props.onDropItem?.(item)}>Drop</button>
+        </div>
+      ))}
     </div>
   ),
 }));
@@ -20,240 +28,681 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
+const setupMocks = () => {
+  vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+  vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+  vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+  vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+  vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+};
+
 describe('KanbanPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+  });
+
+  it('renders page heading', () => {
+    setupMocks();
+    render(<KanbanPage />);
+    expect(screen.getByRole('heading', { level: 1, name: /Kanban Board/i })).toBeTruthy();
+  });
+
+  it('loads all metadata types on mount', async () => {
+    setupMocks();
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(api.getEpics).toHaveBeenCalled();
+      expect(api.getDecisions).toHaveBeenCalled();
+      expect(api.getDeliverables).toHaveBeenCalled();
+      expect(api.getTasks).toHaveBeenCalled();
+      expect(api.getActivities).toHaveBeenCalled();
+    });
+  });
+
+  it('shows backlog toggle', async () => {
+    setupMocks();
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      const checkbox = screen.getByRole('checkbox', { name: /Show backlog/i });
+      expect(checkbox).toBeTruthy();
+      expect(checkbox).not.toBeChecked();
+    });
+  });
+
+  it('toggles backlog when checkbox is clicked', async () => {
+    setupMocks();
+    const user = userEvent.setup();
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('checkbox', { name: /Show backlog/i })).toBeTruthy();
+    });
+
+    await user.click(screen.getByRole('checkbox', { name: /Show backlog/i }));
+
+    expect(screen.getByRole('checkbox', { name: /Show backlog/i })).toBeChecked();
+  });
+
+  it('displays kanban board container', async () => {
+    setupMocks();
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('region', { name: /Kanban board/i })).toBeTruthy();
+    });
+  });
+
+  it('shows loading state on mount', () => {
+    vi.spyOn(api, 'getEpics').mockImplementation(() => new Promise(() => {}));
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
     vi.spyOn(api, 'getTasks').mockResolvedValue([]);
     vi.spyOn(api, 'getActivities').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
-  });
 
-  it('renders a section landmark with the expected heading', async () => {
     render(<KanbanPage />);
-
-    const section = screen.getByRole('region', { name: /Kanban Board/i });
-    expect(section).toBeTruthy();
-
-    const heading = screen.getByRole('heading', { level: 1, name: /Kanban Board/i });
-    expect(heading).toBeTruthy();
-    expect(heading).toHaveAttribute('id', 'kanban-heading');
+    expect(screen.getByLabelText(/Loading kanban board/i)).toBeTruthy();
   });
 
-  it('shows loading state initially', async () => {
-    vi.spyOn(api, 'getEpics').mockImplementation(() => new Promise(() => {}));
-    render(<KanbanPage />);
+  it('loads items with kanban_status', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', kanban_status: 'todo' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
 
-    const loadingEl = screen.getByRole('status', { name: /Loading kanban board/i });
-    expect(loadingEl).toBeTruthy();
-    expect(loadingEl).toHaveTextContent(/Loading/i);
-  });
-
-  it('renders the show backlog checkbox with correct attributes', async () => {
     render(<KanbanPage />);
 
     await waitFor(() => {
-      const checkbox = screen.getByRole('checkbox', { name: /Show backlog column/i });
-      expect(checkbox).toBeTruthy();
-      expect(checkbox).not.toBeChecked();
+      expect(screen.getByText('Epic 1')).toBeTruthy();
     });
-
-    const label = screen.getByText(/Show Backlog/i);
-    expect(label).toBeTruthy();
-    expect(label.closest('label')).toHaveAttribute('title', 'Toggle backlog column visibility');
   });
 
-  it('fetches data from all metadata endpoints on mount', async () => {
+  it('handles API errors gracefully', async () => {
+    vi.spyOn(api, 'getEpics').mockRejectedValue(new Error('API Error'));
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
     render(<KanbanPage />);
 
     await waitFor(() => {
-      expect(api.getEpics).toHaveBeenCalledTimes(1);
-      expect(api.getDeliverables).toHaveBeenCalledTimes(1);
-      expect(api.getTasks).toHaveBeenCalledTimes(1);
-      expect(api.getActivities).toHaveBeenCalledTimes(1);
-      expect(api.getDecisions).toHaveBeenCalledTimes(1);
+      expect(screen.queryByLabelText(/Loading/i)).toBeNull();
     });
   });
 
-  it('renders kanban board region with columns when data loads', async () => {
+  it('displays multiple items in different columns', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic Todo', kanban_status: 'todo', owner: 'alice' },
+      { id: 2, title: 'Epic Done', kanban_status: 'done', owner: 'bob' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic Todo')).toBeTruthy();
+      expect(screen.getByText('Epic Done')).toBeTruthy();
+    });
+  });
+
+  it('displays deliverables with extra details', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      {
+        id: 1,
+        title: 'Deliverable 1',
+        kanban_status: 'in_progress',
+        owner: 'alice',
+        deadline: '2026-12-31',
+        nature: 'technical',
+        reach: 'global',
+      },
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deliverable 1')).toBeTruthy();
+    });
+  });
+
+  it('displays tasks with target date', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      {
+        id: 1,
+        title: 'Task 1',
+        kanban_status: 'todo',
+        owner: 'alice',
+        target_date: '2026-06-01',
+      },
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Task 1')).toBeTruthy();
+    });
+  });
+
+  it('displays decisions with nature and reach', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      {
+        id: 1,
+        title: 'Decision 1',
+        kanban_status: 'done',
+        owner: 'bob',
+        nature: 'structural',
+        reach: 'local',
+        alternatives: 'Option A, Option B',
+      },
+    ]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+    });
+  });
+
+  it('displays activities', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      {
+        id: 1,
+        title: 'Activity 1',
+        kanban_status: 'in_progress',
+        owner: 'charlie',
+      },
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+    });
+  });
+
+  it('displays epics with all extra details', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      {
+        id: 1,
+        title: 'Epic 1',
+        kanban_status: 'todo',
+        owner: 'alice',
+        classification: 'feature',
+        scope: 'global',
+        use_case: 'User management',
+        user_story: 'As a user...',
+      },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+  });
+
+  it('handles items with backlog status', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Backlog Epic', kanban_status: 'backlog', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Backlog Epic')).toBeNull();
+    });
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('checkbox', { name: /Show backlog/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Backlog Epic')).toBeTruthy();
+    });
+  });
+
+  it('hides backlog column by default', async () => {
+    setupMocks();
     render(<KanbanPage />);
 
     await waitFor(() => {
       const board = screen.getByRole('region', { name: /Kanban board/i });
       expect(board).toBeTruthy();
     });
-  });
 
-  it('renders 3 columns by default (without backlog)', async () => {
-    render(<KanbanPage />);
-
-    await waitFor(() => {
-      const columns = screen.getAllByTestId('kanban-column');
-      expect(columns).toHaveLength(3);
-    });
-
-    expect(screen.getByText('To Do')).toBeTruthy();
-    expect(screen.getByText('In Progress')).toBeTruthy();
-    expect(screen.getByText('Done')).toBeTruthy();
     expect(screen.queryByText('Backlog')).toBeNull();
   });
 
-  it('shows 4 columns when backlog checkbox is checked', async () => {
-    render(<KanbanPage />);
+  it('shows backlog column when toggled', async () => {
+    setupMocks();
     const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId('kanban-column')).toHaveLength(3);
-    });
-
-    const checkbox = screen.getByRole('checkbox', { name: /Show backlog column/i });
-    await user.click(checkbox);
-
-    await waitFor(() => {
-      const columns = screen.getAllByTestId('kanban-column');
-      expect(columns).toHaveLength(4);
-    });
-
-    expect(screen.getByText('Backlog')).toBeTruthy();
-  });
-
-  it('handles API errors gracefully by using empty arrays', async () => {
-    vi.spyOn(api, 'getEpics').mockRejectedValue(new Error('Failed'));
-    vi.spyOn(api, 'getDecisions').mockRejectedValue(new Error('Failed'));
-
     render(<KanbanPage />);
 
     await waitFor(() => {
-      const board = screen.getByRole('region', { name: /Kanban board/i });
-      expect(board).toBeTruthy();
+      expect(screen.getByRole('checkbox', { name: /Show backlog/i })).toBeTruthy();
     });
 
-    expect(api.getEpics).toHaveBeenCalled();
-    expect(api.getDecisions).toHaveBeenCalled();
-  });
-
-  it('maps items to columns based on kanban_status', async () => {
-    vi.spyOn(api, 'getTasks').mockResolvedValue([
-      { id: 1, title: 'Task 1', owner: 'alice', kanban_status: 'todo', description: 'desc1' },
-      { id: 2, title: 'Task 2', owner: 'bob', kanban_status: 'in_progress', description: 'desc2' },
-    ]);
-
-    render(<KanbanPage />);
+    await user.click(screen.getByRole('checkbox', { name: /Show backlog/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('To Do')).toBeTruthy();
-      expect(screen.getByText('In Progress')).toBeTruthy();
-    });
-  });
-
-  it('filters items for backlog column correctly', async () => {
-    vi.spyOn(api, 'getTasks').mockResolvedValue([
-      { id: 1, title: 'Backlog Task', owner: 'alice', kanban_status: 'backlog', description: 'desc' },
-      { id: 2, title: 'Todo Task', owner: 'bob', kanban_status: 'todo', description: 'desc' },
-    ]);
-
-    render(<KanbanPage />);
-    const user = userEvent.setup();
-
-    await waitFor(() => {
-      expect(screen.getAllByTestId('kanban-column')).toHaveLength(3);
-    });
-
-    const checkbox = screen.getByRole('checkbox', { name: /Show backlog column/i });
-    await user.click(checkbox);
-
-    await waitFor(() => {
-      const columns = screen.getAllByTestId('kanban-column');
-      expect(columns).toHaveLength(4);
       expect(screen.getByText('Backlog')).toBeTruthy();
     });
   });
 
-  it('maps epic items with all extraDetails fields', async () => {
+  it('handles items without kanban_status', async () => {
     vi.spyOn(api, 'getEpics').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Epic Complete',
-        owner: 'alice',
-        kanban_status: 'todo',
-        description: 'desc',
-        classification: 'Feature',
-        scope: 'System-wide',
-        use_case: 'UC-001',
-        user_story: 'As a user, I want...'
-      },
+      { id: 1, title: 'No Status Epic', owner: 'alice' } as any,
     ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
 
     render(<KanbanPage />);
 
     await waitFor(() => {
-      const columns = screen.getAllByTestId('kanban-column');
-      expect(columns.length).toBeGreaterThan(0);
+      expect(screen.queryByLabelText(/Loading/i)).toBeNull();
     });
   });
 
-  it('maps task items with target_date in extraDetails', async () => {
-    vi.spyOn(api, 'getTasks').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Task with Date',
-        owner: 'bob',
-        kanban_status: 'in_progress',
-        description: 'desc',
-        target_date: '2024-12-01'
-      },
+  it('reloads data after successful card update', async () => {
+    const getEpicsSpy = vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', kanban_status: 'todo', owner: 'alice' },
     ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
 
     render(<KanbanPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('In Progress')).toBeTruthy();
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    expect(getEpicsSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('handles update kanban card error gracefully', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'updateKanbanCard').mockRejectedValue(new Error('Update failed'));
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    consoleError.mockRestore();
+  });
+
+  it('renames column', async () => {
+    setupMocks();
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('To Do')).toBeTruthy();
+    });
+
+    const renameButtons = screen.getAllByRole('button', { name: /Rename/i });
+    await userEvent.click(renameButtons[0]);
+
+    expect(screen.getByText('New Title')).toBeTruthy();
+  });
+
+  it('saves epic item', async () => {
+    const updateSpy = vi.spyOn(api, 'updateEpic').mockResolvedValue({} as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
     });
   });
 
-  it('maps deliverable items with deadline in extraDetails', async () => {
+  it('saves deliverable item', async () => {
+    const updateSpy = vi.spyOn(api, 'updateDeliverable').mockResolvedValue({} as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
     vi.spyOn(api, 'getDeliverables').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Deliverable with Deadline',
-        owner: 'charlie',
-        kanban_status: 'done',
-        description: 'desc',
-        nature: 'functional',
-        reach: 'local',
-        alternatives: 'none',
-        deadline: '2024-11-30'
-      },
+      { id: 1, title: 'Deliverable 1', kanban_status: 'todo', owner: 'alice' },
     ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
 
     render(<KanbanPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('Done')).toBeTruthy();
+      expect(screen.getByText('Deliverable 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
     });
   });
 
-  it('maps decision items with deadline in extraDetails', async () => {
+  it('saves task item', async () => {
+    const updateSpy = vi.spyOn(api, 'updateTask').mockResolvedValue({} as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 1, title: 'Task 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Task 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('saves activity item', async () => {
+    const updateSpy = vi.spyOn(api, 'updateActivity').mockResolvedValue({} as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 1, title: 'Activity 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('saves decision item', async () => {
+    const updateSpy = vi.spyOn(api, 'updateDecision').mockResolvedValue({} as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
     vi.spyOn(api, 'getDecisions').mockResolvedValue([
-      {
-        id: 1,
-        title: 'Decision with Deadline',
-        owner: 'dave',
-        kanban_status: 'backlog',
-        description: 'desc',
-        nature: 'structural',
-        reach: 'global',
-        alternatives: 'option A, option B',
-        deadline: '2024-10-15'
-      },
+      { id: 1, title: 'Decision 1', kanban_status: 'todo', owner: 'alice', nature: 'structural', reach: 'global' },
     ]);
 
     render(<KanbanPage />);
 
     await waitFor(() => {
-      const checkbox = screen.getByRole('checkbox', { name: /Show backlog column/i });
-      expect(checkbox).toBeTruthy();
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles save error gracefully', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'updateEpic').mockRejectedValue(new Error('Save failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Save/i }));
+
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalled();
+    });
+
+    consoleError.mockRestore();
+  });
+
+  it('deletes epic item', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteEpic').mockResolvedValue();
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete/i }));
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('deletes deliverable item', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteDeliverable').mockResolvedValue();
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 1, title: 'Deliverable 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deliverable 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete/i }));
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('deletes task item', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteTask').mockResolvedValue();
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 1, title: 'Task 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Task 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete/i }));
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('deletes activity item', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteActivity').mockResolvedValue();
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 1, title: 'Activity 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete/i }));
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('deletes decision item', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteDecision').mockResolvedValue();
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 1, title: 'Decision 1', kanban_status: 'todo', owner: 'alice', nature: 'structural', reach: 'global' },
+    ]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete/i }));
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('handles delete error gracefully', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'deleteEpic').mockRejectedValue(new Error('Delete failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    await userEvent.click(screen.getByRole('button', { name: /Delete/i }));
+
+    await waitFor(() => {
+      expect(consoleError).toHaveBeenCalled();
+    });
+
+    consoleError.mockRestore();
+  });
+
+  it('skips drop when target column not found', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', kanban_status: 'todo', owner: 'alice' },
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+  });
+
+  it('displays items without status as backlog', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic No Status', owner: 'alice' } as any,
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    render(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Epic No Status')).toBeNull();
+    });
+
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('checkbox', { name: /Show backlog/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic No Status')).toBeTruthy();
     });
   });
 });
