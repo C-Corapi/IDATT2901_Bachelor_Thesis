@@ -91,7 +91,7 @@ const KanbanColumn: React.FC<Props> = ({
             title="Press Enter to save, Escape to cancel"
           />
         ) : (
-          <h3 className="kanban-col-title">{title}</h3>
+          <h2 className="kanban-col-title">{title}</h2>
         )}
         <span
           className="kanban-col-count"

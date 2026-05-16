@@ -82,56 +82,50 @@ const DocumentsPage: React.FC = () => {
           </button>
         </div>
       ) : (
-        <div className="doc-list" role="list" aria-label="Uploaded documents list">
-          {docs.map((filename) => (
-            <article
-              className="doc-row"
-              key={filename}
-              role="listitem"
-              aria-label={`Document: ${filename}`}
-            >
-              <div>
-                <div className="doc-name">{filename}</div>
-              </div>
+          <div className="doc-list">
+            {docs.map((filename) => (
+                <div
+                    className="doc-row"
+                    key={filename}
+                >
+                  <div className="doc-name">{filename}</div>
 
-              <div className="doc-actions">
-                <button
-                  className="btn-outline"
-                  title={`View document: ${filename}`}
-                  aria-label={`View document: ${filename}`}
-                  onClick={() => handleView(filename)}
-                >
-                  View
-                </button>
-                <button
-                  className="btn-outline btn-outline--delete"
-                  title={`Delete document: ${filename}`}
-                  aria-label={`Delete document: ${filename}`}
-                  onClick={() => handleDeleteClick(filename)}
-                >
-                  Delete
-                </button>
-              </div>
-            </article>
-          ))}
-        </div>
+                  <div className="doc-actions">
+                    <button
+                        className="btn-outline"
+                        onClick={() => handleView(filename)}
+                        aria-label={`View ${filename}`}
+                    >
+                      View
+                    </button>
+                    <button
+                        className="btn-outline btn-outline--delete"
+                        onClick={() => handleDeleteClick(filename)}
+                        aria-label={`Delete ${filename}`}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+            ))}
+          </div>
       )}
 
       {showViewModal && selectedFile && (
-        <div className="modal-overlay" role="presentation" onClick={() => setShowViewModal(false)}>
-          <div className="modal modal--wide" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
-            <h2>{selectedFile}</h2>
+          <div className="modal-overlay" role="presentation" onClick={() => setShowViewModal(false)}>
+            <div className="modal modal--wide" role="dialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
+              <h2>{selectedFile}</h2>
 
-            {docLoading ? (
-              <div className="empty-state" role="status">Loading document…</div>
-            ) : (
-              <div className="document-viewer">
-                <pre>{docContent}</pre>
-              </div>
-            )}
+              {docLoading ? (
+                  <div className="empty-state" role="status">Loading document…</div>
+              ) : (
+                  <div className="document-viewer">
+                    <pre>{docContent}</pre>
+                  </div>
+              )}
 
-            <div className="modal-actions">
-              <button className="btn-cancel" onClick={() => setShowViewModal(false)}>
+              <div className="modal-actions">
+                <button className="btn-cancel" onClick={() => setShowViewModal(false)}>
                 Close
               </button>
             </div>

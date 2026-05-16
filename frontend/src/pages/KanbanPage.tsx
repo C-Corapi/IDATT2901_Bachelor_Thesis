@@ -180,7 +180,7 @@ const KanbanPage: React.FC = () => {
       {loading ? (
         <div className="empty-state" role="status" aria-label="Loading kanban board">Loading…</div>
       ) : (
-        <div className="kanban" role="region" aria-label="Kanban board">
+        <div className="kanban">
           {visibleColumns.map((col) => (
             <KanbanColumn
               key={col.id}

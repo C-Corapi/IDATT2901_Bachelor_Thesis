@@ -60,6 +60,11 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   outline: 3px solid var(--blue); outline-offset: 2px;
 }
 
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+  outline: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
@@ -702,7 +707,12 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   border-left: 4px solid var(--peach); border-radius: var(--radius);
   padding: clamp(16px, 3vw, 26px); margin-bottom: 18px;
 }
-.about-card h3 { font-size: 1rem; font-weight: 600; color: var(--blue-dark); margin-bottom: 6px; }
+.about-card h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--blue-dark);
+  margin-bottom: 6px;
+}
 .about-types {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
@@ -712,7 +722,11 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   background: var(--white); border: 1px solid var(--gray-200);
   border-radius: var(--radius); padding: 18px; text-align: center;
 }
-.about-type h4 { color: var(--blue-dark); font-size: .95rem; margin-bottom: 4px; }
+.about-type h3 {
+  color: var(--blue-dark);
+  font-size: .95rem;
+  margin-bottom: 4px;
+}
 .about-type p  { color: var(--gray-500); font-size: .85rem; margin: 0; }
 
 /* ── Responsive ─────────────────────────────────────────────────── */
