@@ -253,12 +253,12 @@ const handleCreate = async () => {
   const total = epics.length + decisions.length + deliverables.length + tasks.length + activities.length;
 
   const stats: Stat[] = [
-    { label: 'Epics',        value: epics.length },
+      { label: 'Total',        value: total },
+    { label: 'Epics',        value: epics.length, variant: 'blue' },
     { label: 'Decisions',    value: decisions.length, variant: 'rose' },
-    { label: 'Deliverables', value: deliverables.length },
-    { label: 'Activities',   value: activities.length },
+    { label: 'Deliverables', value: deliverables.length, variant: 'purple' },
+    { label: 'Activities',   value: activities.length, variant: 'green' },
     { label: 'Tasks',        value: tasks.length, variant: 'peach' },
-    { label: 'Total',        value: total },
   ];
 
   const tabs: Tab[] = [

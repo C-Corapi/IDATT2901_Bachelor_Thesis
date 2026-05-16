@@ -3,10 +3,10 @@
    ================================================================ */
 
 :root {
-  --blue:          #5A8FA8;
+  --blue:          #3E7A96;
   --blue-dark:     #2C4452;
   --blue-light:    #67a4c8;
-  --peach:         #C48A5A;
+  --peach:         #A6703D;
   --peach-light:   #FAE4D3;
   --rose:          #9E4252;
   --black:         #1A1A1A;
@@ -17,6 +17,7 @@
   --gray-500:      #5C5C5C;
   --green:         #2E7348;
   --yellow:        #8A6D1B;
+  --purple:        #702963;
   --red:           #A12E23;
   --radius:        8px;
   --radius-sm:     4px;
@@ -161,6 +162,9 @@ a:focus:not(:focus-visible) {
 .stat-value        { font-size: clamp(1.3rem, 4vw, 1.7rem); font-weight: 700; color: var(--blue-dark); }
 .stat-value--peach { color: var(--peach); }
 .stat-value--rose  { color: var(--rose); }
+.stat-value--green { color: var(--green); }
+.stat-value--purple { color: var(--purple); }
+.stat-value--blue { color: var(--blue); }
 
 /* ── Filter tabs ────────────────────────────────────────────────── */
 .tabs { display: flex; gap: 8px; margin-bottom: 22px; flex-wrap: wrap; }
@@ -173,7 +177,7 @@ a:focus:not(:focus-visible) {
   min-height: 44px;
 }
 .tab:hover          { border-color: var(--blue); color: var(--blue-dark); }
-.tab--active        { background: var(--blue-dark); border-color: var(--blue-dark); color: var(--white); }
+.tab--active { background: var(--white); border-color: var(--blue-dark); color: var(--blue-dark); }
 .tab-count {
   font-size: .75rem; font-weight: 700;
   background: rgba(0,0,0,.1); padding: 1px 7px; border-radius: 10px;
