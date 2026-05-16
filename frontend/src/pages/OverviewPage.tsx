@@ -25,10 +25,10 @@ import type { MetadataType } from '../types';
       getEpics().catch(() => []),
       getDecisions().catch(() => []),
       getDeliverables().catch(() => []),
-      getTasks().catch(() => []),
       getActivities().catch(() => []),
+      getTasks().catch(() => []),
     ]).then(([e, d, dl, t, a]) => {
-      setEpics(e); setDecisions(d); setDeliverables(dl); setTasks(t); setActivities(a);
+      setEpics(e); setDecisions(d); setDeliverables(dl); setActivities(a); setTasks(t);
       setLoading(false);
     });
   }, []);
@@ -202,6 +202,18 @@ const handleCreate = async () => {
         });
         break;
       }
+      case 'activity': {
+        const activity = activities.find((a) => a.id === id);
+        if (!activity) break;
+
+        await updateActivity(id, {
+          title: changes.title ?? activity.title,
+          description: changes.description ?? activity.description,
+          owner: changes.owner ?? activity.owner,
+          status: changes.status ?? activity.status,
+        });
+        break;
+      }
       case 'task': {
         const task = tasks.find((t) => t.id === id);
         if (!task) break;
@@ -213,18 +225,6 @@ const handleCreate = async () => {
           status: changes.status ?? task.status,
           time_logged: changes.time_logged ?? task.time_logged,
           target_date: changes.target_date ?? task.target_date,
-        });
-        break;
-      }
-      case 'activity': {
-        const activity = activities.find((a) => a.id === id);
-        if (!activity) break;
-
-        await updateActivity(id, {
-          title: changes.title ?? activity.title,
-          description: changes.description ?? activity.description,
-          owner: changes.owner ?? activity.owner,
-          status: changes.status ?? activity.status,
         });
         break;
       }
@@ -256,8 +256,8 @@ const handleCreate = async () => {
     { label: 'Epics',        value: epics.length },
     { label: 'Decisions',    value: decisions.length, variant: 'rose' },
     { label: 'Deliverables', value: deliverables.length },
-    { label: 'Tasks',        value: tasks.length, variant: 'peach' },
     { label: 'Activities',   value: activities.length },
+    { label: 'Tasks',        value: tasks.length, variant: 'peach' },
     { label: 'Total',        value: total },
   ];
 
@@ -266,8 +266,8 @@ const handleCreate = async () => {
     { key: 'epic',       label: 'Epics',       count: epics.length },
     { key: 'decision',   label: 'Decisions',   count: decisions.length },
     { key: 'deliverable',label: 'Deliverables',count: deliverables.length },
-    { key: 'task',       label: 'Tasks',       count: tasks.length },
     { key: 'activity',   label: 'Activities',  count: activities.length },
+    { key: 'task',       label: 'Tasks',       count: tasks.length },
   ];
 
   const renderCards = () => {
@@ -307,20 +307,20 @@ const handleCreate = async () => {
             />
           ))}
 
+          {activities.map((a) => (
+            <MetadataCard key={`activity-${a.id}`} title={a.title} owner={a.owner} status={(a.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+              description={a.description}
+              onSave={(c) => handleSave('activity', a.id, c)}
+              onDelete={() => handleDelete('activity', a.id)}
+            />
+          ))}
+
           {tasks.map((t) => (
             <MetadataCard key={`task-${t.id}`} title={t.title} owner={t.owner} status={(t.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
               description={t.description}
               onSave={(c) => handleSave('task', t.id, c)}
               onDelete={() => handleDelete('task', t.id)}
               extraDetails={t.target_date ? [{ label: 'Target Date', value: t.target_date, key: 'target_date' }] : []}
-            />
-          ))}
-
-          {activities.map((a) => (
-            <MetadataCard key={`activity-${a.id}`} title={a.title} owner={a.owner} status={(a.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
-              description={a.description}
-              onSave={(c) => handleSave('activity', a.id, c)}
-              onDelete={() => handleDelete('activity', a.id)}
             />
           ))}
         </>
