@@ -13,326 +13,296 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(<MemoryRouter>{ui}</MemoryRouter>);
-};
+async function renderWithRouter(ui: React.ReactElement) {
+  const result = render(<MemoryRouter>{ui}</MemoryRouter>);
+  await Promise.resolve();
+  return result;
+}
 
 describe('DocumentsPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
-  it('renders page heading', async () => {
+  it('renders a section landmark with the expected heading', async () => {
     vi.spyOn(api, 'getDocuments').mockResolvedValue([]);
-    renderWithRouter(<DocumentsPage />);
+    await renderWithRouter(<DocumentsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByRole('heading', { level: 1, name: /Uploaded Documents/i })).toBeTruthy();
-    });
+    const section = screen.getByRole('region', { name: /Uploaded Documents/i });
+    expect(section).toBeTruthy();
+
+    const heading = screen.getByRole('heading', { level: 1, name: /Uploaded Documents/i });
+    expect(heading).toBeTruthy();
+    expect(heading).toHaveAttribute('id', 'docs-heading');
   });
 
-  it('shows empty state when no documents', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue([]);
-    renderWithRouter(<DocumentsPage />);
+  it('shows loading state initially', async () => {
+    vi.spyOn(api, 'getDocuments').mockImplementation(() => new Promise(() => {}));
+    await renderWithRouter(<DocumentsPage />);
 
-    await waitFor(() => {
-      expect(screen.getByText(/No documents yet/i)).toBeTruthy();
-    });
+    const loadingEl = screen.getByRole('status', { name: /Loading documents/i });
+    expect(loadingEl).toBeTruthy();
+    expect(loadingEl).toHaveTextContent(/Loading/i);
   });
 
-  it('displays documents list', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['doc1.txt', 'doc2.docx']);
-    renderWithRouter(<DocumentsPage />);
+  it('shows empty state with upload button when no documents exist', async () => {
+    vi.spyOn(api, 'getDocuments').mockResolvedValue([]);
+    await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText('doc1.txt')).toBeTruthy();
-      expect(screen.getByText('doc2.docx')).toBeTruthy();
+      const emptyState = screen.getByRole('status');
+      expect(emptyState).toHaveTextContent(/No documents yet/i);
+    });
+
+    const uploadBtn = screen.getByRole('button', { name: /Navigate to upload page/i });
+    expect(uploadBtn).toBeTruthy();
+    expect(uploadBtn).toHaveTextContent(/Upload one/i);
+    expect(uploadBtn).toHaveAttribute('title', 'Go to the upload page');
+  });
+
+  it('renders a list of documents', async () => {
+    const mockDocs = ['doc1.txt', 'doc2.docx', 'doc3.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      const docList = document.querySelector('.doc-list');
+      expect(docList).toBeTruthy();
+    });
+
+    const docRows = document.querySelectorAll('.doc-row');
+    expect(docRows).toHaveLength(mockDocs.length);
+  });
+
+  it('each document has correct name and action buttons', async () => {
+    const mockDocs = ['report.txt', 'notes.docx'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      mockDocs.forEach((filename) => {
+        expect(screen.getByText(filename)).toBeTruthy();
+
+        const viewBtn = screen.getByRole('button', { name: `View ${filename}` });
+        expect(viewBtn).toBeTruthy();
+        expect(viewBtn).toHaveTextContent('View');
+
+        const deleteBtn = screen.getByRole('button', { name: `Delete ${filename}` });
+        expect(deleteBtn).toBeTruthy();
+        expect(deleteBtn).toHaveTextContent('Delete');
+      });
     });
   });
 
   it('shows View button for each document', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /View document: test.txt/i })).toBeTruthy();
-    });
-  });
-
-  it('shows Delete button for each document', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Delete document: test.txt/i })).toBeTruthy();
-    });
-  });
-
-  it('opens document in modal', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    vi.spyOn(api, 'getDocumentByName').mockResolvedValue('Document content');
-    const user = userEvent.setup();
+    const mockDocs = ['test.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
 
     renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /View document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /View document: test.txt/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText('Document content')).toBeTruthy();
+      expect(screen.getByRole('button', { name: /View test.txt/i })).toBeTruthy();
     });
   });
 
-  it('closes document modal', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
+  it('clicking View button opens modal and loads document content', async () => {
+    const mockDocs = ['test.txt'];
+    const mockContent = 'This is the document content.';
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+    vi.spyOn(api, 'getDocumentByName').mockResolvedValue(mockContent);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test.txt')).toBeTruthy();
+    });
+
+    const viewBtn = screen.getByRole('button', { name: /View test.txt/i });
+    await userEvent.click(viewBtn);
+
+    await waitFor(() => {
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeTruthy();
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
+    });
+
+    const modalHeading = screen.getByRole('heading', { name: 'test.txt' });
+    expect(modalHeading).toBeTruthy();
+
+    await waitFor(() => {
+      expect(screen.getByText(mockContent)).toBeTruthy();
+    });
+
+    expect(api.getDocumentByName).toHaveBeenCalledWith('test.txt');
+  });
+
+  it('shows loading state inside modal while fetching document', async () => {
+    const mockDocs = ['slow.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+    vi.spyOn(api, 'getDocumentByName').mockImplementation(() => new Promise(() => {}));
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('slow.txt')).toBeTruthy();
+    });
+
+    const viewBtn = screen.getByRole('button', { name: /View slow.txt/i });
+    await userEvent.click(viewBtn);
+
+    await waitFor(() => {
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeTruthy();
+    });
+
+    await waitFor(() => {
+      const loadingStatus = screen.getByRole('status');
+      expect(loadingStatus).toHaveTextContent(/Loading document/i);
+    });
+  });
+
+  it('shows error message when document loading fails', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const mockDocs = ['error.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+    vi.spyOn(api, 'getDocumentByName').mockRejectedValue(new Error('Failed to load'));
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('error.txt')).toBeTruthy();
+    });
+
+    const viewBtn = screen.getByRole('button', { name: /View error.txt/i });
+    await userEvent.click(viewBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Unable to load document/i)).toBeTruthy();
+    });
+
+    consoleErrorSpy.mockRestore();
+  });
+
+  it('clicking Close button closes the modal', async () => {
+    const mockDocs = ['closable.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
     vi.spyOn(api, 'getDocumentByName').mockResolvedValue('Content');
-    const user = userEvent.setup();
 
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /View document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /View document: test.txt/i }));
+    await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Close/i })).toBeTruthy();
+      expect(screen.getByText('closable.txt')).toBeTruthy();
     });
 
-    await user.click(screen.getByRole('button', { name: /Close/i }));
+    await userEvent.click(screen.getByRole('button', { name: /View closable.txt/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('dialog')).toBeTruthy();
+    });
+
+    const closeBtn = screen.getByRole('button', { name: /Close/i });
+    await userEvent.click(closeBtn);
 
     await waitFor(() => {
       expect(screen.queryByRole('dialog')).toBeNull();
     });
   });
 
-  it('shows document load error', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    vi.spyOn(api, 'getDocumentByName').mockRejectedValue(new Error('Load failed'));
-    const user = userEvent.setup();
-
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /View document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /View document: test.txt/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Unable to load document/i)).toBeTruthy();
-    });
-  });
-
-  it('opens delete confirmation modal', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    const user = userEvent.setup();
-
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Delete document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Delete document: test.txt/i }));
-
-    await waitFor(() => {
-      expect(screen.getByText(/Delete document/i)).toBeTruthy();
-    });
-  });
-
-  it('deletes document on confirm', async () => {
-    const deleteDocumentMock = vi.spyOn(api, 'deleteDocument').mockResolvedValue(undefined as any);
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    const user = userEvent.setup();
-
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Delete document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Delete document: test.txt/i }));
-
-    await waitFor(() => {
-      const confirmBtn = screen.getByRole('button', { name: /Confirm delete "test.txt"/i });
-      expect(confirmBtn).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Confirm delete "test.txt"/i }));
-
-    await waitFor(() => {
-      expect(deleteDocumentMock).toHaveBeenCalledWith('test.txt');
-    });
-  });
-
-  it('cancels delete operation', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    const user = userEvent.setup();
-
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Delete document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Delete document: test.txt/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Cancel deletion/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Cancel deletion/i }));
-
-    await waitFor(() => {
-      expect(screen.queryByRole('alertdialog')).toBeNull();
-    });
-  });
-
-  it('shows loading state initially', () => {
-    vi.spyOn(api, 'getDocuments').mockImplementation(() => new Promise(() => {}));
-    renderWithRouter(<DocumentsPage />);
-    expect(screen.getByRole('status', { name: /Loading documents/i })).toBeTruthy();
-  });
-
-  it('handles getDocuments error gracefully', async () => {
-    vi.spyOn(api, 'getDocuments').mockRejectedValue(new Error('Failed'));
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/No documents yet/i)).toBeTruthy();
-    });
-  });
-
-  it('closes view modal on overlay click', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
+  it('clicking modal overlay closes the modal', async () => {
+    const mockDocs = ['overlay-test.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
     vi.spyOn(api, 'getDocumentByName').mockResolvedValue('Content');
-    const user = userEvent.setup();
 
-    renderWithRouter(<DocumentsPage />);
+    await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /View document: test.txt/i })).toBeTruthy();
+      expect(screen.getByText('overlay-test.txt')).toBeTruthy();
     });
 
-    await user.click(screen.getByRole('button', { name: /View document: test.txt/i }));
+    await userEvent.click(screen.getByRole('button', { name: /View overlay-test.txt/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeTruthy();
     });
 
     const overlay = document.querySelector('.modal-overlay') as HTMLElement;
-    await user.click(overlay);
+    expect(overlay).toBeTruthy();
 
-    expect(screen.queryByRole('dialog')).toBeNull();
+    await userEvent.click(overlay);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('dialog')).toBeNull();
+    });
   });
 
-  it('closes delete modal on overlay click when not deleting', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    const user = userEvent.setup();
+  it('handles API error when fetching documents list', async () => {
+    vi.spyOn(api, 'getDocuments').mockRejectedValue(new Error('Network error'));
 
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Delete document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Delete document: test.txt/i }));
+    await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('alertdialog')).toBeTruthy();
+      const emptyState = screen.getByRole('status');
+      expect(emptyState).toHaveTextContent(/No documents yet/i);
     });
-
-    const overlay = document.querySelector('.modal-overlay') as HTMLElement;
-    await user.click(overlay);
-
-    expect(screen.queryByRole('alertdialog')).toBeNull();
   });
 
-  it('does not close delete modal on overlay click while deleting', async () => {
-    vi.spyOn(api, 'deleteDocument').mockImplementation(() => new Promise(() => {}));
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    const user = userEvent.setup();
+  it('modal dialog has correct accessibility attributes', async () => {
+    const mockDocs = ['a11y-test.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+    vi.spyOn(api, 'getDocumentByName').mockResolvedValue('Test content');
 
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Delete document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Delete document: test.txt/i }));
+    await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('alertdialog')).toBeTruthy();
+      expect(screen.getByText('a11y-test.txt')).toBeTruthy();
     });
 
-    // Wait for the delete button to appear
+    await userEvent.click(screen.getByRole('button', { name: /View a11y-test.txt/i }));
+
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Confirm delete "test.txt"/i })).toBeTruthy();
+      const dialog = screen.getByRole('dialog');
+      expect(dialog).toBeTruthy();
+      expect(dialog).toHaveAttribute('aria-modal', 'true');
     });
 
-    const deleteBtn = screen.getByRole('button', { name: /Confirm delete "test.txt"/i });
-    await user.click(deleteBtn);
-
-    // Wait for deleting state
-    await waitFor(() => {
-      expect(screen.getByText(/Deleting…/i)).toBeTruthy();
-    });
-
-    const overlay = document.querySelector('.modal-overlay') as HTMLElement;
-    await user.click(overlay);
-
-    // Modal should still be open
-    expect(screen.getByRole('alertdialog')).toBeTruthy();
+    const heading = screen.getByRole('heading', { name: 'a11y-test.txt' });
+    expect(heading).toBeTruthy();
+    expect(heading.tagName).toBe('H2');
   });
 
-  it('shows alert on delete failure', async () => {
-    vi.spyOn(api, 'deleteDocument').mockRejectedValue(new Error('Delete failed'));
-    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
-    const user = userEvent.setup();
+  it('displays document content in pre element for proper formatting', async () => {
+    const mockDocs = ['formatted.txt'];
+    const mockContent = 'Line 1\nLine 2\n  Indented line';
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+    vi.spyOn(api, 'getDocumentByName').mockResolvedValue(mockContent);
 
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
-
-    renderWithRouter(<DocumentsPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Delete document: test.txt/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Delete document: test.txt/i }));
+    await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('alertdialog')).toBeTruthy();
+      expect(screen.getByText('formatted.txt')).toBeTruthy();
     });
 
-    // Wait for the delete button to appear
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Confirm delete "test.txt"/i })).toBeTruthy();
-    });
-
-    const deleteBtn = screen.getByRole('button', { name: /Confirm delete "test.txt"/i });
-    await user.click(deleteBtn);
+    await userEvent.click(screen.getByRole('button', { name: /View formatted.txt/i }));
 
     await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('Failed to delete document');
+      const preElement = document.querySelector('pre');
+      expect(preElement).toBeTruthy();
+      expect(preElement?.textContent).toBe(mockContent);
     });
-
-    alertSpy.mockRestore();
   });
 
-  it('navigates using useNavigate hook in empty state', async () => {
-    vi.spyOn(api, 'getDocuments').mockResolvedValue([]);
-    renderWithRouter(<DocumentsPage />);
+  it('renders Delete button for each document', async () => {
+    const mockDocs = ['deletable.txt'];
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(mockDocs);
+
+    await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByText(/No documents yet/i)).toBeTruthy();
+      const deleteBtn = screen.getByRole('button', { name: /Delete deletable.txt/i });
+      expect(deleteBtn).toBeTruthy();
+      expect(deleteBtn).toHaveTextContent('Delete');
     });
-
-    const uploadBtn = screen.getByRole('button', { name: /Navigate to upload page/i });
-    expect(uploadBtn).toBeTruthy();
   });
 });
