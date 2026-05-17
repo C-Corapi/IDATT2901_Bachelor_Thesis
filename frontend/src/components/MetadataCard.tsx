@@ -310,7 +310,7 @@ const MetadataCard: React.FC<Props> = ({
                         aria-label="Cancel deletion">Cancel
                 </button>
                 <button className="btn-delete" onClick={() => { setShowModal(false); onDelete?.(); }}
-                aria-label={`Confirm deletion"${title}"`}>Yes, delete</button>
+                aria-label={`Confirm deletion "${title}"`}>Yes, delete</button>
             </div>
           </div>
         </div>
