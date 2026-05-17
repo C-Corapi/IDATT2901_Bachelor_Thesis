@@ -22,7 +22,7 @@ async def upload_document(file: UploadFile = File(...)):
 
     content = await file.read()
     save_file(safe_name, content)
-    return {"filename": file.filename}
+    return {"filename": safe_name}
 
 
 @router.get("/", response_model=list[str])
