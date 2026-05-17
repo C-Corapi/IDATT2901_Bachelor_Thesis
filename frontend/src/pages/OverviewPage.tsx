@@ -34,7 +34,6 @@ import type { MetadataType } from '../types';
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadAll();
   }, [loadAll]);
 

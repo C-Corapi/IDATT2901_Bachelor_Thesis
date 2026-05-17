@@ -176,7 +176,7 @@ const UploadPage: React.FC = () => {
                 reach={item.reach}
                 description={item.description}
                 alternatives={item.alternatives}
-                evidence={item.source}
+                evidence={item.evidence}
                 confidence={item.confidence ? Math.round(item.confidence * 100) : undefined}
                 verified={false}
                 displayType={item.kind}

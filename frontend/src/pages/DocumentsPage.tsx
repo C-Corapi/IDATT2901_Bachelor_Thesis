@@ -10,6 +10,7 @@ const DocumentsPage: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [docContent, setDocContent] = useState('');
   const [docLoading, setDocLoading] = useState(false);
+  const [msg, setMsg] = useState<{ text: string; ok: boolean } | null>(null);
 
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
@@ -57,16 +58,15 @@ const DocumentsPage: React.FC = () => {
       setDeleteTarget(null);
     } catch (err) {
       console.error('Delete failed:', err);
-      alert('Failed to delete document');
+      setMsg({ text: 'Failed to delete document', ok: false });
     } finally {
       setDeleting(false);
     }
   };
-
   return (
     <section aria-labelledby="docs-heading">
       <h1 id="docs-heading" className="page-title">Uploaded Documents</h1>
-
+      {msg && <div className={msg.ok ? 'msg msg--ok' : 'msg msg--err'}>{msg.text}</div>}
       {loading ? (
         <div className="empty-state" role="status" aria-label="Loading documents">Loading…</div>
       ) : docs.length === 0 ? (
@@ -82,11 +82,13 @@ const DocumentsPage: React.FC = () => {
           </button>
         </div>
       ) : (
-          <div className="doc-list">
+          <ul className="doc-list" role="list" aria-label="Uploaded documents list">
             {docs.map((filename) => (
-                <div
+                <li
                     className="doc-row"
                     key={filename}
+                    role="listitem"
+                    aria-label={`Document: ${filename}`}
                 >
                   <div className="doc-name">{filename}</div>
 
@@ -94,21 +96,23 @@ const DocumentsPage: React.FC = () => {
                     <button
                         className="btn-outline"
                         onClick={() => handleView(filename)}
-                        aria-label={`View ${filename}`}
+                        title={`View document: ${filename}`}
+                        aria-label={`View document: ${filename}`}
                     >
                       View
                     </button>
                     <button
                         className="btn-outline btn-outline--delete"
                         onClick={() => handleDeleteClick(filename)}
-                        aria-label={`Delete ${filename}`}
+                        title={`Delete document: ${filename}`}
+                        aria-label={`Delete document: ${filename}`}
                     >
                       Delete
                     </button>
                   </div>
-                </div>
+                </li>
             ))}
-          </div>
+          </ul>
       )}
 
       {showViewModal && selectedFile && (
@@ -126,9 +130,9 @@ const DocumentsPage: React.FC = () => {
 
               <div className="modal-actions">
                 <button className="btn-cancel" onClick={() => setShowViewModal(false)}>
-                Close
-              </button>
-            </div>
+                  Close
+                </button>
+              </div>
           </div>
         </div>
       )}

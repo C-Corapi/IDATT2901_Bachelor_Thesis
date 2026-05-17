@@ -83,8 +83,8 @@ describe('DocumentsPage Integration Tests', () => {
       expect(screen.getByText('test.txt')).toBeTruthy();
       expect(screen.getByText('project.pdf')).toBeTruthy();
     });
-    const viewBtn1 = screen.getByRole('button', { name: /View test.txt/i });
-    const viewBtn2 = screen.getByRole('button', { name: /View project.pdf/i });
+    const viewBtn1 = screen.getByRole('button', { name: /View document: test.txt/i });
+    const viewBtn2 = screen.getByRole('button', { name: /View document: project.pdf/i });
 
     expect(viewBtn1).toBeTruthy();
     expect(viewBtn2).toBeTruthy();
@@ -101,7 +101,7 @@ describe('DocumentsPage Integration Tests', () => {
       expect(screen.getByText('test.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View test.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: test.txt/i });
     await user.click(viewBtn);
 
     await waitFor(() => {
@@ -122,7 +122,7 @@ describe('DocumentsPage Integration Tests', () => {
       expect(screen.getByText('test.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View test.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: test.txt/i });
     await user.click(viewBtn);
 
     await waitFor(() => {
@@ -145,7 +145,7 @@ describe('DocumentsPage Integration Tests', () => {
       expect(screen.getByText('report.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View report.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: report.txt/i });
     await user.click(viewBtn);
 
     await waitFor(() => {
@@ -166,7 +166,7 @@ describe('DocumentsPage Integration Tests', () => {
       expect(screen.getByText('broken.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View broken.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: broken.txt/i });
     await user.click(viewBtn);
 
     await waitFor(() => {
@@ -187,7 +187,7 @@ describe('DocumentsPage Integration Tests', () => {
       expect(screen.getByText('test.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View test.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: test.txt/i });
     await user.click(viewBtn);
 
     await waitFor(() => {
@@ -213,7 +213,7 @@ describe('DocumentsPage Integration Tests', () => {
       expect(screen.getByText('test.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View test.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: test.txt/i });
     await user.click(viewBtn);
 
     await waitFor(() => {

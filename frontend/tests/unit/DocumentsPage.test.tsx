@@ -85,11 +85,11 @@ describe('DocumentsPage', () => {
       mockDocs.forEach((filename) => {
         expect(screen.getByText(filename)).toBeTruthy();
 
-        const viewBtn = screen.getByRole('button', { name: `View ${filename}` });
+        const viewBtn = screen.getByRole('button', { name: `View document: ${filename}` });
         expect(viewBtn).toBeTruthy();
         expect(viewBtn).toHaveTextContent('View');
 
-        const deleteBtn = screen.getByRole('button', { name: `Delete ${filename}` });
+        const deleteBtn = screen.getByRole('button', { name: `Delete document: ${filename}` });
         expect(deleteBtn).toBeTruthy();
         expect(deleteBtn).toHaveTextContent('Delete');
       });
@@ -103,7 +103,7 @@ describe('DocumentsPage', () => {
     renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /View test.txt/i })).toBeTruthy();
+      expect(screen.getByRole('button', { name: /View document: test.txt/i })).toBeTruthy();
     });
   });
 
@@ -119,7 +119,7 @@ describe('DocumentsPage', () => {
       expect(screen.getByText('test.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View test.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: test.txt/i });
     await userEvent.click(viewBtn);
 
     await waitFor(() => {
@@ -149,7 +149,7 @@ describe('DocumentsPage', () => {
       expect(screen.getByText('slow.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View slow.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: slow.txt/i });
     await userEvent.click(viewBtn);
 
     await waitFor(() => {
@@ -175,7 +175,7 @@ describe('DocumentsPage', () => {
       expect(screen.getByText('error.txt')).toBeTruthy();
     });
 
-    const viewBtn = screen.getByRole('button', { name: /View error.txt/i });
+    const viewBtn = screen.getByRole('button', { name: /View document: error.txt/i });
     await userEvent.click(viewBtn);
 
     await waitFor(() => {
@@ -196,7 +196,7 @@ describe('DocumentsPage', () => {
       expect(screen.getByText('closable.txt')).toBeTruthy();
     });
 
-    await userEvent.click(screen.getByRole('button', { name: /View closable.txt/i }));
+    await userEvent.click(screen.getByRole('button', { name: /View document: closable.txt/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeTruthy();
@@ -221,7 +221,7 @@ describe('DocumentsPage', () => {
       expect(screen.getByText('overlay-test.txt')).toBeTruthy();
     });
 
-    await userEvent.click(screen.getByRole('button', { name: /View overlay-test.txt/i }));
+    await userEvent.click(screen.getByRole('button', { name: /View document: overlay-test.txt/i }));
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeTruthy();
@@ -259,7 +259,7 @@ describe('DocumentsPage', () => {
       expect(screen.getByText('a11y-test.txt')).toBeTruthy();
     });
 
-    await userEvent.click(screen.getByRole('button', { name: /View a11y-test.txt/i }));
+    await userEvent.click(screen.getByRole('button', { name: /View document: a11y-test.txt/i }));
 
     await waitFor(() => {
       const dialog = screen.getByRole('dialog');
@@ -284,7 +284,7 @@ describe('DocumentsPage', () => {
       expect(screen.getByText('formatted.txt')).toBeTruthy();
     });
 
-    await userEvent.click(screen.getByRole('button', { name: /View formatted.txt/i }));
+    await userEvent.click(screen.getByRole('button', { name: /View document: formatted.txt/i }));
 
     await waitFor(() => {
       const preElement = document.querySelector('pre');
@@ -300,7 +300,7 @@ describe('DocumentsPage', () => {
     await renderWithRouter(<DocumentsPage />);
 
     await waitFor(() => {
-      const deleteBtn = screen.getByRole('button', { name: /Delete deletable.txt/i });
+      const deleteBtn = screen.getByRole('button', { name: /Delete document: deletable.txt/i });
       expect(deleteBtn).toBeTruthy();
       expect(deleteBtn).toHaveTextContent('Delete');
     });

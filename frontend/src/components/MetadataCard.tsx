@@ -29,7 +29,7 @@ interface Props {
   raw?: any;
 }
 
-const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in progress','urgent','important','local','global'];
+const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in-progress','urgent','important','local','global'];
 const badgeCls = (v: string) => {
   const k = v.toLowerCase().replace(/\s+/g, '-');
   return `badge badge--${KNOWN.includes(k) ? k : 'default'}`;
@@ -61,7 +61,6 @@ const MetadataCard: React.FC<Props> = ({
 
   useEffect(() => {
     if (!editing) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setDTitle(title ?? '');
        
       setDOwner(owner ?? '');
@@ -311,7 +310,7 @@ const MetadataCard: React.FC<Props> = ({
                         aria-label="Cancel deletion">Cancel
                 </button>
                 <button className="btn-delete" onClick={() => { setShowModal(false); onDelete?.(); }}
-                aria-label={`Confirm deletion"${title}"`}>Yes, delete</button>
+                aria-label={`Confirm deletion "${title}"`}>Yes, delete</button>
             </div>
           </div>
         </div>
