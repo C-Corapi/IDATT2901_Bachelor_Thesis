@@ -16,6 +16,7 @@ interface Props {
   alternatives?: string;
   evidence?: string;
   confidence?: number;
+  showConfidence?: boolean;
   verified?: boolean;
   onVerify?: () => void;
   extraDetails?: DetailField[];
@@ -29,6 +30,17 @@ interface Props {
   raw?: any;
 }
 
+const typeAbbrev = (type: string) => {
+  switch (type) {
+    case 'epic': return 'EPIC';
+    case 'decision': return 'DSC';
+    case 'deliverable': return 'DEL';
+    case 'task': return 'TASK';
+    case 'activity': return 'ACT';
+    default: return type;
+  }
+};
+
 const KNOWN = ['backlog', 'todo', 'open','pending','closed', 'done', 'in-progress','urgent','important','local','global'];
 const badgeCls = (v: string) => {
   const k = v.toLowerCase().replace(/\s+/g, '-');
@@ -39,7 +51,7 @@ const TYPE_ORDER: MetadataType[] = ['epic', 'decision', 'deliverable', 'task', '
 
 const MetadataCard: React.FC<Props> = ({
   title, type, owner, status, nature, reach, description, alternatives, evidence,
-  confidence, verified, onVerify, extraDetails, onSave, onDelete, onTypeChange, defaultOpen, showKanbanStatus = false,
+  confidence, showConfidence = false, verified, onVerify, extraDetails, onSave, onDelete, onTypeChange, defaultOpen, showKanbanStatus = false,
   displayType, id, raw,
 }) => {
   const [open, setOpen] = useState(defaultOpen ?? false);
@@ -162,135 +174,148 @@ const MetadataCard: React.FC<Props> = ({
 
   return (
     <>
-      <article className={`card${open ? ' card--open' : ''}`} onClick={toggle} onKeyDown={onKey}
-        tabIndex={0} role="button" aria-expanded={open} aria-controls={detailId}
-        aria-label={`${title}${verified ? ' (verified)' : ''}. ${badges.join(', ')}. ${open ? 'Collapse' : 'Expand'} details.`}
-        title={`${open ? 'Collapse' : 'Expand'} "${title}"`}>
+      <article className={`card${open ? ' card--open' : ''}${type ? ` card--type-${type}` : ''}`} onClick={toggle} onKeyDown={onKey}
+               tabIndex={0} role="button" aria-expanded={open} aria-controls={detailId}
+               aria-label={`${title}${verified ? ' (verified)' : ''}. ${badges.join(', ')}. ${open ? 'Collapse' : 'Expand'} details.`}
+               title={`${open ? 'Collapse' : 'Expand'} "${title}"`}>
 
         <div className="card-header">
           <span className="card-title">
             {editing
-              ? <input className="detail-input" value={dTitle} onChange={(e) => setDTitle(e.target.value)}
-                  onClick={(e) => e.stopPropagation()} aria-label="Edit title" style={{ marginBottom: 0 }} />
-              : <>{title}{verified && <span className="card-verified" aria-label="Verified">✓ verified</span>}</>
+                ? <input className="detail-input" value={dTitle} onChange={(e) => setDTitle(e.target.value)}
+                         onClick={(e) => e.stopPropagation()} aria-label="Edit title" style={{marginBottom: 0}}/>
+                : <>{title}{verified && <span className="card-verified" aria-label="Verified">✓ verified</span>}</>
             }
           </span>
           <span className={`card-chevron${open ? ' card-chevron--open' : ''}`} aria-hidden="true">›</span>
         </div>
 
         {badges.length > 0 && (
-          <div className="card-badges" aria-label={`Tags: ${badges.join(', ')}`}>
-            {badges.map((b) => <span key={b} className={badgeCls(b)}>{b}</span>)}
-          </div>
+            <div className="card-badges" aria-label={`Tags: ${badges.join(', ')}`}>
+              {badges.map((b) => <span key={b} className={badgeCls(b)}>{b}</span>)}
+            </div>
         )}
 
         <div className="card-meta">
           {(owner || editing) && (
-            <span>
+              <span>
               <span className="sr-only">Owner: </span>owner:{' '}
-              {editing
-                ? <input className="detail-input" value={dOwner} onChange={(e) => setDOwner(e.target.value)}
-                    onClick={(e) => e.stopPropagation()} aria-label="Edit owner"
-                    style={{ width: 140, display: 'inline-block', marginBottom: 0, padding: '2px 6px' }} />
-                : <span className="card-owner">{owner}</span>}
+                {editing
+                    ? <input className="detail-input" value={dOwner} onChange={(e) => setDOwner(e.target.value)}
+                             onClick={(e) => e.stopPropagation()} aria-label="Edit owner"
+                             style={{width: 140, display: 'inline-block', marginBottom: 0, padding: '2px 6px'}}/>
+                    : <span className="card-owner">{owner}</span>}
             </span>
           )}
           {type && (
-            <span className="type-badge" title={`Click to change type from ${type}`}>
-              <button
-                className="type-badge-btn"
-                onClick={(e) => { e.stopPropagation(); setShowTypeMenu(!showTypeMenu); }}
-                aria-label={`Change type from ${type}`}
-              >
-                {type}
-              </button>
-              {showTypeMenu && (
-                <div className="type-menu" role="menu">
-                  {otherTypes.map((t) => (
-                    <button
-                      key={t}
-                      className="type-menu-item"
-                      onClick={(e) => { e.stopPropagation(); handleTypeChangeClick(t); }}
-                      role="menuitem"
-                    >
-                      Convert to {t}
-                    </button>
-                  ))}
-                </div>
-              )}
-            </span>
+            editing ? (
+              <span className="type-badge" title={`Click to change type from ${type}`}>
+                <button
+                  className="type-badge-btn"
+                  onClick={(e) => { e.stopPropagation(); setShowTypeMenu(!showTypeMenu); }}
+                  aria-label={`Change type from ${type}`}
+                >
+                  {type}
+                </button>
+                {showTypeMenu && (
+                  <div className="type-menu" role="menu">
+                    {otherTypes.map((t) => (
+                      <button
+                        key={t}
+                        className="type-menu-item"
+                        onClick={(e) => { e.stopPropagation(); handleTypeChangeClick(t); }}
+                        role="menuitem"
+                      >
+                        Convert to {t}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </span>
+            ) : (
+              <span className={`type-acronym type-acronym--${type}`}>{typeAbbrev(type)}</span>
+            )
           )}
-          {confidence !== undefined && <ConfidenceBar value={confidence} />}
         </div>
 
         {open && (
-          <div className="card-detail" id={detailId} role="region" aria-label={`Details for ${title}`}
-            onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
+            <div className="card-detail" id={detailId} role="region" aria-label={`Details for ${title}`}
+                 onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()}>
 
-            {(description || editing) && (
-              <div>
-                <div className="detail-label" id={`${uid}-desc`}>Description</div>
-                {editing
-                  ? <textarea className="detail-textarea" value={dDesc} onChange={(e) => setDDesc(e.target.value)}
-                      aria-labelledby={`${uid}-desc`} />
-                  : <div className="detail-value" aria-labelledby={`${uid}-desc`}>{description}</div>}
-              </div>
-            )}
-            {evidence && !editing && (
-              <div>
-                <div className="detail-label" id={`${uid}-src`}>Source</div>
-                <blockquote className="detail-quote" aria-labelledby={`${uid}-src`}>"{evidence}"</blockquote>
-              </div>
-            )}
-            {(alternatives || editing) && (
-              <div>
-                <div className="detail-label" id={`${uid}-alt`}>Alternatives</div>
-                {editing
-                  ? <textarea className="detail-textarea" value={dAlts} onChange={(e) => setDAlts(e.target.value)}
-                      aria-labelledby={`${uid}-alt`} />
-                  : <div className="detail-value" aria-labelledby={`${uid}-alt`}>{alternatives}</div>}
-              </div>
-            )}
-            {dExtras.map((d, i) => (
-              <div key={d.label}>
-                <div className="detail-label" id={`${uid}-x${i}`}>{d.label}</div>
-                {editing
-                  ? <input className="detail-input" value={d.value}
-                      onChange={(e) => { const c = [...dExtras]; c[i] = { ...c[i], value: e.target.value }; setDExtras(c); }}
-                      aria-labelledby={`${uid}-x${i}`} />
-                  : <div className="detail-value" aria-labelledby={`${uid}-x${i}`}>{d.value}</div>}
-              </div>
-            ))}
+              {(description || editing) && (
+                  <div>
+                    <div className="detail-label" id={`${uid}-desc`}>Description</div>
+                    {editing
+                        ? <textarea className="detail-textarea" value={dDesc} onChange={(e) => setDDesc(e.target.value)}
+                                    aria-labelledby={`${uid}-desc`}/>
+                        : <div className="detail-value" aria-labelledby={`${uid}-desc`}>{description}</div>}
+                  </div>
+              )}
+              {evidence && !editing && (
+                  <div>
+                    <div className="detail-label" id={`${uid}-src`}>Source</div>
+                    <blockquote className="detail-quote" aria-labelledby={`${uid}-src`}>"{evidence}"</blockquote>
+                  </div>
+              )}
+              {(alternatives || editing) && (
+                  <div>
+                    <div className="detail-label" id={`${uid}-alt`}>Alternatives</div>
+                    {editing
+                        ? <textarea className="detail-textarea" value={dAlts} onChange={(e) => setDAlts(e.target.value)}
+                                    aria-labelledby={`${uid}-alt`}/>
+                        : <div className="detail-value" aria-labelledby={`${uid}-alt`}>{alternatives}</div>}
+                  </div>
+              )}
+              {dExtras.map((d, i) => (
+                  <div key={d.label}>
+                    <div className="detail-label" id={`${uid}-x${i}`}>{d.label}</div>
+                    {editing
+                        ? <input className="detail-input" value={d.value}
+                                 onChange={(e) => {
+                                   const c = [...dExtras];
+                                   c[i] = {...c[i], value: e.target.value};
+                                   setDExtras(c);
+                                 }}
+                                 aria-labelledby={`${uid}-x${i}`}/>
+                        : <div className="detail-value" aria-labelledby={`${uid}-x${i}`}>{d.value}</div>}
+                  </div>
+              ))}
 
-            <div className="card-actions">
-              {!editing && !verified && onVerify && (
-                  <button className="btn-verify" onClick={(e) => {
-                    e.stopPropagation();
-                    onVerify();
-                  }}
-                          title={`Verify "${title}"`} aria-label={`Verify "${title}"`}>✓ Verify</button>
-              )}
-              {!editing && onSave && (
-                  <button className="btn-edit" onClick={startEdit} title={`Edit "${title}"`}
-                          aria-label={`Edit "${title}"`}>Edit</button>
-              )}
-              {editing && (
-                  <>
-                    <button className="btn-save" onClick={save} title="Save changes" aria-label="Save changes">Save
-                    </button>
-                    <button className="btn-cancel" onClick={cancelEdit} title="Cancel editing"
-                            aria-label="Cancel editing">Cancel
-                    </button>
-                  </>
-              )}
-              {onDelete && (
-                  <button className="btn-delete" onClick={(e) => {
-                    e.stopPropagation();
-                    setShowModal(true);
-                  }}
-                          title={`Delete "${title}"`} aria-label={`Delete "${title}"`}>Delete</button>
-              )}
+              <div className="card-actions">
+                {!editing && !verified && onVerify && (
+                    <button className="btn-verify" onClick={(e) => {
+                      e.stopPropagation();
+                      onVerify();
+                    }}
+                            title={`Verify "${title}"`} aria-label={`Verify "${title}"`}>✓ Verify</button>
+                )}
+                {!editing && onSave && (
+                    <button className="btn-edit" onClick={startEdit} title={`Edit "${title}"`}
+                            aria-label={`Edit "${title}"`}>Edit</button>
+                )}
+                {editing && (
+                    <>
+                      <button className="btn-save" onClick={save} title="Save changes" aria-label="Save changes">Save
+                      </button>
+                      <button className="btn-cancel" onClick={cancelEdit} title="Cancel editing"
+                              aria-label="Cancel editing">Cancel
+                      </button>
+                    </>
+                )}
+                {onDelete && (
+                    <button className="btn-delete" onClick={(e) => {
+                      e.stopPropagation();
+                      setShowModal(true);
+                    }}
+                            title={`Delete "${title}"`} aria-label={`Delete "${title}"`}>Delete</button>
+                )}
+              </div>
             </div>
+        )}
+        {showConfidence && (
+          <div className="card-confidence" style={{ marginTop: '8px', textAlign: 'left' }}>
+            <span className="detail-label" style={{ marginRight: '6px' }}>Confidence:</span>
+            <ConfidenceBar value={confidence ?? 0} />
           </div>
         )}
       </article>

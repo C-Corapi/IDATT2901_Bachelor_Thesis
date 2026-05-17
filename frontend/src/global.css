@@ -200,6 +200,11 @@ a:focus:not(:focus-visible) {
 .card:hover { box-shadow: var(--shadow-hover); }
 .card:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
 .card--open { border-left-color: var(--peach); }
+.card--type-epic        { border-left-color: var(--blue); }
+.card--type-decision    { border-left-color: var(--rose); }
+.card--type-deliverable { border-left-color: var(--purple); }
+.card--type-activity    { border-left-color: var(--green); }
+.card--type-task        { border-left-color: var(--peach); }
 
 .card-header {
   display: flex;
@@ -239,6 +244,8 @@ a:focus:not(:focus-visible) {
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-start;
+  min-width: 0;
+  overflow: hidden;
 }
 .badge {
   font-size: .72rem;
@@ -248,7 +255,8 @@ a:focus:not(:focus-visible) {
   padding: 3px 10px;
   border-radius: var(--radius-sm);
   color: var(--blue);
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
   line-height: 1.2;
 }
 .badge--open        { background: var(--green); }
@@ -306,6 +314,23 @@ a:focus:not(:focus-visible) {
   margin-bottom: 14px;
   word-break: break-word;
 }
+
+.kanban-item.card--type-epic        { border-left: 3px solid var(--blue); }
+.kanban-item.card--type-decision    { border-left: 3px solid var(--rose); }
+.kanban-item.card--type-deliverable { border-left: 3px solid var(--purple); }
+.kanban-item.card--type-activity    { border-left: 3px solid var(--green); }
+.kanban-item.card--type-task        { border-left: 3px solid var(--peach); }
+
+.type-acronym {
+  font-size: .68rem; font-weight: 700; letter-spacing: .5px;
+  padding: 2px 7px; border-radius: var(--radius-sm);
+  flex-shrink: 0; white-space: nowrap;
+}
+.type-acronym--epic        { background: color-mix(in srgb, var(--blue) 15%, transparent);   color: var(--blue); }
+.type-acronym--decision    { background: color-mix(in srgb, var(--rose) 15%, transparent);   color: var(--rose); }
+.type-acronym--deliverable { background: color-mix(in srgb, var(--purple) 15%, transparent); color: var(--purple); }
+.type-acronym--activity    { background: color-mix(in srgb, var(--green) 15%, transparent);  color: var(--green); }
+.type-acronym--task        { background: color-mix(in srgb, var(--peach) 15%, transparent);  color: var(--peach); }
 
 /* ── Editable fields ────────────────────────────────────────────── */
 .detail-input {
@@ -399,7 +424,7 @@ a:focus:not(:focus-visible) {
 
 /* ── Confidence bar ─────────────────────────────────────────────── */
 .conf       { display: inline-flex; align-items: center; gap: 7px; }
-.conf-track { width: 72px; height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden; }
+.conf-track { width: 72px; height: 6px; border-radius: 3px; overflow: hidden; }
 .conf-fill  { height: 100%; border-radius: 3px; transition: width .3s; }
 .conf-pct   { font-size: .82rem; font-weight: 700; }
 

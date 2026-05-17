@@ -275,7 +275,7 @@ const handleCreate = async () => {
       return (
         <>
           {epics.map((e) => (
-            <MetadataCard key={`epic-${e.id}`} title={e.title} owner={e.owner} description={e.description} status={(e.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+            <MetadataCard key={`epic-${e.id}`} type="epic" id={e.id} title={e.title} owner={e.owner} description={e.description} status={(e.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
               onSave={(c) => handleSave('epic', e.id, c)}
               onDelete={() => handleDelete('epic', e.id)}
               extraDetails={[
@@ -290,7 +290,7 @@ const handleCreate = async () => {
           ))}
 
           {decisions.map((d) => (
-            <MetadataCard key={`decision-${d.id}`} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+            <MetadataCard key={`decision-${d.id}`} type="decision" id={d.id} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
               description={d.description} alternatives={d.alternatives}
               onSave={(c) => handleSave('decision', d.id, c)}
               onDelete={() => handleDelete('decision', d.id)}
@@ -299,7 +299,7 @@ const handleCreate = async () => {
           ))}
 
           {deliverables.map((d) => (
-            <MetadataCard key={`deliverable-${d.id}`} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+            <MetadataCard key={`deliverable-${d.id}`} type="deliverable" id={d.id} title={d.title} owner={d.owner} nature={d.nature} reach={d.reach} status={(d.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
               description={d.description} alternatives={d.alternatives}
               onSave={(c) => handleSave('deliverable', d.id, c)}
               onDelete={() => handleDelete('deliverable', d.id)}
@@ -308,7 +308,7 @@ const handleCreate = async () => {
           ))}
 
           {activities.map((a) => (
-            <MetadataCard key={`activity-${a.id}`} title={a.title} owner={a.owner} status={(a.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+            <MetadataCard key={`activity-${a.id}`} type="activity" id={a.id} title={a.title} owner={a.owner} status={(a.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
               description={a.description}
               onSave={(c) => handleSave('activity', a.id, c)}
               onDelete={() => handleDelete('activity', a.id)}
@@ -316,7 +316,7 @@ const handleCreate = async () => {
           ))}
 
           {tasks.map((t) => (
-            <MetadataCard key={`task-${t.id}`} title={t.title} owner={t.owner} status={(t.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
+            <MetadataCard key={`task-${t.id}`} type="task" id={t.id} title={t.title} owner={t.owner} status={(t.kanban_status ?? 'backlog').toUpperCase()} showKanbanStatus={true}
               description={t.description}
               onSave={(c) => handleSave('task', t.id, c)}
               onDelete={() => handleDelete('task', t.id)}
