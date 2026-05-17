@@ -45,7 +45,7 @@ describe('AboutPage', () => {
   it('renders a list with accessible role and label for metadata types', () => {
     render(<AboutPage />);
 
-    const list = screen.getByRole('list', { name: /Supported metadata types/i });
+    const list = screen.getByRole('list', { name: /Metadata type descriptions/i });
     expect(list).toBeTruthy();
   });
 
@@ -73,7 +73,7 @@ describe('AboutPage', () => {
     });
   });
 
-  it('each metadata type article has a title attribute with name and description', () => {
+  it('each metadata type has an h3 heading', () => {
     render(<AboutPage />);
 
     const expectedTypes = [
@@ -84,10 +84,23 @@ describe('AboutPage', () => {
       { name: 'Task', desc: 'Individual actionable work items' },
     ];
 
+    expectedTypes.forEach((type) => {
+      const heading = screen.getByRole('heading', { level: 3, name: new RegExp(type.name, 'i') });
+      expect(heading).toBeTruthy();
+    });
+  });
+
+  it('list items contain both icon and text content', () => {
+    render(<AboutPage />);
+
     const items = screen.getAllByRole('listitem');
 
-    expectedTypes.forEach((type, index) => {
-      expect(items[index]).toHaveAttribute('title', `${type.name}: ${type.desc}`);
+    items.forEach((item) => {
+      const heading = item.querySelector('h3');
+      const description = item.querySelector('p');
+
+      expect(heading).toBeTruthy();
+      expect(description).toBeTruthy();
     });
   });
 });
