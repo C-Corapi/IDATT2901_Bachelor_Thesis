@@ -704,7 +704,7 @@ a:focus:not(:focus-visible) {
 .empty-state { text-align: center; color: var(--gray-500); margin-top: 36px; font-size: .95rem; }
 
 /* ── About ──────────────────────────────────────────────────────── */
-.about-content { max-width: 640px; line-height: 1.8; }
+.about-content { max-width: 100%; line-height: 1.8; }
 .about-content p { margin-bottom: 14px; font-size: .95rem; }
 .about-card {
   background: var(--off-white); border: 1px solid var(--gray-200);
@@ -718,9 +718,12 @@ a:focus:not(:focus-visible) {
   margin-bottom: 6px;
 }
 .about-types {
+  list-style: none;
+  padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 170px), 1fr));
-  gap: 10px; margin-top: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
 }
 .about-type {
   background: var(--white); border: 1px solid var(--gray-200);

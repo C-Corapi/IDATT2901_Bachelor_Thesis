@@ -5,7 +5,7 @@ const links = [
   { to: '/overview',  label: 'Overview',    tooltip: 'View all extracted metadata' },
   { to: '/kanban',    label: 'Kanban',      tooltip: 'Manage items on the board' },
       { to: '/upload',    label: 'Upload',      tooltip: 'Upload a new document' },
-  { to: '/documents', label: 'Documents',   tooltip: 'Browse uploaded documents' },
+  { to: '/docs', label: 'Documents',   tooltip: 'Browse uploaded documents' },
   { to: '/about',     label: 'About',       tooltip: 'Learn about this tool' },
 ];
 

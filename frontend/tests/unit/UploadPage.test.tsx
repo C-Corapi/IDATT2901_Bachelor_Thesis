@@ -538,7 +538,8 @@ describe('UploadPage file drop handling', () => {
   it('extracts specific metadata type', async () => {
     vi.spyOn(api, 'uploadDocument').mockResolvedValue({
       id: 1,
-      filename: 'test.txt'
+      filename: 'test.txt',
+      message: 'Success'
     } as any);
     vi.spyOn(api, 'extractEpics').mockResolvedValue([
       { title: 'Epic 1', description: 'Test epic' },
@@ -565,7 +566,8 @@ describe('UploadPage file drop handling', () => {
   it('extracts decision metadata type', async () => {
     vi.spyOn(api, 'uploadDocument').mockResolvedValue({
       id: 1,
-      filename: 'test.txt'
+      filename: 'test.txt',
+      message: 'Success'
     } as any);
     vi.spyOn(api, 'extractDecisions').mockResolvedValue([
       { title: 'Decision 1', nature: 'structural', reach: 'global' },
