@@ -34,10 +34,10 @@ jobs:
         working-directory: frontend
         run: npx eslint --max-warnings=0
 
-      - name: Run unit tests
+      - name: Run unit tests with coverage
         working-directory: frontend
         run: npm run test:coverage:unit
 
-      - name: Run integration tests
+      - name: Run integration tests with coveage
         working-directory: frontend
         run: npm run test:coverage:integration
