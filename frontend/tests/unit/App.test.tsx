@@ -3,7 +3,6 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import App from '../../src/App';
 
-// Mock all page components and Navbar
 vi.mock('../../src/components/Navbar', () => ({
   default: () => <nav data-testid="navbar">Navbar</nav>,
 }));
@@ -28,7 +27,6 @@ vi.mock('../../src/pages/AboutPage', () => ({
   default: () => <div data-testid="about-page">About Page</div>,
 }));
 
-// Mock the API to prevent actual calls
 vi.mock('../../src/api', () => ({
   getEpics: vi.fn().mockResolvedValue([]),
   getDecisions: vi.fn().mockResolvedValue([]),
@@ -97,8 +95,8 @@ describe('App', () => {
     expect(kanbanPage).toBeTruthy();
   });
 
-  it('renders DocumentsPage at /documents route', () => {
-    window.history.pushState({}, '', '/documents');
+  it('renders DocumentsPage at /docs route', () => {
+    window.history.pushState({}, '', '/docs');
     render(<App />);
 
     const documentsPage = screen.getByTestId('documents-page');

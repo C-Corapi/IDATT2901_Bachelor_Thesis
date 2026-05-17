@@ -17,7 +17,7 @@ const App: React.FC = () => (
           <Route path="/" element={<Navigate to="/overview" replace />} />
           <Route path="/overview" element={<OverviewPage />} />
           <Route path="/kanban" element={<KanbanPage />} />
-          <Route path="/documents" element={<DocumentsPage />} />
+          <Route path="/docs" element={<DocumentsPage />} />
           <Route path="/upload" element={<UploadPage />} />
           <Route path="/about" element={<AboutPage />} />
         </Routes>

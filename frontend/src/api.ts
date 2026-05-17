@@ -1,8 +1,8 @@
 /*
  * Centralized API client.
- *
- * Backend endpoints (main branch)
  */
+
+import type { Epic, Decision, Deliverable, Task, Activity } from './types';
 
 const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
 
@@ -37,33 +37,48 @@ async function del(path: string): Promise<void> {
   if (!res.ok) throw new Error(`DELETE ${path} → ${res.status}`);
 }
 
-/* ── 1. GET all ────────────────────────────────────────��─────────── */
-export const getEpics        = () => get<any[]>('/epics/');
-export const getDecisions    = () => get<any[]>('/decisions/');
-export const getDeliverables = () => get<any[]>('/deliverables/');
-export const getTasks        = () => get<any[]>('/tasks/');
-export const getActivities   = () => get<any[]>('/activities/');
+/* ── 1. GET all ─────────────────────────────────────────────────── */
+export const getEpics        = () => get<Epic[]>('/epics/');
+export const getDecisions    = () => get<Decision[]>('/decisions/');
+export const getDeliverables = () => get<Deliverable[]>('/deliverables/');
+export const getTasks        = () => get<Task[]>('/tasks/');
+export const getActivities   = () => get<Activity[]>('/activities/');
 
 /* ── 2. CREATE (POST) ────────────────────────────────────────────── */
-export const createEpic        = (d: any) => post<any>('/epics/', d);
-export const createDecision    = (d: any) => post<any>('/decisions/', d);
-export const createDeliverable = (d: any) => post<any>('/deliverables/', d);
-export const createTask        = (d: any) => post<any>('/tasks/', d);
-export const createActivity    = (d: any) => post<any>('/activities/', d);
+export const createEpic        = (d: Omit<Epic, 'id'>)        => post<Epic>('/epics/', d);
+export const createDecision    = (d: Omit<Decision, 'id'>)    => post<Decision>('/decisions/', d);
+export const createDeliverable = (d: Omit<Deliverable, 'id'>) => post<Deliverable>('/deliverables/', d);
+export const createTask        = (d: Omit<Task, 'id'>)        => post<Task>('/tasks/', d);
+export const createActivity    = (d: Omit<Activity, 'id'>)    => post<Activity>('/activities/', d);
 
 /* ── 3. GET by id ────────────────────────────────────────────────── */
-export const getEpicById        = (id: number) => get<any>(`/epics/${id}`);
-export const getDecisionById    = (id: number) => get<any>(`/decisions/${id}`);
-export const getDeliverableById = (id: number) => get<any>(`/deliverables/${id}`);
-export const getTaskById        = (id: number) => get<any>(`/tasks/${id}`);
-export const getActivityById    = (id: number) => get<any>(`/activities/${id}`);
+export const getEpicById        = (id: number) => get<Epic>(`/epics/${id}`);
+export const getDecisionById    = (id: number) => get<Decision>(`/decisions/${id}`);
+export const getDeliverableById = (id: number) => get<Deliverable>(`/deliverables/${id}`);
+export const getTaskById        = (id: number) => get<Task>(`/tasks/${id}`);
+export const getActivityById    = (id: number) => get<Activity>(`/activities/${id}`);
 
 /* ── 4. UPDATE (PUT) ─────────────────────────────────────────────── */
-export const updateEpic        = (id: number, d: any) => put<any>(`/epics/${id}`, d);
-export const updateDecision    = (id: number, d: any) => put<any>(`/decisions/${id}`, d);
-export const updateDeliverable = (id: number, d: any) => put<any>(`/deliverables/${id}`, d);
-export const updateTask        = (id: number, d: any) => put<any>(`/tasks/${id}`, d);
-export const updateActivity    = (id: number, d: any) => put<any>(`/activities/${id}`, d);
+export const updateEpic        = (id: number, d: Partial<Omit<Epic, 'id'>>)        => put<Epic>(`/epics/${id}`, d);
+export const updateDecision    = (id: number, d: Partial<Omit<Decision, 'id'>>)    => put<Decision>(`/decisions/${id}`, d);
+export const updateDeliverable = (id: number, d: Partial<Omit<Deliverable, 'id'>>) => put<Deliverable>(`/deliverables/${id}`, d);
+export const updateTask        = (id: number, d: Partial<Omit<Task, 'id'>>)        => put<Task>(`/tasks/${id}`, d);
+export const updateActivity    = (id: number, d: Partial<Omit<Activity, 'id'>>)    => put<Activity>(`/activities/${id}`, d);
+
+export async function convertMetadataType(
+  oldType: string,
+  id: number,
+  newType: string,
+  data: Record<string, unknown>
+): Promise<any> {
+  const res = await fetch(`${BASE}/convert/${oldType}/${id}/${newType}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error(`Convert failed: ${res.status}`);
+  return res.json();
+}
 
 /* ── 5. DELETE ───────────────────────────────────────────────────── */
 export const deleteEpic        = (id: number) => del(`/epics/${id}`);
@@ -74,21 +89,21 @@ export const deleteActivity    = (id: number) => del(`/activities/${id}`);
 
 /* ── 6. EXTRACT (LLM) ───────────────────────────────────────────── */
 export const extractEpics = (filepath: string) =>
-  post<any[]>(`/epics/extract?filepath=${encodeURIComponent(filepath)}`);
+  post<Partial<Epic>[]>(`/epics/extract?filepath=${encodeURIComponent(filepath)}`);
 
 export const extractDecisions = (filepath: string) =>
-  post<any[]>(`/decisions/extract?filepath=${encodeURIComponent(filepath)}`);
+  post<Partial<Decision>[]>(`/decisions/extract?filepath=${encodeURIComponent(filepath)}`);
 
 export const extractDeliverables = (filepath: string) =>
-  post<any[]>(`/deliverables/extract?filepath=${encodeURIComponent(filepath)}`);
+  post<Partial<Deliverable>[]>(`/deliverables/extract?filepath=${encodeURIComponent(filepath)}`);
 
 export const extractTasks = (filepath: string) =>
-  post<any[]>(`/tasks/extract?filepath=${encodeURIComponent(filepath)}`);
+  post<Partial<Task>[]>(`/tasks/extract?filepath=${encodeURIComponent(filepath)}`);
 
 export const extractActivities = (filepath: string) =>
-  post<any[]>(`/activities/extract?filepath=${encodeURIComponent(filepath)}`);
+  post<Partial<Activity>[]>(`/activities/extract?filepath=${encodeURIComponent(filepath)}`);
 
-/* ── 7. UPLOAD DOCUMENT ─────────────────────────────────────────── */
+/* ── 7. DOCUMENTs ─────────────────────────────────────────── */
 export async function uploadDocument(file: File): Promise<{ filename: string; message: string }> {
   const form = new FormData();
   form.append('file', file);
@@ -102,19 +117,31 @@ export async function uploadDocument(file: File): Promise<{ filename: string; me
   return res.json();
 }
 
-/* ── 8. GET DOCUMENTS ────────────────────────────────────────────── */
 export const getDocuments = () => get<string[]>('/documents/');
 
 export const getDocumentByName = (filename: string) =>
   get<string>(`/documents/${encodeURIComponent(filename)}`);
 
-/* ── 9. KANBAN ────────────────────────────────────────────── */
-export async function updateKanbanCard(payload: {
+export const deleteDocument = (filename: string) =>
+  del(`/documents/${encodeURIComponent(filename)}`);
+
+/* ── 8. KANBAN ───────────────────────────────────────────────────── */
+export interface KanbanUpdatePayload {
   id: number;
   title: string;
   type: string;
   kanban_status: string;
-}) {
+}
+
+export interface KanbanUpdateResponse {
+  id: number;
+  title: string;
+  type: string;
+  kanban_status: string;
+  [key: string]: unknown;
+}
+
+export async function updateKanbanCard(payload: KanbanUpdatePayload): Promise<KanbanUpdateResponse> {
   const res = await fetch(`${BASE}/kanban/update`, {
     method: 'POST',
     headers: {

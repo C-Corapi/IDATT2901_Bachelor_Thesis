@@ -6,6 +6,14 @@ import UploadPage from '../../src/pages/UploadPage';
 import * as api from '../../src/api';
 
 vi.mock('../../src/api');
+vi.mock('../../src/components/MetadataCard', () => ({
+  default: (props: any) => (
+    <div data-testid="metadata-card" data-type={props.displayType}>
+      <div>{props.title}</div>
+      {props.displayType && <div data-testid="card-badge">{props.displayType}</div>}
+    </div>
+  ),
+}));
 
 afterEach(() => {
   cleanup();
@@ -115,12 +123,13 @@ describe('UploadPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
 
     await waitFor(() => {
-      const workingBtn = screen.getByRole('button', { name: /Working/i });
+      const workingBtn = screen.getByRole('button', { name: /Working…/i });
       expect(workingBtn).toBeTruthy();
       expect(workingBtn).toBeDisabled();
     });
   });
-   it('shows success message and extraction progress', async () => {
+
+  it('shows success message and extraction progress', async () => {
     vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
     vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
     vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
@@ -399,8 +408,17 @@ describe('UploadPage', () => {
     await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
 
     await waitFor(() => {
-      expect(screen.getByText(/Epic: Epic Item/i)).toBeTruthy();
-      expect(screen.getByText(/Decision: Decision Item/i)).toBeTruthy();
+      expect(screen.getByText('Epic Item')).toBeTruthy();
+      expect(screen.getByText('Decision Item')).toBeTruthy();
+
+      const cards = screen.getAllByTestId('metadata-card');
+      expect(cards.length).toBe(2);
+
+      const epicCard = cards.find((card) => card.getAttribute('data-type') === 'Epic');
+      const decisionCard = cards.find((card) => card.getAttribute('data-type') === 'Decision');
+
+      expect(epicCard).toBeTruthy();
+      expect(decisionCard).toBeTruthy();
     });
   });
 

@@ -7,6 +7,7 @@ import {
   extractTasks,
   extractActivities,
 } from '../api';
+import MetadataCard from '../components/MetadataCard';
 import type { MetadataType } from '../types';
 
 type ExtractType = MetadataType | 'all';
@@ -61,19 +62,19 @@ const UploadPage: React.FC = () => {
       } else {
         switch (type) {
           case 'epic':
-            extracted = await extractEpics(uploaded.filename);
+            extracted = (await extractEpics(uploaded.filename)).map(item => ({ kind: 'Epic', ...item }));
             break;
           case 'decision':
-            extracted = await extractDecisions(uploaded.filename);
+            extracted = (await extractDecisions(uploaded.filename)).map(item => ({ kind: 'Decision', ...item }));
             break;
           case 'deliverable':
-            extracted = await extractDeliverables(uploaded.filename);
+            extracted = (await extractDeliverables(uploaded.filename)).map(item => ({ kind: 'Deliverable', ...item }));
             break;
           case 'task':
-            extracted = await extractTasks(uploaded.filename);
+            extracted = (await extractTasks(uploaded.filename)).map(item => ({ kind: 'Task', ...item }));
             break;
           case 'activity':
-            extracted = await extractActivities(uploaded.filename);
+            extracted = (await extractActivities(uploaded.filename)).map(item => ({ kind: 'Activity', ...item }));
             break;
         }
       }
@@ -164,14 +165,31 @@ const UploadPage: React.FC = () => {
       {results.length > 0 && (
         <div style={{ marginTop: '24px' }}>
           <h2 className="page-title" style={{ fontSize: '1.1rem' }}>Extracted Metadata</h2>
-          <div className="doc-list">
+          <div>
             {results.map((item, i) => (
-              <article className="doc-row" key={i}>
-                <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-                  <strong>{item.kind ? `${item.kind}: ` : ''}{item.title ?? item.name ?? `Item ${i + 1}`}</strong>
-                  <div>{JSON.stringify(item, null, 2)}</div>
-                </div>
-              </article>
+              <MetadataCard
+                key={i}
+                title={item.title ?? item.name ?? `Item ${i + 1}`}
+                owner={item.owner}
+                status={item.status}
+                nature={item.nature}
+                reach={item.reach}
+                description={item.description}
+                alternatives={item.alternatives}
+                evidence={item.evidence}
+                confidence={item.confidence ? Math.round(item.confidence * 100) : undefined}
+                verified={false}
+                displayType={item.kind}
+                defaultOpen={false}
+                extraDetails={[
+                  ...(item.deadline ? [{ label: 'Deadline', value: item.deadline, key: 'deadline' }] : []),
+                  ...(item.target_date ? [{ label: 'Target Date', value: item.target_date, key: 'target_date' }] : []),
+                  ...(item.classification ? [{ label: 'Classification', value: item.classification, key: 'classification' }] : []),
+                  ...(item.scope ? [{ label: 'Scope', value: item.scope, key: 'scope' }] : []),
+                  ...(item.use_case ? [{ label: 'Use Case', value: item.use_case, key: 'use_case' }] : []),
+                  ...(item.user_story ? [{ label: 'User Story', value: item.user_story, key: 'user_story' }] : []),
+                ]}
+              />
             ))}
           </div>
         </div>

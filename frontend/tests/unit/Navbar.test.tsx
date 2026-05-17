@@ -12,12 +12,11 @@ afterEach(() => {
 const expectedLinks = [
   { to: '/overview', label: 'Overview', tooltip: 'View all extracted metadata' },
   { to: '/kanban', label: 'Kanban', tooltip: 'Manage items on the board' },
-  { to: '/documents', label: 'Documents', tooltip: 'Browse uploaded documents' },
   { to: '/upload', label: 'Upload', tooltip: 'Upload a new document' },
+  { to: '/docs', label: 'Documents', tooltip: 'Browse uploaded documents' },
   { to: '/about', label: 'About', tooltip: 'Learn about this tool' },
 ];
 
-// helper to render and wait for router
 async function renderWithRouter(ui: React.ReactElement, route = '/') {
   const result = render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>);
   await screen.findByLabelText('Main navigation');
@@ -101,8 +100,12 @@ describe('Navbar', () => {
     await renderWithRouter(<Navbar />, '/');
 
     const user = userEvent.setup();
-    const anchors = expectedLinks.map((l) => screen.getByText(l.label).closest('a') as HTMLAnchorElement);
 
+    await user.tab();
+    const hamburger = screen.getByRole('button', { name: /Toggle navigation menu/i });
+    expect(document.activeElement).toBe(hamburger);
+
+    const anchors = expectedLinks.map((l) => screen.getByText(l.label).closest('a') as HTMLAnchorElement);
     for (const expected of anchors) {
       await user.tab();
       expect(document.activeElement).toBe(expected);
@@ -130,5 +133,19 @@ describe('Navbar', () => {
     expect(aboutAnchor).toHaveTextContent('About');
 
     expect(aboutAnchor).toHaveAttribute('aria-label', 'Learn about this tool');
+  });
+
+  it('hamburger button toggles menu visibility', async () => {
+    await renderWithRouter(<Navbar />, '/');
+    const user = userEvent.setup();
+
+    const hamburger = screen.getByRole('button', { name: /Toggle navigation menu/i });
+    expect(hamburger).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(hamburger);
+    expect(hamburger).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(hamburger);
+    expect(hamburger).toHaveAttribute('aria-expanded', 'false');
   });
 });

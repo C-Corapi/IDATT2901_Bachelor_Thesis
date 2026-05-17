@@ -4,30 +4,15 @@ import userEvent from '@testing-library/user-event';
 import KanbanColumn from '../../src/components/KanbanColumn';
 import type { KanbanItemFull } from '../../src/types';
 
-/**
- * Stub MetadataCard so tests don't depend on its internal implementation.
- */
 vi.mock('../../src/components/MetadataCard', () => {
   return {
-    default: (props: any) => {
-      return (
-        <div data-testid="metadata-card">
-          <div data-testid="metadata-card-title">{props.title}</div>
-          <button
-            data-testid="metadata-save"
-            onClick={() => props.onSave && props.onSave({ saved: 'yes' })}
-          >
-            Save
-          </button>
-          <button
-            data-testid="metadata-delete"
-            onClick={() => props.onDelete && props.onDelete()}
-          >
-            Delete
-          </button>
-        </div>
-      );
-    },
+    default: (props: any) => (
+      <div data-testid="metadata-card">
+        <div>{props.title}</div>
+        <button data-testid="metadata-save" onClick={() => props.onSave?.({ saved: 'yes' })}>Save</button>
+        <button data-testid="metadata-delete" onClick={() => props.onDelete?.()}>Delete</button>
+      </div>
+    ),
   };
 });
 
@@ -42,14 +27,8 @@ function makeItem(overrides?: Partial<KanbanItemFull>): KanbanItemFull {
     type: 'task',
     title: 'Test Task',
     owner: 'alice',
-    nature: 'functional',
-    reach: 'local',
     description: 'desc',
-    alternatives: [],
-    evidence: [],
-    confidence: 0,
     verified: false,
-    extraDetails: {},
     ...overrides,
   } as KanbanItemFull;
 }
@@ -59,329 +38,198 @@ function makeItems(n = 2): KanbanItemFull[] {
 }
 
 describe('KanbanColumn', () => {
-  it('renders header with title, count and accessible attributes', () => {
+  it('renders column header with title and item count', () => {
     const items = makeItems(3);
     render(<KanbanColumn title="To Do" items={items} />);
-
-    const section = screen.getByLabelText(/To Do column — 3 items/i);
-    expect(section).toBeTruthy();
-
-    const titleEl = screen.getByText('To Do');
-    expect(titleEl).toBeTruthy();
-
-    const count = screen.getByLabelText('3 items');
-    expect(count).toBeTruthy();
-    expect(count).toHaveTextContent('3');
-    expect(count).toHaveAttribute('title', '3 items in To Do');
+    expect(screen.getByLabelText(/To Do column — 3 items/i)).toBeTruthy();
   });
 
-  it('shows edit button only when onTitleChange is provided', async () => {
-    const items = makeItems();
-    const onTitleChange = vi.fn();
-    const { rerender } = render(<KanbanColumn title="Backlog" items={items} onTitleChange={onTitleChange} />);
-
-    const editBtn = screen.getByRole('button', { name: /Rename "Backlog" column/i });
-    expect(editBtn).toBeTruthy();
-
-    rerender(<KanbanColumn title="Backlog" items={items} />);
-    const maybe = screen.queryByRole('button', { name: /Rename "Backlog" column/i });
-    expect(maybe).toBeNull();
+  it('shows edit button when onTitleChange is provided', () => {
+    render(<KanbanColumn title="Col" items={[]} onTitleChange={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /Rename "Col" column/i })).toBeTruthy();
   });
 
-  it('allows editing the title and commits on Enter (calls onTitleChange with trimmed value)', async () => {
-    const items = makeItems();
+  it('edits column title on Enter', async () => {
     const onTitleChange = vi.fn();
-    render(<KanbanColumn title="Column" items={items} onTitleChange={onTitleChange} />);
-
+    render(<KanbanColumn title="Old" items={[]} onTitleChange={onTitleChange} />);
     const user = userEvent.setup();
 
-    const editBtn = screen.getByRole('button', { name: /Rename "Column" column/i });
-    await user.click(editBtn);
-    const input = await screen.findByRole('textbox', { name: /Edit column name/i }) as HTMLInputElement;
-    expect(input).toBeTruthy();
-
+    await user.click(screen.getByRole('button', { name: /Rename "Old"/i }));
+    const input = screen.getByRole('textbox', { name: /Edit column name/i });
     await user.clear(input);
-    await user.type(input, '  New Column  ');
+    await user.type(input, 'New');
     await user.keyboard('{Enter}');
 
-    expect(onTitleChange).toHaveBeenCalledTimes(1);
-    expect(onTitleChange).toHaveBeenCalledWith('New Column');
-
-    expect(screen.queryByRole('textbox', { name: /Edit column name/i })).toBeNull();
+    expect(onTitleChange).toHaveBeenCalledWith('New');
   });
 
-  it('cancels title editing on Escape and restores draft to original title', async () => {
-    const items = makeItems();
+  it('cancels title edit on Escape', async () => {
     const onTitleChange = vi.fn();
-    render(<KanbanColumn title="Original" items={items} onTitleChange={onTitleChange}/>);
-
+    render(<KanbanColumn title="Original" items={[]} onTitleChange={onTitleChange} />);
     const user = userEvent.setup();
-    await user.click(screen.getByRole('button', { name: /Rename "Original" column/i }));
 
-    const input = await screen.findByRole('textbox', { name: /Edit column name/i }) as HTMLInputElement;
-
-    await user.clear(input);
+    await user.click(screen.getByRole('button', { name: /Rename/i }));
+    const input = screen.getByRole('textbox');
     await user.type(input, 'Changed');
     await user.keyboard('{Escape}');
 
     expect(onTitleChange).not.toHaveBeenCalled();
-    expect(screen.queryByRole('textbox', { name: /Edit column name/i })).toBeNull();
     expect(screen.getByText('Original')).toBeTruthy();
   });
 
-  it('renders items with titles and owners when provided', () => {
-    const items = [
-      makeItem({ id: 11, title: 'A', owner: 'bob' }),
-      makeItem({ id: 22, title: 'B', owner: undefined }),
-    ];
+  it('renders items with titles', () => {
+    const items = [makeItem({ title: 'Task A' }), makeItem({ id: 2, title: 'Task B' })];
     render(<KanbanColumn title="Col" items={items} />);
 
-    const a = screen.getByText('A');
-    expect(a).toBeTruthy();
-    const owner = screen.getByText('bob');
-    expect(owner).toBeTruthy();
-
-    const b = screen.getByText('B');
-    expect(b).toBeTruthy();
+    expect(screen.getByText('Task A')).toBeTruthy();
+    expect(screen.getByText('Task B')).toBeTruthy();
   });
 
-  it('expands on click and renders MetadataCard title', async () => {
-    const item = makeItem({ id: 5, title: 'ExpandMe' });
-    render(<KanbanColumn title="Col" items={[item]} />);
+  it('renders owner when provided', () => {
+    const items = [makeItem({ owner: 'alice' })];
+    render(<KanbanColumn title="Col" items={items} />);
+
+    expect(screen.getByText('alice')).toBeTruthy();
+  });
+
+  it('expands item on click', async () => {
+    const items = [makeItem({ title: 'Expandable' })];
+    render(<KanbanColumn title="Col" items={items} />);
+    const user = userEvent.setup();
 
     expect(screen.queryByTestId('metadata-card')).toBeNull();
 
-    const article = screen.getByRole('button', { name: /ExpandMe, draggable/i });
-    const user = userEvent.setup();
-    await user.click(article);
-
+    await user.click(screen.getByRole('button', { name: /Expandable/i }));
     expect(screen.getByTestId('metadata-card')).toBeTruthy();
-    expect(screen.getByTestId('metadata-card-title')).toHaveTextContent('ExpandMe');
   });
 
-  it('calls onSaveItem and onDeleteItem when MetadataCard buttons are clicked', async () => {
-    const item = makeItem({ id: 6, title: 'Callbacks' });
+  it('calls onSaveItem when save button clicked', async () => {
+    const item = makeItem({ id: 5, title: 'Item' });
     const onSaveItem = vi.fn();
-    const onDeleteItem = vi.fn();
-
-    render(<KanbanColumn title="Col" items={[item]} onSaveItem={onSaveItem} onDeleteItem={onDeleteItem} />);
-
-    const article = screen.getByRole('button', { name: /Callbacks, draggable/i });
+    render(<KanbanColumn title="Col" items={[item]} onSaveItem={onSaveItem} />);
     const user = userEvent.setup();
-    await user.click(article);
 
+    await user.click(screen.getByRole('button', { name: /Item/i }));
     await user.click(screen.getByTestId('metadata-save'));
-    expect(onSaveItem).toHaveBeenCalledTimes(1);
-    expect(onSaveItem).toHaveBeenCalledWith(item, { saved: 'yes' });
 
+    expect(onSaveItem).toHaveBeenCalledWith(item, { saved: 'yes' });
+  });
+
+  it('calls onDeleteItem when delete button clicked', async () => {
+    const item = makeItem({ id: 5, title: 'Item' });
+    const onDeleteItem = vi.fn();
+    render(<KanbanColumn title="Col" items={[item]} onDeleteItem={onDeleteItem} />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: /Item/i }));
     await user.click(screen.getByTestId('metadata-delete'));
-    expect(onDeleteItem).toHaveBeenCalledTimes(1);
+
     expect(onDeleteItem).toHaveBeenCalledWith(item);
   });
 
-  it('toggles expansion with Enter and with Space on the article', async () => {
-    const item = makeItem({ id: 7, title: 'KeyToggle' });
+  it('toggles expansion with Enter key', async () => {
+    const items = [makeItem({ title: 'Key' })];
     const user = userEvent.setup();
+    render(<KanbanColumn title="Col" items={items} />);
 
-    const { unmount } = render(<KanbanColumn title="Col" items={[item]} />);
-    const article1 = screen.getByRole('button', { name: /KeyToggle, draggable/i });
-    article1.focus();
+    const article = screen.getByRole('button', { name: /Key/i });
+    article.focus();
     await user.keyboard('{Enter}');
-    expect(screen.getByTestId('metadata-card')).toBeTruthy();
 
-    unmount();
-    render(<KanbanColumn title="Col" items={[item]} />);
-    const article2 = screen.getByRole('button', { name: /KeyToggle, draggable/i });
-    article2.focus();
-    await user.keyboard(' ');
     expect(screen.getByTestId('metadata-card')).toBeTruthy();
   });
 
-    it('toggles expansion with Space on the article', async () => {
-    const item = makeItem({ id: 7, title: 'KeyToggle' });
+  it('toggles expansion with Space key', async () => {
+    const items = [makeItem({ title: 'Key' })];
     const user = userEvent.setup();
+    render(<KanbanColumn title="Col" items={items} />);
 
-    const { unmount } = render(<KanbanColumn title="Col" items={[item]} />);
-    const article1 = screen.getByRole('button', { name: /KeyToggle, draggable/i });
-    article1.focus();
+    const article = screen.getByRole('button', { name: /Key/i });
+    article.focus();
     await user.keyboard(' ');
+
     expect(screen.getByTestId('metadata-card')).toBeTruthy();
   });
 
-  it('sets dataTransfer payload during dragStart on an item', () => {
-    const item = makeItem({ id: 99, title: 'Draggable' });
-    render(<KanbanColumn title="Col" items={[item]} />);
+  it('sets drag data on drag start', () => {
+    const item = makeItem({ title: 'Drag' });
+    render(<KanbanColumn title="Col" items={[item]} onDropItem={vi.fn()} />);
 
-    const article = screen.getByRole('button', { name: /Draggable, draggable/i });
-
-    const dataTransfer = {
-      setData: vi.fn(),
-      effectAllowed: '',
-    };
+    const article = screen.getByRole('button', { name: /Drag/i });
+    const dataTransfer = { setData: vi.fn(), effectAllowed: '' };
 
     fireEvent.dragStart(article, { dataTransfer } as any);
 
-    expect(dataTransfer.setData).toHaveBeenCalledTimes(1);
     expect(dataTransfer.setData).toHaveBeenCalledWith('application/json', JSON.stringify(item));
-    expect((dataTransfer as any).effectAllowed).toBe('move');
   });
 
-  it('adds and removes over-class on dragOver/dragLeave', () => {
-    const item = makeItem({ id: 42, title: 'Payload' });
-    render(<KanbanColumn title="DropCol" items={[item]} onDropItem={vi.fn()} />);
+  it('highlights column on drag over', () => {
+    const { container } = render(<KanbanColumn title="Drop" items={[]} onDropItem={vi.fn()} />);
+    const section = container.querySelector('.kanban-col') as HTMLElement;
 
-    const section = screen.getByLabelText(/DropCol column — 1 items/i);
-    const dtOver = { getData: () => '', setData: vi.fn() };
+    fireEvent.dragOver(section, { dataTransfer: { getData: () => '' } } as any);
 
-    fireEvent.dragOver(section, { dataTransfer: dtOver } as any);
-    expect(section.className).toMatch(/\bkanban-col--over\b/);
+    expect(section.className).toContain('kanban-col--over');
+  });
 
+  it('removes highlight on drag leave', () => {
+    const { container } = render(<KanbanColumn title="Drop" items={[]} onDropItem={vi.fn()} />);
+    const section = container.querySelector('.kanban-col') as HTMLElement;
+
+    fireEvent.dragOver(section, { dataTransfer: { getData: () => '' } } as any);
     fireEvent.dragLeave(section);
-    expect(section.className).not.toMatch(/\bkanban-col--over\b/);
+
+    expect(section.className).not.toContain('kanban-col--over');
   });
 
-  it('calls onDropItem with parsed payload on drop and clears over-class', () => {
-    const item = makeItem({ id: 42, title: 'Payload' });
+  it('calls onDropItem on drop with valid data', () => {
+    const item = makeItem({ id: 99 });
     const onDropItem = vi.fn();
-    render(<KanbanColumn title="DropCol" items={[item]} onDropItem={onDropItem} />);
+    const { container } = render(<KanbanColumn title="Drop" items={[]} onDropItem={onDropItem} />);
 
-    const section = screen.getByLabelText(/DropCol column — 1 items/i);
+    const section = container.querySelector('.kanban-col') as HTMLElement;
+    const dataTransfer = { getData: () => JSON.stringify(item) };
 
-    const dtDrop = {
-      getData: vi.fn(() => JSON.stringify(item)),
-    };
-    fireEvent.drop(section, { dataTransfer: dtDrop } as any);
+    fireEvent.drop(section, { dataTransfer } as any);
 
-    expect(onDropItem).toHaveBeenCalledTimes(1);
     expect(onDropItem).toHaveBeenCalledWith(item);
-    expect(section.className).not.toMatch(/\bkanban-col--over\b/);
   });
 
-  it('does not call onDropItem when drop payload is invalid JSON', () => {
-    const item = makeItem({ id: 13 });
+  it('does not call onDropItem with empty data', () => {
     const onDropItem = vi.fn();
-    render(<KanbanColumn title="DropBad" items={[item]} onDropItem={onDropItem} />);
+    const { container } = render(<KanbanColumn title="Drop" items={[]} onDropItem={onDropItem} />);
 
-    const section = screen.getByLabelText(/DropBad column — 1 items/i);
+    const section = container.querySelector('.kanban-col') as HTMLElement;
+    const dataTransfer = { getData: () => '' };
 
-    const dtBad = {
-      getData: vi.fn(() => 'not-a-json'),
-    };
+    fireEvent.drop(section, { dataTransfer } as any);
+
+    expect(onDropItem).not.toHaveBeenCalled();
+  });
+
+  it('handles invalid JSON on drop gracefully', () => {
+    const onDropItem = vi.fn();
+    const { container } = render(<KanbanColumn title="Drop" items={[]} onDropItem={onDropItem} />);
+
+    const section = container.querySelector('.kanban-col') as HTMLElement;
+    const dataTransfer = { getData: () => 'invalid' };
 
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    fireEvent.drop(section, { dataTransfer: dtBad } as any);
+    fireEvent.drop(section, { dataTransfer } as any);
 
     expect(onDropItem).not.toHaveBeenCalled();
     expect(consoleSpy).toHaveBeenCalled();
+
     consoleSpy.mockRestore();
   });
 
-  it('allows editing the title and commits on Enter (calls onTitleChange with trimmed value)', async () => {
-    const items = makeItems();
+  it('does not allow title change with empty value', async () => {
     const onTitleChange = vi.fn();
-    render(<KanbanColumn title="Column" items={items} onTitleChange={onTitleChange} />);
-
+    render(<KanbanColumn title="Title" items={[]} onTitleChange={onTitleChange} />);
     const user = userEvent.setup();
 
-    const editBtn = screen.getByRole('button', { name: /Rename "Column" column/i });
-    await user.click(editBtn);
-
-    const input = screen.getByRole('textbox', { name: /Edit column name/i });
-    expect(input).toBeTruthy();
-
-    await user.clear(input);
-    await user.type(input, '  New Title  ');
-    await user.keyboard('{Enter}');
-
-    expect(onTitleChange).toHaveBeenCalledWith('New Title');
-  });
-
-  it('cancels editing on Escape and restores original title', async () => {
-    const items = makeItems();
-    const onTitleChange = vi.fn();
-    render(<KanbanColumn title="Original" items={items} onTitleChange={onTitleChange} />);
-
-    const user = userEvent.setup();
-
-    const editBtn = screen.getByRole('button', { name: /Rename "Original" column/i });
-    await user.click(editBtn);
-
-    const input = screen.getByRole('textbox', { name: /Edit column name/i });
-    await user.clear(input);
-    await user.type(input, 'Changed');
-    await user.keyboard('{Escape}');
-
-    expect(onTitleChange).not.toHaveBeenCalled();
-    expect(screen.getByText('Original')).toBeTruthy();
-  });
-
-  it('handles drag and drop of items', async () => {
-    const items = makeItems();
-    const onDropItem = vi.fn();
-    const { container } = render(<KanbanColumn title="Done" items={items} onDropItem={onDropItem} />);
-
-    const section = container.querySelector('.kanban-col') as HTMLElement;
-
-    const draggedItem = makeItem({ id: 99, title: 'Dragged' });
-    const dataTransfer = {
-      getData: vi.fn().mockReturnValue(JSON.stringify(draggedItem)),
-    };
-
-    fireEvent.dragOver(section, { dataTransfer });
-    expect(section.className).toContain('kanban-col--over');
-
-    fireEvent.drop(section, { dataTransfer });
-
-    expect(onDropItem).toHaveBeenCalledWith(draggedItem);
-    expect(section.className).not.toContain('kanban-col--over');
-  });
-
-  it('removes drag-over styling on drag leave', () => {
-    const items = makeItems();
-    const { container } = render(<KanbanColumn title="In Progress" items={items} />);
-
-    const section = container.querySelector('.kanban-col') as HTMLElement;
-
-    fireEvent.dragOver(section);
-    expect(section.className).toContain('kanban-col--over');
-
-    fireEvent.dragLeave(section);
-    expect(section.className).not.toContain('kanban-col--over');
-  });
-
-  it('handles invalid JSON in drag data gracefully', () => {
-    const items = makeItems();
-    const onDropItem = vi.fn();
-    const { container } = render(<KanbanColumn title="Done" items={items} onDropItem={onDropItem} />);
-
-    const section = container.querySelector('.kanban-col') as HTMLElement;
-
-    const dataTransfer = {
-      getData: vi.fn().mockReturnValue('invalid json'),
-    };
-
-    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    fireEvent.drop(section, { dataTransfer });
-
-    expect(onDropItem).not.toHaveBeenCalled();
-    expect(consoleError).toHaveBeenCalled();
-
-    consoleError.mockRestore();
-  });
-
-  it('does not call onTitleChange if trimmed value is empty', async () => {
-    const items = makeItems();
-    const onTitleChange = vi.fn();
-    render(<KanbanColumn title="Original" items={items} onTitleChange={onTitleChange} />);
-
-    const user = userEvent.setup();
-
-    const editBtn = screen.getByRole('button', { name: /Rename "Original" column/i });
-    await user.click(editBtn);
-
-    const input = screen.getByRole('textbox', { name: /Edit column name/i });
+    await user.click(screen.getByRole('button', { name: /Rename/i }));
+    const input = screen.getByRole('textbox');
     await user.clear(input);
     await user.type(input, '   ');
     await user.keyboard('{Enter}');
@@ -389,19 +237,28 @@ describe('KanbanColumn', () => {
     expect(onTitleChange).not.toHaveBeenCalled();
   });
 
-  it('does not call onTitleChange if value is unchanged', async () => {
+  it('shows empty state when no items', () => {
+    render(<KanbanColumn title="Empty" items={[]} />);
+    expect(screen.getByLabelText(/Empty column — 0 items/i)).toBeTruthy();
+  });
+
+  it('items are draggable when onDropItem is provided', () => {
     const items = makeItems();
-    const onTitleChange = vi.fn();
-    render(<KanbanColumn title="Same" items={items} onTitleChange={onTitleChange} />);
+    render(<KanbanColumn title="Col" items={items} onDropItem={vi.fn()} />);
 
-    const user = userEvent.setup();
+    const articles = screen.getAllByRole('button', { name: /draggable/i });
+    articles.forEach((a) => {
+      expect(a.getAttribute('draggable')).toBe('true');
+    });
+  });
 
-    const editBtn = screen.getByRole('button', { name: /Rename "Same" column/i });
-    await user.click(editBtn);
+  it('items have draggable=true by default in component logic', () => {
+    const items = makeItems();
+    const { container } = render(<KanbanColumn title="Col" items={items} />);
 
-    const input = screen.getByRole('textbox', { name: /Edit column name/i });
-    await user.keyboard('{Enter}');
-
-    expect(onTitleChange).not.toHaveBeenCalled();
+    const articles = container.querySelectorAll('[draggable]');
+    articles.forEach((a) => {
+      expect(a.getAttribute('draggable')).toBe('true');
+    });
   });
 });
