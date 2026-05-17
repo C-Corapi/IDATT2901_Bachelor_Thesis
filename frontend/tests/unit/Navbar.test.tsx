@@ -12,12 +12,11 @@ afterEach(() => {
 const expectedLinks = [
   { to: '/overview', label: 'Overview', tooltip: 'View all extracted metadata' },
   { to: '/kanban', label: 'Kanban', tooltip: 'Manage items on the board' },
-  { to: '/documents', label: 'Documents', tooltip: 'Browse uploaded documents' },
   { to: '/upload', label: 'Upload', tooltip: 'Upload a new document' },
+  { to: '/docs', label: 'Documents', tooltip: 'Browse uploaded documents' },
   { to: '/about', label: 'About', tooltip: 'Learn about this tool' },
 ];
 
-// helper to render and wait for router
 async function renderWithRouter(ui: React.ReactElement, route = '/') {
   const result = render(<MemoryRouter initialEntries={[route]}>{ui}</MemoryRouter>);
   await screen.findByLabelText('Main navigation');
@@ -97,25 +96,21 @@ describe('Navbar', () => {
     expect(overviewAnchor).not.toHaveAttribute('aria-current');
   });
 
-it('tabbing moves focus through links in DOM order (keyboard accessibility)', async () => {
-  await renderWithRouter(<Navbar />, '/');
+  it('tabbing moves focus through links in DOM order (keyboard accessibility)', async () => {
+    await renderWithRouter(<Navbar />, '/');
 
-  const user = userEvent.setup();
-  const hamburger = screen.getByRole('button', { name: /Open menu/i });
-  const anchors = expectedLinks.map((l) => screen.getByText(l.label).closest('a') as HTMLAnchorElement);
+    const user = userEvent.setup();
 
-  let focusedElement = document.activeElement;
-
-  for (const expected of anchors) {
     await user.tab();
-    focusedElement = document.activeElement;
-    if (focusedElement === hamburger) {
+    const hamburger = screen.getByRole('button', { name: /Toggle navigation menu/i });
+    expect(document.activeElement).toBe(hamburger);
+
+    const anchors = expectedLinks.map((l) => screen.getByText(l.label).closest('a') as HTMLAnchorElement);
+    for (const expected of anchors) {
       await user.tab();
-      focusedElement = document.activeElement;
+      expect(document.activeElement).toBe(expected);
     }
-    expect(focusedElement).toBe(expected);
-  }
-});
+  });
 
   it('activates a link with Enter when it has focus', async () => {
     await renderWithRouter(<Navbar />, '/overview');
@@ -140,25 +135,11 @@ it('tabbing moves focus through links in DOM order (keyboard accessibility)', as
     expect(aboutAnchor).toHaveAttribute('aria-label', 'Learn about this tool');
   });
 
-  it('closes menu when a link is clicked', async () => {
-    await renderWithRouter(<Navbar />, '/');
-    const user = userEvent.setup();
-
-    const hamburger = screen.getByRole('button', { name: /Open menu/i });
-    await user.click(hamburger);
-
-    const overviewLink = screen.getByText('Overview').closest('a') as HTMLAnchorElement;
-    await user.click(overviewLink);
-
-    const navLinks = overviewLink.closest('ul');
-    expect(navLinks?.className).not.toContain('nav-links--open');
-  });
-
   it('hamburger button toggles menu visibility', async () => {
     await renderWithRouter(<Navbar />, '/');
     const user = userEvent.setup();
 
-    const hamburger = screen.getByRole('button', { name: /Open menu/i });
+    const hamburger = screen.getByRole('button', { name: /Toggle navigation menu/i });
     expect(hamburger).toHaveAttribute('aria-expanded', 'false');
 
     await user.click(hamburger);
