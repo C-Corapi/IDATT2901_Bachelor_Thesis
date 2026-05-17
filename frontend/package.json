@@ -42,10 +42,16 @@
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
-    "test:unit": "vitest --run tests/unit",
-    "test:unit:ci": "vitest --run --coverage tests/unit",
-    "test:integration": "vitest --run tests/integration",
-    "test:integration:ci": "vitest --run --coverage tests/integration",
+
+    "test": "vitest",
+    "test:coverage": "npm run test:coverage:unit && npm run test:coverage:integration",
+
+    "test:unit": "vitest --config vitest.config.ts",
+    "test:coverage:unit": "vitest run --config vitest.unit.config.ts --coverage",
+
+    "test:integration": "vitest --config vitest.integration.config.ts",
+    "test:coverage:integration": "vitest run --config vitest.integration.config.ts --coverage",
+
     "cypress:open": "cypress open",
     "cypress:run": "cypress run"
 }
