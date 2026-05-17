@@ -4,8 +4,8 @@ import {
   extractEpics,
   extractDecisions,
   extractDeliverables,
-  extractTasks,
   extractActivities,
+  extractTasks,
 } from '../api';
 import MetadataCard from '../components/MetadataCard';
 import type { MetadataType } from '../types';
@@ -17,8 +17,8 @@ const OPTIONS: { value: ExtractType; label: string }[] = [
   { value: 'epic', label: 'Epic' },
   { value: 'decision', label: 'Decision' },
   { value: 'deliverable', label: 'Deliverable' },
-  { value: 'task', label: 'Task' },
   { value: 'activity', label: 'Activity' },
+  { value: 'task', label: 'Task' },
 ];
 
 const UploadPage: React.FC = () => {
@@ -48,16 +48,16 @@ const UploadPage: React.FC = () => {
           extractEpics(uploaded.filename),
           extractDecisions(uploaded.filename),
           extractDeliverables(uploaded.filename),
-          extractTasks(uploaded.filename),
           extractActivities(uploaded.filename),
+          extractTasks(uploaded.filename),
         ]);
 
         extracted = [
           ...epics.map((item) => ({ kind: 'Epic', ...item })),
           ...decisions.map((item) => ({ kind: 'Decision', ...item })),
           ...deliverables.map((item) => ({ kind: 'Deliverable', ...item })),
-          ...tasks.map((item) => ({ kind: 'Task', ...item })),
           ...activities.map((item) => ({ kind: 'Activity', ...item })),
+          ...tasks.map((item) => ({ kind: 'Task', ...item })),
         ];
       } else {
         switch (type) {
@@ -70,11 +70,11 @@ const UploadPage: React.FC = () => {
           case 'deliverable':
             extracted = (await extractDeliverables(uploaded.filename)).map(item => ({ kind: 'Deliverable', ...item }));
             break;
+            case 'activity':
+            extracted = (await extractActivities(uploaded.filename)).map(item => ({ kind: 'Activity', ...item }));
+            break;
           case 'task':
             extracted = (await extractTasks(uploaded.filename)).map(item => ({ kind: 'Task', ...item }));
-            break;
-          case 'activity':
-            extracted = (await extractActivities(uploaded.filename)).map(item => ({ kind: 'Activity', ...item }));
             break;
         }
       }
@@ -177,7 +177,8 @@ const UploadPage: React.FC = () => {
                 description={item.description}
                 alternatives={item.alternatives}
                 evidence={item.evidence}
-                confidence={item.confidence ? Math.round(item.confidence * 100) : undefined}
+                confidence={item.confidence != null ? Math.round(item.confidence * 100) : 0}
+                showConfidence={true}
                 verified={false}
                 displayType={item.kind}
                 defaultOpen={false}

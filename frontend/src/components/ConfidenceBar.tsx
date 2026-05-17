@@ -7,7 +7,7 @@ const ConfidenceBar: React.FC<{ value: number }> = ({ value }) => {
   return (
     <span className="conf" role="meter" aria-valuenow={v} aria-valuemin={0}
       aria-valuemax={100} aria-label={`Confidence: ${v}% (${label})`} title={`Confidence: ${v}% — ${label}`}>
-      <span className="conf-track" aria-hidden="true">
+      <span className="conf-track" aria-hidden="true" style={{ background: `color-mix(in srgb, ${color} 20%, transparent)` }}>
         <span className="conf-fill" style={{ width: `${v}%`, background: color }} />
       </span>
       <span className="conf-pct" style={{ color }}>{v}%</span>

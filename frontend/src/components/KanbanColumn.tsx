@@ -122,6 +122,7 @@ const KanbanColumn: React.FC<Props> = ({
               {isOpen ? (
                 <MetadataCard
                   title={i.title}
+                  type={i.type}
                   owner={i.owner}
                   displayType={typeAbbrev(i.type)}
                   nature={i.nature}
@@ -138,7 +139,7 @@ const KanbanColumn: React.FC<Props> = ({
                 />
               ) : (
                 <article
-                  className="kanban-item"
+                  className={`kanban-item card--type-${i.type}`}
                   tabIndex={0}
                   role="button"
                   draggable
@@ -156,7 +157,10 @@ const KanbanColumn: React.FC<Props> = ({
                   aria-label={`${i.title}, draggable`}
                   title="Drag to another column"
                 >
-                  <div className="kanban-item-title">{i.title}</div>
+                  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+                    <div className="kanban-item-title">{i.title}</div>
+                    <span className={`type-acronym type-acronym--${i.type}`}>{typeAbbrev(i.type)}</span>
+                  </div>
                   {i.owner && <div className="kanban-item-owner">{i.owner}</div>}
                 </article>
               )}
