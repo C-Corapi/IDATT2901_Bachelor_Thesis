@@ -28,21 +28,29 @@ const AboutPage: React.FC = () => (
         Activities. Each extracted item can be reviewed and managed
         through the Kanban board.
       </p>
-      <h2 style={{ marginTop: '2rem' }}>Metadata Types</h2>
-      <div className="about-types">
-        {TYPES.map((t) => {
-          const Icon = t.icon;
-          return (
-            <div className="about-type" key={t.name}>
-              <h3>
-                <span aria-hidden="true"><Icon size={16} strokeWidth={1.5} /> </span>
-                {t.name}
-              </h3>
-              <p>{t.desc}</p>
-            </div>
-          );
-        })}
-      </div>
+      <h2 style={{marginTop: '2rem'}}>Metadata Types</h2>
+      <ul className="about-types" role="list" aria-label="Metadata type descriptions">
+        <li className="about-type" role="listitem">
+          <h3><Umbrella size={16}/> Epic</h3>
+          <p>Major planned features or capabilities</p>
+        </li>
+        <li className="about-type" role="listitem">
+          <h3><Split size={16}/> Decision</h3>
+          <p>Decisions with alternatives & ownership</p>
+        </li>
+        <li className="about-type" role="listitem">
+          <h3><PackageCheck size={16}/> Deliverable</h3>
+          <p>Tangible or intangible project results</p>
+        </li>
+        <li className="about-type" role="listitem">
+          <h3><ClipboardList size={16}/> Activity</h3>
+          <p>Ongoing project activities</p>
+        </li>
+        <li className="about-type" role="listitem">
+          <h3><ClipboardCheck size={16}/> Task</h3>
+          <p>Individual actionable work items</p>
+        </li>
+      </ul>
     </div>
   </section>
 );
