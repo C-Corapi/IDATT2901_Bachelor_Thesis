@@ -27,7 +27,7 @@ import type { MetadataType } from '../types';
       getDeliverables().catch(() => []),
       getActivities().catch(() => []),
       getTasks().catch(() => []),
-    ]).then(([e, d, dl, t, a]) => {
+    ]).then(([e, d, dl, a, t]) => {
       setEpics(e); setDecisions(d); setDeliverables(dl); setActivities(a); setTasks(t);
       setLoading(false);
     });
