@@ -8,6 +8,10 @@ vi.mock('../../src/components/ConfidenceBar', () => ({
   default: (props: any) => <div data-testid="confidence-bar">conf:{props.value}</div>,
 }));
 
+vi.mock('../../src/api', () => ({
+  convertMetadataType: vi.fn().mockResolvedValue({}),
+}));
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -279,7 +283,7 @@ describe('MetadataCard', () => {
     const dialog = screen.getByRole('alertdialog');
     expect(dialog).toBeTruthy();
 
-    const deleteBtn = screen.getByRole('button', { name: /Confirm deletetion/i });
+    const deleteBtn = screen.getByRole('button', { name: /Confirm deletion/i });
     await user.click(deleteBtn);
 
     expect(onDelete).toHaveBeenCalled();
