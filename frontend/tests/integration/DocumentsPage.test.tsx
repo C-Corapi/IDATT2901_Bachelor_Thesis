@@ -243,4 +243,161 @@ describe('DocumentsPage Integration Tests', () => {
 
     consoleErrorSpy.mockRestore();
   });
+
+    it('handles document fetch error gracefully', async () => {
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
+    vi.spyOn(api, 'getDocumentByName').mockRejectedValue(new Error('Network error'));
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test.txt')).toBeTruthy();
+    });
+
+    const viewBtn = screen.getByRole('button', { name: /View document: test.txt/i });
+    await userEvent.click(viewBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Unable to load document/i)).toBeTruthy();
+    });
+  });
+
+  it('opens delete modal when delete button is clicked', async () => {
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(['deletable.txt']);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('deletable.txt')).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete document: deletable.txt/i });
+    await userEvent.click(deleteBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeTruthy();
+      expect(screen.getByText(/Are you sure you want to delete/i)).toBeTruthy();
+      expect(screen.getByText('"deletable.txt"')).toBeTruthy();
+    });
+  });
+
+  it('closes delete modal when cancel is clicked', async () => {
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test.txt')).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete document: test.txt/i });
+    await userEvent.click(deleteBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeTruthy();
+    });
+
+    const cancelBtn = screen.getByRole('button', { name: /Cancel deletion/i });
+    await userEvent.click(cancelBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+  });
+
+  it('deletes document when confirmed', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteDocument').mockResolvedValue(undefined);
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(['file1.txt', 'file2.txt']);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('file1.txt')).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete document: file1.txt/i });
+    await userEvent.click(deleteBtn);
+
+    await waitFor(() => {
+      expect(screen.getByRole('alertdialog')).toBeTruthy();
+    });
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm delete "file1.txt"/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith('file1.txt');
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+      expect(screen.queryByText('file1.txt')).toBeNull();
+    });
+  });
+
+  it('shows error message when delete fails', async () => {
+    vi.spyOn(api, 'deleteDocument').mockRejectedValue(new Error('Delete failed'));
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test.txt')).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete document: test.txt/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm delete "test.txt"/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Failed to delete document/i)).toBeTruthy();
+    });
+  });
+
+  it('shows deleting state during deletion', async () => {
+    let resolveDelete: () => void;
+    const deletePromise = new Promise<void>((resolve) => {
+      resolveDelete = resolve;
+    });
+    vi.spyOn(api, 'deleteDocument').mockReturnValue(deletePromise);
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test.txt')).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete document: test.txt/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm delete "test.txt"/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(confirmBtn).toHaveTextContent(/Deleting/i);
+      expect(confirmBtn).toBeDisabled();
+    });
+
+    resolveDelete!();
+  });
+
+  it('closes modal when clicking overlay during delete', async () => {
+    vi.spyOn(api, 'getDocuments').mockResolvedValue(['test.txt']);
+
+    await renderWithRouter(<DocumentsPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('test.txt')).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete document: test.txt/i });
+    await userEvent.click(deleteBtn);
+
+    const overlay = screen.getByRole('alertdialog').parentElement;
+    await userEvent.click(overlay!);
+
+    await waitFor(() => {
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+  });
 });

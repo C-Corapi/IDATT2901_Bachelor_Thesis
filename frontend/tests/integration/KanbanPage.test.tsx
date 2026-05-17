@@ -4,6 +4,7 @@ import { render, screen, cleanup, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import KanbanPage from '../../src/pages/KanbanPage';
 import * as api from '../../src/api';
+import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('../../src/api');
 
@@ -11,6 +12,10 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
+
+async function renderWithRouter(ui: React.ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 describe('KanbanPage Integration Tests', () => {
   beforeEach(() => {
@@ -120,13 +125,11 @@ describe('KanbanPage Integration Tests', () => {
 
     const toggle = screen.getByRole('checkbox', { name: /Show backlog column/i });
 
-    // Check
     await user.click(toggle);
     await waitFor(() => {
       expect(screen.getByRole('region', { name: /Backlog column/i })).toBeTruthy();
     });
 
-    // Uncheck
     await user.click(toggle);
     await waitFor(() => {
       expect(toggle).not.toBeChecked();
@@ -605,5 +608,896 @@ describe('KanbanPage Integration Tests', () => {
     });
 
     consoleErrorSpy.mockRestore();
+  });
+
+  it('loads and displays items with all metadata types', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User1', kanban_status: 'todo', description: 'Desc',
+        classification: 'Feature', scope: 'Global', use_case: 'UC1', user_story: 'Story' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 2, title: 'Deliverable 1', owner: 'User2', kanban_status: 'in_progress',
+        description: 'Desc', nature: 'Physical', reach: 'Global', alternatives: 'Alt', deadline: '2024-12-31' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 3, title: 'Task 1', owner: 'User3', kanban_status: 'done',
+        description: 'Desc', target_date: '2024-06-01' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 4, title: 'Activity 1', owner: 'User4', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 5, title: 'Decision 1', owner: 'User5', kanban_status: 'todo',
+        description: 'Desc', nature: 'Strategic', reach: 'Local', alternatives: 'Alt', deadline: '2024-08-15' }
+    ]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+      expect(screen.getByText('Deliverable 1')).toBeTruthy();
+      expect(screen.getByText('Task 1')).toBeTruthy();
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+    });
+  });
+
+  it('shows and hides backlog column when toggled', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Backlog Item', owner: 'User', kanban_status: 'backlog', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Backlog')).toBeNull();
+    });
+
+    const checkbox = screen.getByRole('checkbox', { name: /Show backlog/i });
+    await userEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByText('Backlog')).toBeTruthy();
+      expect(screen.getByText('Backlog Item')).toBeTruthy();
+    });
+  });
+
+  it('handles save item for epic', async () => {
+    const updateSpy = vi.spyOn(api, 'updateEpic').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Epic 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Epic 1"/i });
+    await userEvent.click(editBtn);
+
+    const titleInput = screen.getByLabelText(/Edit title/i);
+    await userEvent.clear(titleInput);
+    await userEvent.type(titleInput, 'Updated Epic');
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith(1, expect.objectContaining({ title: 'Updated Epic' }));
+    });
+  });
+
+  it('handles save item for deliverable', async () => {
+    const updateSpy = vi.spyOn(api, 'updateDeliverable').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 2, title: 'Del 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Del 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Del 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Del 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Del 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles save item for task', async () => {
+    const updateSpy = vi.spyOn(api, 'updateTask').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 3, title: 'Task 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Task 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Task 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Task 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Task 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles save item for activity', async () => {
+    const updateSpy = vi.spyOn(api, 'updateActivity').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 4, title: 'Activity 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Activity 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Activity 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Activity 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Activity 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles save item for decision', async () => {
+    const updateSpy = vi.spyOn(api, 'updateDecision').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 5, title: 'Decision 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Decision 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Decision 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Decision 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Decision 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles delete for all item types', async () => {
+    const deleteEpicSpy = vi.spyOn(api, 'deleteEpic').mockResolvedValue(undefined as any);
+
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 3, title: 'Task 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const epicCard = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (epicCard) await userEvent.click(epicCard);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Delete "Epic 1"/i })).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Epic 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteEpicSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('handles drag and drop to different column', async () => {
+    const updateKanbanSpy = vi.spyOn(api, 'updateKanbanCard').mockResolvedValue(undefined as any);
+
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    expect(updateKanbanSpy).not.toHaveBeenCalled();
+  });
+
+  it('handles save error gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'updateEpic').mockRejectedValue(new Error('Save failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Epic 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Epic 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('Save failed');
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it('handles delete error gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'deleteEpic').mockRejectedValue(new Error('Delete failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Delete "Epic 1"/i })).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Epic 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalledWith('Delete failed');
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+   it('renames column when edit button is clicked', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('To Do')).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Rename "To Do" column/i });
+    await userEvent.click(editBtn);
+
+    expect(editBtn).toBeTruthy();
+  });
+
+  it('handles drag and drop update successfully', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    expect(screen.getByText('Epic 1')).toBeTruthy();
+  });
+
+  it('handles drag/drop error gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'updateKanbanCard').mockRejectedValue(new Error('Update failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+    it('handles column rename by clicking edit button', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('To Do')).toBeTruthy();
+    });
+
+    const renameBtn = screen.getByRole('button', { name: /Rename "To Do" column/i });
+    expect(renameBtn).toBeTruthy();
+
+    await userEvent.click(renameBtn);
+  });
+
+  it('displays correct item counts in each column', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' },
+      { id: 2, title: 'Epic 2', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 3, title: 'Del 1', owner: 'User', kanban_status: 'in_progress', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 4, title: 'Task 1', owner: 'User', kanban_status: 'done', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('2 items')).toBeTruthy();
+      expect(screen.getAllByLabelText('1 items').length).toBeGreaterThanOrEqual(1);
+    });
+  });
+
+  it('shows empty columns when no items', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('To Do')).toBeTruthy();
+      expect(screen.getByText('In Progress')).toBeTruthy();
+      expect(screen.getByText('Done')).toBeTruthy();
+    });
+
+    const emptyColumns = screen.getAllByLabelText('0 items');
+    expect(emptyColumns.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it('handles update kanban card error gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'updateKanbanCard').mockRejectedValue(new Error('Update failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it('displays backlog column when toggle is checked', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Backlog Epic', owner: 'User', kanban_status: 'backlog', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    expect(screen.queryByText('Backlog')).toBeNull();
+
+    const checkbox = screen.getByRole('checkbox', { name: /Show backlog/i });
+    await userEvent.click(checkbox);
+
+    await waitFor(() => {
+      expect(screen.getByText('Backlog')).toBeTruthy();
+      expect(screen.getByText('Backlog Epic')).toBeTruthy();
+    });
+  });
+
+  it('hides backlog column when toggle is unchecked', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Backlog Epic', owner: 'User', kanban_status: 'backlog', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    const checkbox = screen.getByRole('checkbox', { name: /Show backlog/i });
+
+    await userEvent.click(checkbox);
+    await waitFor(() => {
+      expect(screen.getByText('Backlog')).toBeTruthy();
+    });
+
+    await userEvent.click(checkbox);
+    await waitFor(() => {
+      expect(screen.queryByText('Backlog')).toBeNull();
+    });
+  });
+
+  it('loads all five metadata types correctly', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User1', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 2, title: 'Del 1', owner: 'User2', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 3, title: 'Task 1', owner: 'User3', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 4, title: 'Activity 1', owner: 'User4', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 5, title: 'Decision 1', owner: 'User5', kanban_status: 'todo', description: 'Desc' }
+    ]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+      expect(screen.getByText('Del 1')).toBeTruthy();
+      expect(screen.getByText('Task 1')).toBeTruthy();
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+    });
+  });
+
+  it('handles API errors during initial load', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'getEpics').mockRejectedValue(new Error('API Error'));
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Kanban Board')).toBeTruthy();
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+    it('handles save for deliverable type', async () => {
+    const updateSpy = vi.spyOn(api, 'updateDeliverable').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 2, title: 'Del 1', owner: 'User', kanban_status: 'todo', description: 'Desc', nature: 'Physical', reach: 'Local', alternatives: '' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Del 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Del 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Del 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Del 1"/i });
+    await userEvent.click(editBtn);
+
+    const titleInput = screen.getByLabelText(/Edit title/i);
+    await userEvent.clear(titleInput);
+    await userEvent.type(titleInput, 'Updated Deliverable');
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalledWith(2, expect.objectContaining({ title: 'Updated Deliverable' }));
+    });
+  });
+
+  it('handles delete for deliverable type', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteDeliverable').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 2, title: 'Del 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Del 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Del 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Del 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(2);
+    });
+  });
+
+  it('handles delete for task type', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteTask').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 3, title: 'Task 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Task 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Task 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Task 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(3);
+    });
+  });
+
+  it('handles delete for activity type', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteActivity').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 4, title: 'Activity 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Activity 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Activity 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Activity 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(4);
+    });
+  });
+
+  it('handles delete for decision type', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteDecision').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 5, title: 'Decision 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Decision 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Decision 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Decision 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(5);
+    });
+  });
+
+  it('updates kanban status when item is dragged to different column', async () => {
+    const updateKanbanSpy = vi.spyOn(api, 'updateKanbanCard').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    expect(updateKanbanSpy).not.toHaveBeenCalled();
+  });
+
+  it('shows loading state initially', async () => {
+    let resolveEpics: (value: any[]) => void;
+    const epicsPromise = new Promise<any[]>((resolve) => {
+      resolveEpics = resolve;
+    });
+
+    vi.spyOn(api, 'getEpics').mockReturnValue(epicsPromise);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    expect(screen.getByText('Kanban Board')).toBeTruthy();
+
+    resolveEpics!([]);
+
+    await waitFor(() => {
+      expect(screen.getByText('To Do')).toBeTruthy();
+    });
+  });
+
+  it('handles mixed metadata types in same column', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User1', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 2, title: 'Del 1', owner: 'User2', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 3, title: 'Task 1', owner: 'User3', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 4, title: 'Activity 1', owner: 'User4', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 5, title: 'Decision 1', owner: 'User5', kanban_status: 'todo', description: 'Desc' }
+    ]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+      expect(screen.getByText('Del 1')).toBeTruthy();
+      expect(screen.getByText('Task 1')).toBeTruthy();
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+
+      expect(screen.getByLabelText('5 items')).toBeTruthy();
+    });
+  });
+
+  it('cancels delete when cancel button is clicked', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteEpic').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Epic 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const cancelBtn = screen.getByRole('button', { name: /Cancel deletion/i });
+    await userEvent.click(cancelBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).not.toHaveBeenCalled();
+      expect(screen.queryByRole('alertdialog')).toBeNull();
+    });
+  });
+
+  it('expands card to show details when clicked', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+
+    await renderWithRouter(<KanbanPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+
+    expect(screen.queryByRole('button', { name: /Edit "Epic 1"/i })).toBeNull();
+
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Epic 1"/i })).toBeTruthy();
+    });
   });
 });

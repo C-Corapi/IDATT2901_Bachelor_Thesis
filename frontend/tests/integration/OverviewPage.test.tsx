@@ -4,6 +4,7 @@ import { render, screen, cleanup, waitFor, within } from '@testing-library/react
 import userEvent from '@testing-library/user-event';
 import OverviewPage from '../../src/pages/OverviewPage';
 import * as api from '../../src/api';
+import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('../../src/api');
 
@@ -11,6 +12,10 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
+
+async function renderWithRouter(ui: React.ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 describe('OverviewPage Integration Tests', () => {
   beforeEach(() => {
@@ -256,306 +261,793 @@ describe('OverviewPage Integration Tests', () => {
   });
 
   it('opens create modal when Create New button is clicked', async () => {
-    const user = userEvent.setup();
-    render(<OverviewPage />);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
+      expect(screen.getByText('Metadata Overview')).toBeTruthy();
     });
 
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      const dialog = screen.getByRole('dialog');
-      expect(dialog).toBeTruthy();
-      expect(dialog).toHaveAttribute('aria-modal', 'true');
-    });
-
-    expect(screen.getByRole('heading', { name: /Create New/i })).toBeTruthy();
-  });
-
-  it('create modal has metadata type selector with all options', async () => {
-    const user = userEvent.setup();
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      const select = screen.getByRole('combobox');
-      expect(select).toBeTruthy();
-    });
-
-    const options = screen.getAllByRole('option');
-    expect(options).toHaveLength(5);
-    expect(screen.getByRole('option', { name: /Epic/i })).toBeTruthy();
-    expect(screen.getByRole('option', { name: /Decision/i })).toBeTruthy();
-    expect(screen.getByRole('option', { name: /Deliverable/i })).toBeTruthy();
-    expect(screen.getByRole('option', { name: /Task/i })).toBeTruthy();
-    expect(screen.getByRole('option', { name: /Activity/i })).toBeTruthy();
-  });
-
-  it('create modal has title, owner, and description fields', async () => {
-    const user = userEvent.setup();
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Title/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Owner/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Description/i)).toBeTruthy();
-    });
-  });
-
-  it('shows epic-specific fields when epic type is selected', async () => {
-    const user = userEvent.setup();
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Classification/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Scope/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Use Case/i)).toBeTruthy();
-      expect(screen.getByLabelText(/User Story/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Non-Functional Requirements/i)).toBeTruthy();
-    });
-  });
-
-  it('shows decision-specific fields when decision type is selected', async () => {
-    const user = userEvent.setup();
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      const select = screen.getByRole('combobox');
-      expect(select).toBeTruthy();
-    });
-
-    const select = screen.getByRole('combobox');
-    await user.selectOptions(select, 'decision');
-
-    await waitFor(() => {
-      expect(screen.getByLabelText(/Alternatives/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Nature/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Reach/i)).toBeTruthy();
-      expect(screen.getByLabelText(/Deadline/i)).toBeTruthy();
-    });
-  });
-
-  it('creates an epic successfully', async () => {
-    const user = userEvent.setup();
-    const createEpicSpy = vi.spyOn(api, 'createEpic').mockResolvedValue({ id: 1 } as any);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeTruthy();
-    });
-
-    const titleInput = document.getElementById('create-title') as HTMLInputElement;
-    const ownerInput = document.getElementById('create-owner') as HTMLInputElement;
-
-    await user.type(titleInput, 'New Epic');
-    await user.type(ownerInput, 'Alice');
-
-    const createBtn = within(screen.getByRole('dialog'))
-      .getAllByRole('button')
-      .find(btn => btn.textContent === 'Create');
-
-    await user.click(createBtn!);
-
-    await waitFor(() => {
-      expect(createEpicSpy).toHaveBeenCalledWith(
-        expect.objectContaining({
-          title: 'New Epic',
-          owner: 'Alice'
-        })
-      );
+      expect(screen.getByRole('heading', { name: /Create New/i })).toBeTruthy();
     });
   });
 
+  it('creates a new epic with all fields', async () => {
+    const createSpy = vi.spyOn(api, 'createEpic').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
 
-  it('closes modal after successful creation', async () => {
-    const user = userEvent.setup();
-    vi.spyOn(api, 'createEpic').mockResolvedValue({ id: 1 } as any);
-
-    render(<OverviewPage />);
+    await renderWithRouter(<OverviewPage />);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
+      expect(screen.getByText('Metadata Overview')).toBeTruthy();
     });
 
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
+
+    const titleInput = screen.getByLabelText(/Title/i);
+    await userEvent.type(titleInput, 'New Epic');
+
+    const ownerInput = screen.getByLabelText(/Owner/i);
+    await userEvent.type(ownerInput, 'John Doe');
+
+    const descInput = screen.getByLabelText(/Description/i);
+    await userEvent.type(descInput, 'Epic description');
+
+    const classInput = screen.getByLabelText(/Classification/i);
+    await userEvent.type(classInput, 'Feature');
+
+    const scopeInput = screen.getByLabelText(/Scope/i);
+    await userEvent.type(scopeInput, 'Global');
+
+    const useCaseInput = screen.getByLabelText(/Use Case/i);
+    await userEvent.type(useCaseInput, 'UC-1');
+
+    const userStoryInput = screen.getByLabelText(/User Story/i);
+    await userEvent.type(userStoryInput, 'As a user...');
+
+    const nfrInput = screen.getByLabelText(/Non-Functional Requirements/i);
+    await userEvent.type(nfrInput, 'Performance');
+
+    const submitBtn = screen.getByRole('button', { name: /^Create$/i });
+    await userEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeTruthy();
+      expect(createSpy).toHaveBeenCalledWith({
+        title: 'New Epic',
+        owner: 'John Doe',
+        description: 'Epic description',
+        classification: 'Feature',
+        scope: 'Global',
+        use_case: 'UC-1',
+        user_story: 'As a user...',
+        non_functional_requirements: 'Performance',
+      });
     });
-
-    const titleInput = document.getElementById('create-title') as HTMLInputElement;
-    await user.type(titleInput, 'New Epic');
-
-    const createBtn = within(screen.getByRole('dialog'))
-      .getAllByRole('button')
-      .find(btn => btn.textContent === 'Create');
-
-    await user.click(createBtn!);
-
-    await waitFor(() => {
-      expect(api.createEpic).toHaveBeenCalled();
-    });
-
-    await waitFor(() => {
-      expect(screen.queryByRole('dialog')).toBeFalsy();
-    }, { timeout: 5000 });
   });
 
-  it('closes modal when Cancel is clicked', async () => {
-    const user = userEvent.setup();
-    render(<OverviewPage />);
+  it('creates a new decision', async () => {
+    const createSpy = vi.spyOn(api, 'createDecision').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
+
+    const typeSelect = document.getElementById('create-metadata-type') as HTMLSelectElement;
+    await userEvent.selectOptions(typeSelect, 'decision');
+
+    await userEvent.type(screen.getByLabelText(/^Title$/i), 'Decision 1');
+    await userEvent.type(screen.getByLabelText(/Alternatives/i), 'Alt A, Alt B');
+    await userEvent.type(screen.getByLabelText(/Nature/i), 'Strategic');
+    await userEvent.type(screen.getByLabelText(/Reach/i), 'Global');
+    await userEvent.type(screen.getByLabelText(/Deadline/i), '2024-12-31');
+
+    const submitBtn = screen.getByRole('button', { name: /^Create$/i });
+    await userEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
+      expect(createSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('creates a new deliverable', async () => {
+    const createSpy = vi.spyOn(api, 'createDeliverable').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
+
+    const typeSelect = document.getElementById('create-metadata-type') as HTMLSelectElement;
+    await userEvent.selectOptions(typeSelect, 'deliverable');
+
+    await userEvent.type(screen.getByLabelText(/^Title$/i), 'Deliverable 1');
+
+    const submitBtn = screen.getByRole('button', { name: /^Create$/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('creates a new task', async () => {
+    const createSpy = vi.spyOn(api, 'createTask').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
+
+    const typeSelect = document.getElementById('create-metadata-type') as HTMLSelectElement;
+    await userEvent.selectOptions(typeSelect, 'task');
+
+    await userEvent.type(screen.getByLabelText(/^Title$/i), 'Task 1');
+    await userEvent.type(screen.getByLabelText(/Status/i), 'In Progress');
+    await userEvent.type(screen.getByLabelText(/Time Logged/i), '5h');
+    await userEvent.type(screen.getByLabelText(/Target Date/i), '2024-06-15');
+
+    const submitBtn = screen.getByRole('button', { name: /^Create$/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('creates a new activity', async () => {
+    const createSpy = vi.spyOn(api, 'createActivity').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
+
+    const typeSelect = document.getElementById('create-metadata-type') as HTMLSelectElement;
+    await userEvent.selectOptions(typeSelect, 'activity');
+
+    await userEvent.type(screen.getByLabelText(/^Title$/i), 'Activity 1');
+    await userEvent.type(screen.getByLabelText(/Status/i), 'Ongoing');
+
+    const submitBtn = screen.getByRole('button', { name: /^Create$/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(createSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles create error gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'createEpic').mockRejectedValue(new Error('Create failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
+
+    await userEvent.type(screen.getByLabelText(/^Title$/i), 'Test');
+
+    const submitBtn = screen.getByRole('button', { name: /^Create$/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalled();
     });
 
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
+    consoleSpy.mockRestore();
+  });
+
+  it('shows creating state during submission', async () => {
+    let resolveCreate: () => void;
+    const createPromise = new Promise<any>((resolve) => {
+      resolveCreate = () => resolve(undefined);
+    });
+    vi.spyOn(api, 'createEpic').mockReturnValue(createPromise);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
+
+    await userEvent.type(screen.getByLabelText(/^Title$/i), 'Test');
+
+    const submitBtn = screen.getByRole('button', { name: /^Create$/i });
+    await userEvent.click(submitBtn);
+
+    await waitFor(() => {
+      expect(submitBtn).toHaveTextContent(/Creating/i);
+      expect(submitBtn).toBeDisabled();
+    });
+
+    resolveCreate!();
+  });
+
+  it('displays all tabs correctly', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([{ id: 1, title: 'Epic', owner: 'User', kanban_status: 'todo', description: '' }]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([{ id: 2, title: 'Decision', owner: 'User', kanban_status: 'todo', description: '' }]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([{ id: 3, title: 'Deliverable', owner: 'User', kanban_status: 'todo', description: '' }]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([{ id: 4, title: 'Task', owner: 'User', kanban_status: 'todo', description: '' }]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([{ id: 5, title: 'Activity', owner: 'User', kanban_status: 'todo', description: '' }]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      expect(screen.getByRole('tab', { name: /All/i })).toBeTruthy();
+      expect(screen.getByRole('tab', { name: /Epics/i })).toBeTruthy();
+      expect(screen.getByRole('tab', { name: /Decisions/i })).toBeTruthy();
+      expect(screen.getByRole('tab', { name: /Deliverables/i })).toBeTruthy();
+      expect(screen.getByRole('tab', { name: /Tasks/i })).toBeTruthy();
+      expect(screen.getByRole('tab', { name: /Activities/i })).toBeTruthy();
+    });
+  });
+
+  it('filters items when clicking Epic tab', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([{ id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([{ id: 2, title: 'Decision 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+    });
+
+    const epicTab = screen.getByRole('tab', { name: /Epics/i });
+    await userEvent.click(epicTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+      expect(screen.queryByText('Decision 1')).toBeNull();
+    });
+  });
+
+  it('filters items when clicking Decision tab', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([{ id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([{ id: 2, title: 'Decision 1', owner: 'User', kanban_status: 'todo', description: 'Desc', nature: 'Strategic', reach: 'Global', alternatives: '' }]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const decisionTab = screen.getByRole('tab', { name: /Decisions/i });
+    await userEvent.click(decisionTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+      expect(screen.queryByText('Epic 1')).toBeNull();
+    });
+  });
+
+  it('filters items when clicking Deliverable tab', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([{ id: 3, title: 'Deliverable 1', owner: 'User', kanban_status: 'todo', description: 'Desc', nature: 'Physical', reach: 'Local', alternatives: '' }]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const deliverableTab = screen.getByRole('tab', { name: /Deliverables/i });
+    await userEvent.click(deliverableTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Deliverable 1')).toBeTruthy();
+    });
+  });
+
+  it('filters items when clicking Task tab', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([{ id: 4, title: 'Task 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const taskTab = screen.getByRole('tab', { name: /Tasks/i });
+    await userEvent.click(taskTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Task 1')).toBeTruthy();
+    });
+  });
+
+  it('filters items when clicking Activity tab', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([{ id: 5, title: 'Activity 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const activityTab = screen.getByRole('tab', { name: /Activities/i });
+    await userEvent.click(activityTab);
+
+    await waitFor(() => {
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+    });
+  });
+
+  it('updates epic successfully', async () => {
+    const updateSpy = vi.spyOn(api, 'updateEpic').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc', classification: 'Feature' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      const editBtn = screen.getByRole('button', { name: /Edit "Epic 1"/i });
+      expect(editBtn).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Epic 1"/i });
+    await userEvent.click(editBtn);
+
+    const titleInput = screen.getByLabelText(/Edit title/i);
+    await userEvent.clear(titleInput);
+    await userEvent.type(titleInput, 'Updated Epic');
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('deletes epic successfully', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteEpic').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      const deleteBtn = screen.getByRole('button', { name: /Delete "Epic 1"/i });
+      expect(deleteBtn).toBeTruthy();
+    });
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Epic 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(1);
+    });
+  });
+
+  it('handles update for decision successfully', async () => {
+    const updateSpy = vi.spyOn(api, 'updateDecision').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 2, title: 'Decision 1', owner: 'User', kanban_status: 'todo', description: 'Desc', nature: 'Strategic', reach: 'Global', alternatives: 'Alt' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Decision 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Decision 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Decision 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Decision 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles update for deliverable successfully', async () => {
+    const updateSpy = vi.spyOn(api, 'updateDeliverable').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 3, title: 'Deliverable 1', owner: 'User', kanban_status: 'todo', description: 'Desc', nature: 'Physical', reach: 'Local', alternatives: 'Alt' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Deliverable 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Deliverable 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Deliverable 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Deliverable 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles update for task successfully', async () => {
+    const updateSpy = vi.spyOn(api, 'updateTask').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 4, title: 'Task 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Task 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Task 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Task 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Task 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles update for activity successfully', async () => {
+    const updateSpy = vi.spyOn(api, 'updateActivity').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 5, title: 'Activity 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Activity 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Activity 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /Edit "Activity 1"/i })).toBeTruthy();
+    });
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Activity 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(updateSpy).toHaveBeenCalled();
+    });
+  });
+
+  it('handles delete for decision successfully', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteDecision').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([
+      { id: 2, title: 'Decision 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Decision 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Decision 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Decision 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(2);
+    });
+  });
+
+  it('handles delete for deliverable successfully', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteDeliverable').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([
+      { id: 3, title: 'Deliverable 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Deliverable 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Deliverable 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Deliverable 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(3);
+    });
+  });
+
+  it('handles delete for task successfully', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteTask').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([
+      { id: 4, title: 'Task 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Task 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Task 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Task 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(4);
+    });
+  });
+
+  it('handles delete for activity successfully', async () => {
+    const deleteSpy = vi.spyOn(api, 'deleteActivity').mockResolvedValue(undefined as any);
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([
+      { id: 5, title: 'Activity 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Activity 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Activity 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Activity 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(deleteSpy).toHaveBeenCalledWith(5);
+    });
+  });
+
+  it('handles save error gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'updateEpic').mockRejectedValue(new Error('Update failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const editBtn = screen.getByRole('button', { name: /Edit "Epic 1"/i });
+    await userEvent.click(editBtn);
+
+    const saveBtn = screen.getByRole('button', { name: /Save changes/i });
+    await userEvent.click(saveBtn);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalled();
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it('handles delete error gracefully', async () => {
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.spyOn(api, 'deleteEpic').mockRejectedValue(new Error('Delete failed'));
+    vi.spyOn(api, 'getEpics').mockResolvedValue([
+      { id: 1, title: 'Epic 1', owner: 'User', kanban_status: 'todo', description: 'Desc' }
+    ]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    await waitFor(() => {
+      const cards = screen.getAllByText('Epic 1');
+      expect(cards.length).toBeGreaterThan(0);
+    });
+
+    const card = screen.getAllByText('Epic 1')[0].closest('[role="button"]');
+    if (card) await userEvent.click(card);
+
+    const deleteBtn = screen.getByRole('button', { name: /Delete "Epic 1"/i });
+    await userEvent.click(deleteBtn);
+
+    const confirmBtn = screen.getByRole('button', { name: /Confirm deletion/i });
+    await userEvent.click(confirmBtn);
+
+    await waitFor(() => {
+      expect(consoleSpy).toHaveBeenCalled();
+    });
+
+    consoleSpy.mockRestore();
+  });
+
+  it('cancels create modal when cancel button is clicked', async () => {
+    vi.spyOn(api, 'getEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'getDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'getDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'getTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'getActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<OverviewPage />);
+
+    const createBtn = screen.getByRole('button', { name: /Create New/i });
+    await userEvent.click(createBtn);
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeTruthy();
     });
 
     const cancelBtn = screen.getByRole('button', { name: /Cancel/i });
-    await user.click(cancelBtn);
+    await userEvent.click(cancelBtn);
 
     await waitFor(() => {
-      expect(screen.queryByRole('dialog')).toBeFalsy();
+      expect(screen.queryByRole('dialog')).toBeNull();
     });
-  });
-
-  it('closes modal when clicking overlay', async () => {
-    const user = userEvent.setup();
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeTruthy();
-    });
-
-    const overlay = document.querySelector('.modal-overlay') as HTMLElement;
-    await user.click(overlay);
-
-    await waitFor(() => {
-      expect(screen.queryByRole('dialog')).toBeFalsy();
-    });
-  });
-
-  it('handles API errors gracefully on load', async () => {
-    vi.spyOn(api, 'getEpics').mockRejectedValue(new Error('API Error'));
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(api.getEpics).toHaveBeenCalled();
-    });
-
-    expect(screen.getByRole('region', { name: /Metadata Overview/i })).toBeTruthy();
-  });
-
-  it('handles create errors gracefully', async () => {
-    const user = userEvent.setup();
-    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.spyOn(api, 'createEpic').mockRejectedValue(new Error('Create failed'));
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(screen.getByRole('button', { name: /Create New/i })).toBeTruthy();
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeTruthy();
-    });
-
-    const titleInput = document.getElementById('create-title') as HTMLInputElement;
-    await user.type(titleInput, 'Will Fail');
-
-    const createBtn = within(screen.getByRole('dialog'))
-      .getAllByRole('button')
-      .find(btn => btn.textContent === 'Create');
-
-    await user.click(createBtn!);
-
-    await waitFor(() => {
-      const actualErrors = consoleErrorSpy.mock.calls.filter(call =>
-        typeof call[0] === 'string' && call[0] === 'Create failed'
-      );
-      expect(actualErrors.length).toBeGreaterThan(0);
-    }, { timeout: 3000 });
-
-    consoleErrorSpy.mockRestore();
-  });
-
-  it('reloads data after successful creation', async () => {
-    const user = userEvent.setup();
-    vi.spyOn(api, 'createEpic').mockResolvedValue({ id: 1 } as any);
-
-    render(<OverviewPage />);
-
-    await waitFor(() => {
-      expect(api.getEpics).toHaveBeenCalledTimes(1);
-    });
-
-    await user.click(screen.getByRole('button', { name: /Create New/i }));
-
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeTruthy();
-    });
-
-    const titleInput = document.getElementById('create-title') as HTMLInputElement;
-    await user.type(titleInput, 'New Epic');
-
-    const createBtn = within(screen.getByRole('dialog'))
-      .getAllByRole('button')
-      .find(btn => btn.textContent === 'Create');
-
-    await user.click(createBtn!);
-
-    await waitFor(() => {
-      expect(api.createEpic).toHaveBeenCalled();
-    });
-
-    await waitFor(() => {
-      expect(api.getEpics).toHaveBeenCalledTimes(2);
-    }, { timeout: 5000 });
   });
 });

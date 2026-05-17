@@ -4,6 +4,7 @@ import { render, screen, cleanup, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import UploadPage from '../../src/pages/UploadPage';
 import * as api from '../../src/api';
+import { MemoryRouter } from 'react-router-dom';
 
 vi.mock('../../src/api');
 
@@ -11,6 +12,10 @@ afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
+
+async function renderWithRouter(ui: React.ReactElement) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 describe('UploadPage Integration Tests', () => {
   beforeEach(() => {
@@ -326,6 +331,465 @@ describe('UploadPage Integration Tests', () => {
     await waitFor(() => {
       const dropzone = screen.getByRole('button', { name: /Click or drag a file here to upload/i });
       expect(dropzone).toHaveTextContent(/Click or drag a file here/i);
+    });
+  });
+
+  it('handles upload error and displays error message', async () => {
+    vi.spyOn(api, 'uploadDocument').mockRejectedValue(new Error('Upload failed'));
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      const alert = screen.getByRole('alert');
+      expect(alert).toBeTruthy();
+      expect(alert).toHaveTextContent(/failed/i);
+    });
+  });
+
+  it('handles extraction error gracefully', async () => {
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockRejectedValue(new Error('Extraction failed'));
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('alert')).toBeTruthy();
+    });
+  });
+
+  it('clears extracted items when uploading new file', async () => {
+    let uploadCount = 0;
+    vi.spyOn(api, 'uploadDocument').mockImplementation(() => {
+      uploadCount++;
+      return Promise.resolve({ filename: `test${uploadCount}.txt`, message: 'ok' });
+    });
+
+    vi.spyOn(api, 'extractEpics').mockResolvedValueOnce([{ title: 'Epic 1' }]);
+    vi.spyOn(api, 'extractEpics').mockResolvedValueOnce([{ title: 'Epic 2' }]);
+
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    const file1 = new File(['content1'], 'test1.txt', { type: 'text/plain' });
+    await userEvent.upload(fileInput, file1);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+    });
+
+    const file2 = new File(['content2'], 'test2.txt', { type: 'text/plain' });
+    await userEvent.upload(fileInput, file2);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 2')).toBeTruthy();
+      expect(screen.queryByText('Epic 1')).toBeNull();
+    });
+  });
+
+    it('disables upload button when no file is selected', async () => {
+    await renderWithRouter(<UploadPage />);
+
+    const uploadBtn = screen.getByRole('button', { name: /Upload & Extract/i });
+    expect(uploadBtn).toBeDisabled();
+  });
+
+  it('enables upload button when file is selected', async () => {
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    const uploadBtn = screen.getByRole('button', { name: /Upload & Extract/i });
+    expect(uploadBtn).not.toBeDisabled();
+  });
+
+  it('shows uploading state during upload', async () => {
+    let resolveUpload: () => void;
+    const uploadPromise = new Promise<{ filename: string; message: string }>((resolve) => {
+      resolveUpload = () => resolve({ filename: 'test.txt', message: 'ok' });
+    });
+    vi.spyOn(api, 'uploadDocument').mockReturnValue(uploadPromise);
+    vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      const uploadBtn = screen.getByRole('button', { name: /Working/i });
+      expect(uploadBtn).toBeDisabled();
+    });
+
+    resolveUpload!();
+  });
+
+  it('extracts only selected metadata type', async () => {
+    const extractEpicsSpy = vi.spyOn(api, 'extractEpics').mockResolvedValue([{ title: 'Epic 1' }]);
+    const extractDecisionsSpy = vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    const typeSelect = screen.getByLabelText(/Metadata type to extract/i);
+    await userEvent.selectOptions(typeSelect, 'epic');
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(extractEpicsSpy).toHaveBeenCalledWith('test.txt');
+      expect(extractDecisionsSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  it('displays all extracted metadata types', async () => {
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockResolvedValue([{ title: 'Epic 1' }]);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([{ title: 'Decision 1' }]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([{ title: 'Deliverable 1' }]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([{ title: 'Task 1' }]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([{ title: 'Activity 1' }]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+      expect(screen.getByText('Decision 1')).toBeTruthy();
+      expect(screen.getByText('Deliverable 1')).toBeTruthy();
+      expect(screen.getByText('Task 1')).toBeTruthy();
+      expect(screen.getByText('Activity 1')).toBeTruthy();
+    });
+  });
+
+  it('shows completion message when extraction completes with no results', async () => {
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Metadata extraction completed/i)).toBeTruthy();
+    });
+  });
+
+  it('shows error message when extraction fails', async () => {
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockRejectedValue(new Error('Extraction failed'));
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Extraction failed/i)).toBeTruthy();
+    });
+  });
+
+  it('clears file selection when new file is chosen', async () => {
+    await renderWithRouter(<UploadPage />);
+
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    const file1 = new File(['content1'], 'test1.txt', { type: 'text/plain' });
+    await userEvent.upload(fileInput, file1);
+
+    expect(fileInput.files?.[0]?.name).toBe('test1.txt');
+
+    const file2 = new File(['content2'], 'test2.txt', { type: 'text/plain' });
+    await userEvent.upload(fileInput, file2);
+
+    expect(fileInput.files?.[0]?.name).toBe('test2.txt');
+  });
+
+  it('accepts only .txt and .docx files', async () => {
+    await renderWithRouter(<UploadPage />);
+
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    expect(fileInput).toHaveAttribute('accept', '.txt,.docx');
+  });
+
+  it('displays selected filename when file is chosen', async () => {
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'my-document.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    await waitFor(() => {
+      expect(screen.getByText('my-document.txt')).toBeTruthy();
+    });
+  });
+
+  it('allows changing file selection', async () => {
+    await renderWithRouter(<UploadPage />);
+
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    const file1 = new File(['content1'], 'file1.txt', { type: 'text/plain' });
+    await userEvent.upload(fileInput, file1);
+
+    await waitFor(() => {
+      expect(screen.getByText('file1.txt')).toBeTruthy();
+    });
+
+    const file2 = new File(['content2'], 'file2.txt', { type: 'text/plain' });
+    await userEvent.upload(fileInput, file2);
+
+    await waitFor(() => {
+      expect(screen.getByText('file2.txt')).toBeTruthy();
+      expect(screen.queryByText('file1.txt')).toBeNull();
+    });
+  });
+
+  it('shows extracting state with correct message', async () => {
+    let resolveExtract: () => void;
+    const extractPromise = new Promise<any[]>((resolve) => {
+      resolveExtract = () => resolve([]);
+    });
+
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockReturnValue(extractPromise);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/Document uploaded. Extracting metadata/i)).toBeTruthy();
+    });
+
+    resolveExtract!();
+  });
+
+  it('extracts all metadata types when "All" is selected', async () => {
+    const extractEpicsSpy = vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
+    const extractDecisionsSpy = vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    const extractDeliverablesSpy = vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    const extractTasksSpy = vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    const extractActivitiesSpy = vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    const typeSelect = screen.getByLabelText(/Metadata type to extract/i);
+    await userEvent.selectOptions(typeSelect, 'all');
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(extractEpicsSpy).toHaveBeenCalledWith('test.txt');
+      expect(extractDecisionsSpy).toHaveBeenCalledWith('test.txt');
+      expect(extractDeliverablesSpy).toHaveBeenCalledWith('test.txt');
+      expect(extractTasksSpy).toHaveBeenCalledWith('test.txt');
+      expect(extractActivitiesSpy).toHaveBeenCalledWith('test.txt');
+    });
+  });
+
+  it('extracts only decisions when decision type selected', async () => {
+    const extractEpicsSpy = vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
+    const extractDecisionsSpy = vi.spyOn(api, 'extractDecisions').mockResolvedValue([{ title: 'Dec 1' }]);
+
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    const typeSelect = screen.getByLabelText(/Metadata type to extract/i);
+    await userEvent.selectOptions(typeSelect, 'decision');
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(extractDecisionsSpy).toHaveBeenCalledWith('test.txt');
+      expect(extractEpicsSpy).not.toHaveBeenCalled();
+    });
+  });
+
+  it('extracts only deliverables when deliverable type selected', async () => {
+    const extractDeliverablesSpy = vi.spyOn(api, 'extractDeliverables').mockResolvedValue([{ title: 'Del 1' }]);
+
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    const typeSelect = screen.getByLabelText(/Metadata type to extract/i);
+    await userEvent.selectOptions(typeSelect, 'deliverable');
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(extractDeliverablesSpy).toHaveBeenCalledWith('test.txt');
+    });
+  });
+
+  it('extracts only tasks when task type selected', async () => {
+    const extractTasksSpy = vi.spyOn(api, 'extractTasks').mockResolvedValue([{ title: 'Task 1' }]);
+
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    const typeSelect = screen.getByLabelText(/Metadata type to extract/i);
+    await userEvent.selectOptions(typeSelect, 'task');
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(extractTasksSpy).toHaveBeenCalledWith('test.txt');
+    });
+  });
+
+  it('extracts only activities when activity type selected', async () => {
+    const extractActivitiesSpy = vi.spyOn(api, 'extractActivities').mockResolvedValue([{ title: 'Act 1' }]);
+
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+
+    const typeSelect = screen.getByLabelText(/Metadata type to extract/i);
+    await userEvent.selectOptions(typeSelect, 'activity');
+
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(extractActivitiesSpy).toHaveBeenCalledWith('test.txt');
+    });
+  });
+
+  it('resets form after successful extraction', async () => {
+    vi.spyOn(api, 'uploadDocument').mockResolvedValue({ filename: 'test.txt', message: 'ok' });
+    vi.spyOn(api, 'extractEpics').mockResolvedValue([{ title: 'Epic 1' }]);
+    vi.spyOn(api, 'extractDecisions').mockResolvedValue([]);
+    vi.spyOn(api, 'extractDeliverables').mockResolvedValue([]);
+    vi.spyOn(api, 'extractTasks').mockResolvedValue([]);
+    vi.spyOn(api, 'extractActivities').mockResolvedValue([]);
+
+    await renderWithRouter(<UploadPage />);
+
+    const file = new File(['content'], 'test.txt', { type: 'text/plain' });
+    const fileInput = document.querySelector('#file-input') as HTMLInputElement;
+
+    await userEvent.upload(fileInput, file);
+    await userEvent.click(screen.getByRole('button', { name: /Upload & Extract/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText('Epic 1')).toBeTruthy();
+      expect(screen.getByText(/Metadata extraction completed/i)).toBeTruthy();
     });
   });
 });

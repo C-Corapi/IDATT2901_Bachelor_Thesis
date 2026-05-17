@@ -309,15 +309,16 @@ const MetadataCard: React.FC<Props> = ({
                 <button className="btn-cancel" data-cancel onClick={() => setShowModal(false)}
                         aria-label="Cancel deletion">Cancel
                 </button>
-                <button className="btn-delete" onClick={() => { setShowModal(false); onDelete?.(); }}
-                aria-label={`Confirm deletion "${title}"`}>Yes, delete</button>
+                <button className="btn-delete" onClick={() => {setShowModal(false); onDelete?.(); }}
+                        aria-label={`Confirm deletion "${title}"`}>Yes, delete
+                </button>
+              </div>
             </div>
           </div>
-        </div>
       )}
 
       {showTypeWarning && targetType && (
-        <div className="modal-overlay" role="presentation" onClick={() => !converting && setShowTypeWarning(false)}>
+          <div className="modal-overlay" role="presentation" onClick={() => !converting && setShowTypeWarning(false)}>
           <div className="modal" role="alertdialog" aria-modal="true" onClick={(e) => e.stopPropagation()}>
             <h2>Change metadata type?</h2>
             <p>
