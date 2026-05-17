@@ -1,7 +1,7 @@
 /// <reference types="cypress" />
+ 
 import 'cypress-plugin-tab';
 
-// Custom commands and global config
 Cypress.Commands.add('visitAndWait', (url: string) => {
   cy.visit(url);
   cy.get('h1').should('be.visible');
