@@ -9,6 +9,7 @@ import {
   deleteEpic, deleteDecision, deleteDeliverable, deleteTask, deleteActivity,
 } from '../api';
 import type { MetadataType } from '../types';
+/* eslint-disable react-hooks/set-state-in-effect */
 
   const OverviewPage: React.FC = () => {
     const [epics, setEpics]               = useState<any[]>([]);

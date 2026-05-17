@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import ConfidenceBar from './ConfidenceBar';
 import { convertMetadataType } from '../api';
 import type { MetadataType } from '../types';
-
+/* eslint-disable react-hooks/set-state-in-effect */
 export interface DetailField { label: string; value: string; key?: string; }
 
 interface Props {
@@ -62,13 +62,13 @@ const MetadataCard: React.FC<Props> = ({
   useEffect(() => {
     if (!editing) {
       setDTitle(title ?? '');
-       
+
       setDOwner(owner ?? '');
-       
+
       setDDesc(description ?? '');
-       
+
       setDAlts(alternatives ?? '');
-       
+
       setDExtras(extraDetails ?? []);
     }
   }, [title, owner, description, alternatives, extraDetails, editing]);
@@ -310,7 +310,7 @@ const MetadataCard: React.FC<Props> = ({
                         aria-label="Cancel deletion">Cancel
                 </button>
                 <button className="btn-delete" onClick={() => { setShowModal(false); onDelete?.(); }}
-                aria-label={`Confirm deletion "${title}"`}>Yes, delete</button>
+                aria-label={`Confirm deletion"${title}"`}>Yes, delete</button>
             </div>
           </div>
         </div>

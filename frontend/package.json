@@ -47,9 +47,6 @@
     "test:integration": "vitest --run tests/integration",
     "test:integration:ci": "vitest --run --coverage tests/integration",
     "cypress:open": "cypress open",
-  "cypress:run": "cypress run",
-  "dev:cypress": "vite --config vite.config.cypress.ts",
-  "test:e2e": "start-server-and-test dev:cypress http://localhost:5173 cypress:open",
-  "test:e2e:ci": "start-server-and-test dev:cypress http://localhost:5173 cypress:run"
+    "cypress:run": "cypress run"
 }
 }

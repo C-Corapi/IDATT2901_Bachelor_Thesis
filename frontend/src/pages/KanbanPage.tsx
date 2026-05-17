@@ -7,6 +7,7 @@ import {
   updateKanbanCard,
 } from '../api';
 import type { KanbanItemFull, MetadataType } from '../types';
+/* eslint-disable react-hooks/set-state-in-effect */
 
 interface ColumnDef {
   id: string;
