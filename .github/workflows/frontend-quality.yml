@@ -34,7 +34,10 @@ jobs:
         working-directory: frontend
         run: npx eslint --max-warnings=0
 
-      - name: Run unit tests (vitest)
+      - name: Run unit tests
         working-directory: frontend
-        run: |
-          npm run test:unit:ci
+        run: npm run test:coverage:unit
+
+      - name: Run integration tests
+        working-directory: frontend
+        run: npm run test:coverage:integration
