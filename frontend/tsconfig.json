@@ -15,11 +15,16 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "noFallthroughCasesInSwitch": true,
-    "types": ["vitest/globals"]
+    "types": ["vite/client", "vitest/globals", "cypress"]
   },
   "include": [
     "src",
     "src/vite-env.d.ts",
     "tests"
+  ],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    }
   ]
 }

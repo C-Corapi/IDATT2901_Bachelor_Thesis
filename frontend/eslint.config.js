@@ -57,4 +57,38 @@ export default defineConfig([
       'no-unused-vars': 'off',
     },
   },
+  {
+    files: ['tests/e2e/**/*.{ts,tsx}'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      sourceType: 'module',
+      globals: {
+        ...globals.browser,
+        cy: 'readonly',
+        Cypress: 'readonly',
+        expect: 'readonly',
+        assert: 'readonly',
+        before: 'readonly',
+        beforeEach: 'readonly',
+        after: 'readonly',
+        afterEach: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        context: 'readonly',
+      },
+      parser: tseslint.parser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': tseslint.plugin,
+    },
+    rules: {
+      ...js.configs.recommended.rules,
+      ...tseslint.configs.recommended.rules,
+      '@typescript-eslint/no-unused-expressions': 'off',
+      'no-undef': 'off',
+    },
+  },
 ])
