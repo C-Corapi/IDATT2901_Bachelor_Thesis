@@ -37,7 +37,7 @@ describe('MetadataCard', () => {
   });
 
   it('shows confidence bar when confidence provided', () => {
-    render(<MetadataCard {...baseProps} />);
+    render(<MetadataCard {...baseProps} showConfidence={true} />);
     expect(screen.getByTestId('confidence-bar')).toHaveTextContent('conf:42');
   });
 
@@ -324,8 +324,10 @@ describe('MetadataCard', () => {
   });
 
   it('shows type conversion menu', async () => {
-    render(<MetadataCard {...baseProps} type="epic" id={1} raw={{}} displayType="epic" defaultOpen={true} />);
+    render(<MetadataCard {...baseProps} type="epic" id={1} raw={{}} displayType="epic" defaultOpen={true} onSave={vi.fn()} />);
     const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: /Edit/i }));
 
     const typeBtn = screen.getByRole('button', { name: /Change type from epic/i });
     await user.click(typeBtn);
@@ -335,8 +337,10 @@ describe('MetadataCard', () => {
   });
 
   it('shows type conversion warning modal', async () => {
-    render(<MetadataCard {...baseProps} type="epic" id={1} raw={{}} displayType="epic" defaultOpen={true} />);
+    render(<MetadataCard {...baseProps} type="epic" id={1} raw={{}} displayType="epic" defaultOpen={true} onSave={vi.fn()} />);
     const user = userEvent.setup();
+
+    await user.click(screen.getByRole('button', { name: /Edit/i }));
 
     const typeBtn = screen.getByRole('button', { name: /Change type from epic/i });
     await user.click(typeBtn);
