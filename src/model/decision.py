@@ -1,6 +1,5 @@
 """SQLAlchemy model representing a Decision in the database."""
 
-
 from sqlalchemy.orm import Mapped, mapped_column
 
 from enums.kanban_status import KanbanStatus
