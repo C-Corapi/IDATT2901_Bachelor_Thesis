@@ -138,7 +138,7 @@ const KanbanColumn: React.FC<Props> = ({
                   onDelete={onDeleteItem ? () => onDeleteItem(i) : undefined}
                 />
               ) : (
-                <article
+                <div
                   className={`kanban-item card--type-${i.type}`}
                   tabIndex={0}
                   role="button"
@@ -162,7 +162,7 @@ const KanbanColumn: React.FC<Props> = ({
                     <span className={`type-acronym type-acronym--${i.type}`}>{typeAbbrev(i.type)}</span>
                   </div>
                   {i.owner && <div className="kanban-item-owner">{i.owner}</div>}
-                </article>
+                </div>
               )}
             </div>
           );
