@@ -326,11 +326,11 @@ a:focus:not(:focus-visible) {
   padding: 2px 7px; border-radius: var(--radius-sm);
   flex-shrink: 0; white-space: nowrap;
 }
-.type-acronym--epic        { background: color-mix(in srgb, var(--blue) 15%, transparent);   color: var(--blue); }
-.type-acronym--decision    { background: color-mix(in srgb, var(--rose) 15%, transparent);   color: var(--rose); }
-.type-acronym--deliverable { background: color-mix(in srgb, var(--purple) 15%, transparent); color: var(--purple); }
-.type-acronym--activity    { background: color-mix(in srgb, var(--green) 15%, transparent);  color: var(--green); }
-.type-acronym--task        { background: color-mix(in srgb, var(--peach) 15%, transparent);  color: var(--peach); }
+.type-acronym--epic        { background: color-mix(in srgb, var(--blue) 15%, transparent);   color: var(--blue-dark); }
+.type-acronym--decision    { background: color-mix(in srgb, var(--rose) 15%, transparent);   color: #6e2035; }
+.type-acronym--deliverable { background: color-mix(in srgb, var(--purple) 15%, transparent); color: #4e1d46; }
+.type-acronym--activity    { background: color-mix(in srgb, var(--green) 15%, transparent);  color: #1e4d30; }
+.type-acronym--task { background: color-mix(in srgb, var(--peach) 15%, transparent); color: #6b4520; }
 
 /* ── Editable fields ────────────────────────────────────────────── */
 .detail-input {
@@ -524,8 +524,8 @@ a:focus:not(:focus-visible) {
 .kanban-col-count {
   font-size: .75rem;
   font-weight: 700;
-  background: var(--blue-light);
-  color: var(--blue-dark);
+  background: var(--blue);
+  color: var(--white);
   padding: 2px 8px;
   border-radius: 10px;
   flex-shrink: 0;

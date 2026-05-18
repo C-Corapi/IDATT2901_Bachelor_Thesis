@@ -33,12 +33,12 @@ const AboutPage: React.FC = () => (
         {TYPES.map((t) => {
           const Icon = t.icon;
           return (
-              <article className="about-type" key={t.name} role="listitem" title={`${t.name}: ${t.desc}`}>
+              <div className="about-type" key={t.name} role="listitem" title={`${t.name}: ${t.desc}`}>
                 <h3 style={{color: 'var(--blue-dark)', fontSize: '.95rem', marginBottom: 4}}>
                   <span aria-hidden="true"><Icon size={16} strokeWidth={1.5}/> </span>{t.name}
                 </h3>
                 <p>{t.desc}</p>
-              </article>
+              </div>
           );
         })}
       </div>

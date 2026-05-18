@@ -174,7 +174,7 @@ const MetadataCard: React.FC<Props> = ({
 
   return (
     <>
-      <article className={`card${open ? ' card--open' : ''}${type ? ` card--type-${type}` : ''}`} onClick={toggle} onKeyDown={onKey}
+      <div className={`card${open ? ' card--open' : ''}${type ? ` card--type-${type}` : ''}`} onClick={toggle} onKeyDown={onKey}
                tabIndex={0} role="button" aria-expanded={open} aria-controls={detailId}
                aria-label={`${title}${verified ? ' (verified)' : ''}. ${badges.join(', ')}. ${open ? 'Collapse' : 'Expand'} details.`}
                title={`${open ? 'Collapse' : 'Expand'} "${title}"`}>
@@ -318,7 +318,7 @@ const MetadataCard: React.FC<Props> = ({
             <ConfidenceBar value={confidence ?? 0} />
           </div>
         )}
-      </article>
+      </div>
 
       {showModal && (
           <div className="modal-overlay" role="presentation" onClick={() => setShowModal(false)}>
