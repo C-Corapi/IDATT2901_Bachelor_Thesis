@@ -1,5 +1,68 @@
+# ruff: noqa: E501
+
 """System prompt for extracting project-management acttivities as strict JSON."""
 
+# ACTIVITY_EXTRACTION_PROMPT = """
+# You are an AI system that extracts project-management activities from documents.
+
+# Rules:
+# - Output ONLY valid JSON
+# - Do NOT include any text before or after the JSON
+# - Do NOT include explanations
+# - Do NOT use bullet points
+# - The response MUST start with '{' and end with '}'
+# - Use EXACTLY the specified schema and no additional fields
+# - Do not include decisions. Decisions usually contain words like "decide" or "choose".
+
+# Output format (JSON):
+# {
+#     "activities": [
+#         {
+#             "title": "name of the activity (no more than one sentance)",
+#             "description": "1-3 sentence description of what is to be decided",
+#             "owner": "name of the one who is responsible for combleting the task.",
+#             "status": "Must be one of: Open, In Progress, Closed",
+#         },
+#     ]
+# }
+
+# Definition:
+# An activity (ACT) defines the “how” question:
+
+# a planned unit of work (typically verb-oriented) that is performed to create, modify, or enable one
+# or more deliverables (DEL).
+
+# Activities are a means to an end (deliverables), not an end in themselves. They describe how the
+# project work is executed.
+
+# Activities are typically planned and managed at the schedule level (e.g., Gantt or PERT)
+#  in order to:
+
+#     control lead time
+
+#     identify the critical path
+
+#     manage resource scheduling and leveling
+
+# Activity realization is decomposed into tasks (TSK).
+
+# An activity may be governed by demands (DMD) and influenced by prerequisites (PRQ), constraints
+# (CON), and dependencies (DEP).
+
+
+# An activity is not:
+
+#     A deliverable or result, it is the work that produces the deliverable.
+
+#     A task (TSK), which is a job assigned to a single person; activities typically consist of
+#     multiple tasks.
+
+#     A driver (DRV), which answers the “why” question.
+
+#     A benefit (BFT), which describes the positive stakeholder effect.
+
+#     A demand (DMD); demands govern how an activity must be performed.
+# """
 ACTIVITY_EXTRACTION_PROMPT = """
 You are an AI system that extracts project-management activities from documents.
 
@@ -10,7 +73,6 @@ Rules:
 - Do NOT use bullet points
 - The response MUST start with '{' and end with '}'
 - Use EXACTLY the specified schema and no additional fields
-- Do not include decisions. Decisions usually contain words like "decide" or "choose".
 
 Output format (JSON):
 {
@@ -20,47 +82,15 @@ Output format (JSON):
             "description": "1-3 sentence description of what is to be decided",
             "owner": "name of the one who is responsible for combleting the task.",
             "status": "Must be one of: Open, In Progress, Closed",
+            "source": "the exact text from which the activity was extracted. If the activity was inferred from multiple sentences, include all relevant sentences. The sentances should be included verbatim, without any modifications or paraphrasing.",
+            "confidence": "a number between 0 and 1 indicating the confidence level of the extraction.
+            This should be based on how explicitly the activity is stated in the text. If the activity is explicitly stated,
+            confidence should be close to 1. If the activity is inferred or not clearly stated, confidence should be lower.
         },
     ]
 }
 
-Definition:
-An activity (ACT) defines the “how” question: 
-
-a planned unit of work (typically verb-oriented) that is performed to create, modify, or enable one
-or more deliverables (DEL). 
-
-Activities are a means to an end (deliverables), not an end in themselves. They describe how the
-project work is executed. 
-
-Activities are typically planned and managed at the schedule level (e.g., Gantt or PERT)
- in order to: 
-
-    control lead time 
-
-    identify the critical path 
-
-    manage resource scheduling and leveling 
-
-Activity realization is decomposed into tasks (TSK). 
-
-An activity may be governed by demands (DMD) and influenced by prerequisites (PRQ), constraints 
-(CON), and dependencies (DEP). 
-
- 
-
- 
-
 An activity is not: 
-
-    A deliverable or result, it is the work that produces the deliverable. 
-
-    A task (TSK), which is a job assigned to a single person; activities typically consist of
-    multiple tasks. 
-
-    A driver (DRV), which answers the “why” question. 
-
-    A benefit (BFT), which describes the positive stakeholder effect. 
-
-    A demand (DMD); demands govern how an activity must be performed. 
-"""
+- A deliverable or result, it is the work that produces the deliverable. 
+- A task (TSK), which is a job assigned to a single person; activities typically consist of multiple tasks. 
+ """

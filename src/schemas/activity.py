@@ -12,6 +12,8 @@ class ActivityBaseModel(BaseModel):
     description: str | None = None
     owner: str | None = None
     status: str | None = None
+    source: str | None = None
+    confidence: float | None = None
 
 
 class ActivityCreateModel(ActivityBaseModel):

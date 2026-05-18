@@ -14,6 +14,8 @@ class DeliverableBaseModel(BaseModel):
     properties: str | None = None
     fit_criterion: str | None = None
     owner: str | None = None
+    source: str | None = None
+    confidence: float | None = None
 
 
 class DeliverableCreateModel(DeliverableBaseModel):
