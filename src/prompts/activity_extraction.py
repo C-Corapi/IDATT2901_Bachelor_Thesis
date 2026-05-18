@@ -82,6 +82,10 @@ Output format (JSON):
             "description": "1-3 sentence description of what is to be decided",
             "owner": "name of the one who is responsible for combleting the task.",
             "status": "Must be one of: Open, In Progress, Closed",
+            "source": "the exact text from which the activity was extracted. If the activity was inferred from multiple sentences, include all relevant sentences. The sentances should be included verbatim, without any modifications or paraphrasing.",
+            "confidence": "a number between 0 and 1 indicating the confidence level of the extraction.
+            This should be based on how explicitly the activity is stated in the text. If the activity is explicitly stated,
+            confidence should be close to 1. If the activity is inferred or not clearly stated, confidence should be lower.
         },
     ]
 }
