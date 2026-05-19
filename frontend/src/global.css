@@ -259,14 +259,14 @@ a:focus:not(:focus-visible) {
   word-break: break-word;
   line-height: 1.2;
 }
-.badge--open        { background: var(--green); }
-.badge--pending     { background: var(--yellow); }
-.badge--closed      { background: var(--gray-500); }
+.badge--open        { background: var(--green); color: var(--white) }
+.badge--pending     { background: var(--yellow); color: var(--white) }
+.badge--closed      { background: var(--gray-500); color: var(--white) }
 .badge--in-progress { background: var(--blue); }
-.badge--urgent      { background: var(--red); }
-.badge--important   { background: var(--yellow); }
-.badge--local       { background: var(--blue-dark); }
-.badge--global      { background: var(--rose); }
+.badge--urgent      { background: var(--red); color: var(--white) }
+.badge--important   { background: var(--yellow); color: var(--white) }
+.badge--local       { background: var(--blue-dark); color: var(--white) }
+.badge--global      { background: var(--rose); color: var(--white) }
 .badge--default     { background: var(--white); }
 
 .card-meta {

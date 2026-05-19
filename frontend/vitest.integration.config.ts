@@ -17,11 +17,9 @@ export default defineConfig({
         'src/types.ts',
         '**/*.d.ts',
         'node_modules/**',
-        // Integration tests exclude components and API
         'src/components/**',
         'src/api.ts',
       ],
-      // Integration tests only cover pages
       reportsDirectory: './coverage/integration',
     },
   },
