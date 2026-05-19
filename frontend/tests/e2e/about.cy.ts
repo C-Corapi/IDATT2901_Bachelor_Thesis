@@ -10,19 +10,19 @@ describe('About Page', () => {
     cy.contains('NTNU Trondheim').should('be.visible');
 
     cy.contains('h3', 'Epic').should('be.visible');
-    cy.contains('Major planned features or capabilities').should('be.visible');
+    cy.contains('An epic (EPIC) is a major project goal').should('be.visible');
 
     cy.contains('h3', 'Decision').should('be.visible');
-    cy.contains('Decisions with alternatives').should('be.visible');
+    cy.contains('A decision (DEC) is a choice').should('be.visible');
 
     cy.contains('h3', 'Deliverable').should('be.visible');
-    cy.contains('Tangible or intangible').should('be.visible');
+    cy.contains('A deliverable (DEL) is a major result').should('be.visible');
 
     cy.contains('h3', 'Activity').should('be.visible');
-    cy.contains('Ongoing project activities').should('be.visible');
+    cy.contains('An activity (ACT) is a means to an end').should('be.visible');
 
     cy.contains('h3', 'Task').should('be.visible');
-    cy.contains('Individual actionable').should('be.visible');
+    cy.contains('A task (TSK) is an individual').should('be.visible');
   });
 
   it('should display icons for each metadata type', () => {
