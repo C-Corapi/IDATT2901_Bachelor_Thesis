@@ -24,8 +24,8 @@ describe('AboutPage', () => {
 
     expect(screen.getByText(/IDATT2901 Bachelor Thesis/i)).toBeTruthy();
     expect(screen.getByText(/NTNU Trondheim/i)).toBeTruthy();
-    expect(screen.getByText(/increase efficiency/i)).toBeTruthy();
-    expect(screen.getByText(/LLMs/i)).toBeTruthy();
+    expect(screen.getByText(/implement the agile Rolling Wave Planning/i)).toBeTruthy();
+    expect(screen.getByText(/Upload your project documents to extract structured metadata/i)).toBeTruthy();
   });
 
   it('renders a description paragraph about uploading documents', () => {
@@ -59,12 +59,17 @@ describe('AboutPage', () => {
   it('each metadata type has a heading and description', () => {
     render(<AboutPage />);
 
-    const expectedTypes = [
-      { name: 'Epic', desc: 'Major planned features or capabilities' },
-      { name: 'Decision', desc: 'Decisions with alternatives & ownership' },
-      { name: 'Deliverable', desc: 'Tangible or intangible project results' },
-      { name: 'Activity', desc: 'Ongoing project activities' },
-      { name: 'Task', desc: 'Individual actionable work items' },
+        const expectedTypes = [
+      { name: 'Epic', desc: 'An epic (EPC) is a major project goal. It can be composed ' +
+        'of decisions, deliverables, activities, and tasks.' },
+      { name: 'Decision', desc: 'A decision (DEC) is a choice than needs to be made to ' +
+        'determine how a project is to be completed.' },
+      { name: 'Deliverable', desc: 'A deliverable (DEL) is a major result than needs to be ' +
+        'delivered to complete and epic. It can be composed of activities and tasks.' },
+      { name: 'Activity', desc: 'An activity (ACT) is a means to an end (deliverables). ' +
+        'It describe how the project work is executed and can be decomposed into tasks.' },
+      { name: 'Task', desc: 'A task (TSK) is an individual, actionable work item, ' +
+        'which cannot be further decomposed into any smaller parts.' },
     ];
 
     expectedTypes.forEach((type) => {
@@ -77,11 +82,16 @@ describe('AboutPage', () => {
     render(<AboutPage />);
 
     const expectedTypes = [
-      { name: 'Epic', desc: 'Major planned features or capabilities' },
-      { name: 'Decision', desc: 'Decisions with alternatives & ownership' },
-      { name: 'Deliverable', desc: 'Tangible or intangible project results' },
-      { name: 'Activity', desc: 'Ongoing project activities' },
-      { name: 'Task', desc: 'Individual actionable work items' },
+      { name: 'Epic', desc: 'An epic (EPC) is a major project goal. It can be composed ' +
+        'of decisions, deliverables, activities, and tasks.' },
+      { name: 'Decision', desc: 'A decision (DEC) is a choice than needs to be made to ' +
+        'determine how a project is to be completed.' },
+      { name: 'Deliverable', desc: 'A deliverable (DEL) is a major result than needs to be ' +
+        'delivered to complete and epic. It can be composed of activities and tasks.' },
+      { name: 'Activity', desc: 'An activity (ACT) is a means to an end (deliverables). ' +
+        'It describe how the project work is executed and can be decomposed into tasks.' },
+      { name: 'Task', desc: 'A task (TSK) is an individual, actionable work item, ' +
+        'which cannot be further decomposed into any smaller parts.' },
     ];
 
     expectedTypes.forEach((type) => {

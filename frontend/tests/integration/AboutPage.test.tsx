@@ -1,6 +1,6 @@
 import React from 'react';
 import { describe, it, expect, afterEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { render, screen, cleanup, within } from '@testing-library/react';
 import AboutPage from '../../src/pages/AboutPage';
 
 afterEach(() => {
@@ -24,8 +24,8 @@ describe('AboutPage Integration Tests', () => {
 
     expect(screen.getByText(/IDATT2901 Bachelor Thesis/i)).toBeTruthy();
     expect(screen.getByText(/NTNU Trondheim/i)).toBeTruthy();
-    expect(screen.getByText(/increase efficiency/i)).toBeTruthy();
-    expect(screen.getByText(/LLMs/i)).toBeTruthy();
+    expect(screen.getByText(/implement the agile Rolling Wave Planning/i)).toBeTruthy();
+    expect(screen.getByText(/Upload your project documents to extract structured metadata/i)).toBeTruthy();
   });
 
   it('displays upload instructions', () => {
@@ -33,7 +33,7 @@ describe('AboutPage Integration Tests', () => {
 
     expect(screen.getByText(/Upload your project documents/i)).toBeTruthy();
     expect(screen.getByText(/Epics, Decisions, Deliverables, Tasks/i)).toBeTruthy();
-    const introParagraph = screen.getByText(/Upload your project documents and the system will automatically extract/i);
+    const introParagraph = screen.getByText(/Upload your project documents to extract structured metadata/i);
     expect(introParagraph.textContent).toContain('Activities');
   });
 
@@ -59,9 +59,10 @@ describe('AboutPage Integration Tests', () => {
 
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(5);
-    expect(screen.getByRole('heading', { name: /Epic/i, level: 3 })).toBeTruthy();
-    expect(screen.getByText(/Major planned features or capabilities/i)).toBeTruthy();
 
+    const epicItem = items[0];
+    expect(within(epicItem).getByRole('heading', { name: /Epic/i, level: 3 })).toBeTruthy();
+    expect(within(epicItem).getByText(/An epic \(EPC\) is a major project goal/i)).toBeTruthy();
   });
 
   it('displays Decision metadata type with icon and description', () => {
@@ -69,8 +70,10 @@ describe('AboutPage Integration Tests', () => {
 
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(5);
-    expect(screen.getByRole('heading', { name: /Decision/i, level: 3 })).toBeTruthy();
-    expect(screen.getByText(/Decisions with alternatives/i)).toBeTruthy();
+
+    const decisionItem = items[1];
+    expect(within(decisionItem).getByRole('heading', { name: /Decision/i, level: 3 })).toBeTruthy();
+    expect(within(decisionItem).getByText(/A decision \(DEC\) is a choice/i)).toBeTruthy();
   });
 
   it('displays Deliverable metadata type with icon and description', () => {
@@ -78,9 +81,10 @@ describe('AboutPage Integration Tests', () => {
 
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(5);
-    expect(screen.getByRole('heading', { name: /Deliverable/i, level: 3 })).toBeTruthy();
-    expect(screen.getByText(/Tangible or intangible/i)).toBeTruthy();
 
+    const deliverableItem = items[2];
+    expect(within(deliverableItem).getByRole('heading', { name: /Deliverable/i, level: 3 })).toBeTruthy();
+    expect(within(deliverableItem).getByText(/A deliverable \(DEL\) is a major result/i)).toBeTruthy();
   });
 
   it('displays Activity metadata type with icon and description', () => {
@@ -88,8 +92,10 @@ describe('AboutPage Integration Tests', () => {
 
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(5);
-    expect(screen.getByRole('heading', { name: /Activity/i, level: 3 })).toBeTruthy();
-    expect(screen.getByText(/Ongoing project activities/i)).toBeTruthy();
+
+    const activityItem = items[3];
+    expect(within(activityItem).getByRole('heading', { name: /Activity/i, level: 3 })).toBeTruthy();
+    expect(within(activityItem).getByText(/An activity \(ACT\) is a means/i)).toBeTruthy();
   });
 
   it('displays Task metadata type with icon and description', () => {
@@ -97,7 +103,9 @@ describe('AboutPage Integration Tests', () => {
 
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(5);
-    expect(screen.getByRole('heading', { name: /Task/i, level: 3 })).toBeTruthy();
-    expect(screen.getByText(/Individual actionable/i)).toBeTruthy();
+
+    const taskItem = items[4];
+    expect(within(taskItem).getByRole('heading', { name: /Task/i, level: 3 })).toBeTruthy();
+    expect(within(taskItem).getByText(/A task \(TSK\) is an individual/i)).toBeTruthy();
   });
 });
