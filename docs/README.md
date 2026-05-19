@@ -120,7 +120,7 @@ deactivate
 
 ## Running tests
 To run the backend unit tests, from the project folder run:
-```
+```bash
 pytest
 ```
 To get a coverage report run:
@@ -129,42 +129,36 @@ pytest --cov="src"
 ```
 
 To run the frontend unit tests, run;
-
 ```bash
 cd frontend
 npm run test:unit
 ```
 
 To get a coverage report of the frontend unit tests, run: 
-
 ```bash
 cd frontend
 npm run test:coverage:unit
 ```
 
 To run the frontend integration tests, run;
-
 ```bash
 cd frontend
 npm run test:integration
 ```
 
 To get a coverage report of the frontend unit tests, run: 
-
 ```bash
 cd frontend
 npm run test:coverage:integration
 ```
 
 To run the frontend end to end tests headless, run;
-
 ```bash
 cd frontend
 npm run cypress:run
 ```
 
 To run the frontend end to end tests in cypress, run;
-
 ```bash
 cd frontend
 npm run cypress:open
