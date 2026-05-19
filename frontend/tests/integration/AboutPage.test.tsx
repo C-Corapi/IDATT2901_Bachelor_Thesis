@@ -62,7 +62,7 @@ describe('AboutPage Integration Tests', () => {
 
     const epicItem = items[0];
     expect(within(epicItem).getByRole('heading', { name: /Epic/i, level: 3 })).toBeTruthy();
-    expect(within(epicItem).getByText(/An epic \(EPC\) is a major project goal/i)).toBeTruthy();
+    expect(within(epicItem).getByText(/An epic \(EPIC\) is a major project goal/i)).toBeTruthy();
   });
 
   it('displays Decision metadata type with icon and description', () => {

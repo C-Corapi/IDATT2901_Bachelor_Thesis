@@ -2,7 +2,7 @@ import React from 'react';
 import { Umbrella, Split, PackageCheck, ClipboardList, ClipboardCheck } from "lucide-react";
 
 const TYPES = [
-  { icon: Umbrella,       name: 'Epic',        desc: 'An epic (EPC) is a major project goal. It can be composed ' +
+  { icon: Umbrella,       name: 'Epic',        desc: 'An epic (EPIC) is a major project goal. It can be composed ' +
         'of decisions, deliverables, activities, and tasks.'},
   { icon: Split,          name: 'Decision',     desc: 'A decision (DEC) is a choice than needs to be made to ' +
         'determine how a project is to be completed.' },
