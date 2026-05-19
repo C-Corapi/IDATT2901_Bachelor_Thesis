@@ -62,7 +62,7 @@ describe('AboutPage', () => {
         const expectedTypes = [
       { name: 'Epic', desc: 'An epic (EPIC) is a major project goal. It can be composed ' +
         'of decisions, deliverables, activities, and tasks.' },
-      { name: 'Decision', desc: 'A decision (DEC) is a choice than needs to be made to ' +
+      { name: 'Decision', desc: 'A decision (DEC) is a choice that needs to be made to ' +
         'determine how a project is to be completed.' },
       { name: 'Deliverable', desc: 'A deliverable (DEL) is a major result than needs to be ' +
         'delivered to complete and epic. It can be composed of activities and tasks.' },
@@ -84,7 +84,7 @@ describe('AboutPage', () => {
     const expectedTypes = [
       { name: 'Epic', desc: 'An epic (EPIC) is a major project goal. It can be composed ' +
         'of decisions, deliverables, activities, and tasks.' },
-      { name: 'Decision', desc: 'A decision (DEC) is a choice than needs to be made to ' +
+      { name: 'Decision', desc: 'A decision (DEC) is a choice that needs to be made to ' +
         'determine how a project is to be completed.' },
       { name: 'Deliverable', desc: 'A deliverable (DEL) is a major result than needs to be ' +
         'delivered to complete and epic. It can be composed of activities and tasks.' },
