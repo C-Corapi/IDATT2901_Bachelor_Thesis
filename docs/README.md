@@ -81,7 +81,7 @@ This system requires environment variables for access to the LLM.
 
 Before running the application, create a `.env` file in the project root and add the required access token.
 
-Required variables:
+Required variables (Contact the team if you need a API key to test the application. To contact the team, send an email to all of the members):
 - `API_TOKEN`: your Hugging Face access token
 
 Use your own access token unless you have been provided one.
@@ -165,7 +165,13 @@ npm run cypress:open
 ```
 
 ## Documentation
-Code should be documented with docstrings. For a more detailed description of the project see the wiki.
+Code should be documented with docstrings.
+
+## Contact
+Emails of the contributors:
+- henriaga@stud.ntnu.no
+- simenjgr@stud.ntnu.no
+- cacorapi@stud.ntnu.no
 
 ## Contribution
 To contribute to the project you have to create a new branch, then make changes on the branch. When you are finished you make a pull request to main and if no pipelines fail you are free to merge. To ensure pull requests take as little time as possible tests and checkstyle should be performed locally before attempting to merge. For large additions or changes the pull request should be reviewed by at least one other contributor before merging.
