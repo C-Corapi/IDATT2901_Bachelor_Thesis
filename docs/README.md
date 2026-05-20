@@ -146,7 +146,7 @@ cd frontend
 npm run test:integration
 ```
 
-To get a coverage report of the frontend unit tests, run: 
+To get a coverage report of the frontend integration tests, run: 
 ```bash
 cd frontend
 npm run test:coverage:integration
@@ -158,7 +158,7 @@ cd frontend
 npm run cypress:run
 ```
 
-To run the frontend end to end tests in cypress, run;
+To run the frontend end to end tests in browser, run;
 ```bash
 cd frontend
 npm run cypress:open
