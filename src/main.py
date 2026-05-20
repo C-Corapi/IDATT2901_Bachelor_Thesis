@@ -16,7 +16,6 @@ from api import (
     kanban_router,
     task_router,
 )
-from utils.database import Base, engine
 
 app = FastAPI()
 
@@ -31,11 +30,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Reset db on app restart only for testing purposes.
-
-Base.metadata.drop_all(bind=engine)
-Base.metadata.create_all(bind=engine)
 
 app.include_router(epic_router.router)
 app.include_router(decision_router.router)
